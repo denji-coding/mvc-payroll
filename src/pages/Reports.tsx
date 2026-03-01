@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileText, Users, DollarSign, Building2, Download, Loader2 } from 'lucide-react';
+import { FileText, Users, DollarSign, Download, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { DateInput } from '@/components/ui/date-picker';
 
-type ReportType = 'employee-masterlist' | 'attendance-summary' | 'leave-balance' | 'payroll-summary' | 'gov-contributions' | 'branch-performance';
+type ReportType = 'employee-masterlist' | 'attendance-summary' | 'leave-balance' | 'payroll-summary' | 'gov-contributions';
 
 const reports = [
   { id: 'employee-masterlist' as ReportType, title: 'Employee Masterlist', description: 'Complete list of all employees with details', icon: Users, category: 'HR' },
@@ -17,7 +17,6 @@ const reports = [
   { id: 'leave-balance' as ReportType, title: 'Leave Balance Report', description: 'Leave credits and usage per employee', icon: FileText, category: 'HR' },
   { id: 'payroll-summary' as ReportType, title: 'Payroll Summary', description: 'Payroll totals per period', icon: DollarSign, category: 'Payroll' },
   { id: 'gov-contributions' as ReportType, title: 'Government Contributions', description: 'SSS, PhilHealth, Pag-IBIG reports', icon: DollarSign, category: 'Payroll' },
-  { id: 'branch-performance' as ReportType, title: 'Branch Performance', description: 'Attendance and costs by branch', icon: Building2, category: 'Branch' },
 ];
 
 export default function Reports() {
@@ -151,30 +150,6 @@ export default function Reports() {
           }));
           downloadCSV(formatted, 'gov-contributions', ['employee_id', 'name', 'sss_number', 'sss_ee', 'sss_er', 'philhealth_number', 'philhealth_ee', 'philhealth_er', 'pagibig_number', 'pagibig_ee', 'pagibig_er']);
           toast({ title: 'Report Generated', description: 'Government contributions report downloaded successfully' });
-          break;
-        }
-        case 'branch-performance': {
-          const { data: branches } = await supabase.from('branches').select('*');
-          const { data: employees } = await supabase.from('employees').select('branch_id');
-          const { data: attendance } = await supabase.from('attendance').select('employee_id, status, employees(branch_id)');
-          
-          const formatted = (branches || []).map(b => {
-            const branchEmployees = (employees || []).filter(e => e.branch_id === b.id).length;
-            const branchAttendance = (attendance || []).filter(a => (a.employees as any)?.branch_id === b.id);
-            const presentCount = branchAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
-            const attendanceRate = branchAttendance.length > 0 ? ((presentCount / branchAttendance.length) * 100).toFixed(1) : '0';
-            return {
-              branch_code: b.code,
-              branch_name: b.name,
-              address: b.address || '',
-              total_employees: branchEmployees,
-              attendance_records: branchAttendance.length,
-              attendance_rate: `${attendanceRate}%`,
-              status: b.is_active ? 'Active' : 'Inactive'
-            };
-          });
-          downloadCSV(formatted, 'branch-performance', ['branch_code', 'branch_name', 'address', 'total_employees', 'attendance_records', 'attendance_rate', 'status']);
-          toast({ title: 'Report Generated', description: 'Branch performance report downloaded successfully' });
           break;
         }
       }

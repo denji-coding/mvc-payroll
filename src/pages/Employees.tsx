@@ -18,6 +18,7 @@ export default function Employees() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'active' | 'inactive' | 'deleted'>('active');
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEmployees();
@@ -60,6 +61,20 @@ export default function Employees() {
       .eq('id', id);
     if (error) { toast.error('Failed to restore employee'); return; }
     toast.success(`${name} has been restored`);
+    fetchEmployees();
+  };
+
+  const handlePermanentDelete = async (id: string, name: string) => {
+    setDeletingId(id);
+    const { data, error } = await supabase.functions.invoke('delete-employee', {
+      body: { employee_id: id },
+    });
+    setDeletingId(null);
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || 'Failed to permanently delete employee');
+      return;
+    }
+    toast.success(`${name} has been permanently deleted`);
     fetchEmployees();
   };
 
@@ -118,15 +133,38 @@ export default function Employees() {
               </Button>
             )}
             {role === 'hr_admin' && viewMode === 'deleted' && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-success hover:text-success"><RotateCcw className="h-4 w-4" /></Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {emp.first_name} {emp.last_name} to active status.</AlertDialogDescription></AlertDialogHeader>
-                  <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleRestore(emp.id, `${emp.first_name} ${emp.last_name}`)}>Restore</AlertDialogAction></AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-success hover:text-success"><RotateCcw className="h-4 w-4" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {emp.first_name} {emp.last_name} to active status.</AlertDialogDescription></AlertDialogHeader>
+                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleRestore(emp.id, `${emp.first_name} ${emp.last_name}`)}>Restore</AlertDialogAction></AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={deletingId === emp.id}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Permanently Delete Employee?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete {emp.first_name} {emp.last_name} and all associated records (attendance, payroll, leaves, etc.). This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, `${emp.first_name} ${emp.last_name}`)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete Permanently
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
             )}
             {role === 'hr_admin' && viewMode !== 'deleted' && (
               <AlertDialog>

@@ -14,3 +14,12 @@ verify_jwt = false
 
 [functions.send-payslip-emails]
 verify_jwt = false
+
+[functions.delete-employee]
+verify_jwt = false
+
+[functions.purge-deleted-employees]
+verify_jwt = false
+
+[functions.refresh-leave-credits]
+verify_jwt = false

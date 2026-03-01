@@ -34,17 +34,36 @@ interface EmployeeData {
   password: string;
 }
 
-// Clean empty strings to null for optional fields
 function cleanData(data: Record<string, unknown>): Record<string, unknown> {
   const cleaned: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(data)) {
-    if (value === '' || value === undefined) {
-      cleaned[key] = null;
-    } else {
-      cleaned[key] = value;
-    }
+    cleaned[key] = (value === '' || value === undefined) ? null : value;
   }
   return cleaned;
+}
+
+async function checkDuplicates(supabaseAdmin: any, data: EmployeeData) {
+  const checks: { field: string; value: string | undefined; label: string }[] = [
+    { field: 'email', value: data.email, label: 'email' },
+    { field: 'phone', value: data.phone, label: 'phone number' },
+    { field: 'rfid_card_number', value: data.rfid_card_number, label: 'RFID card number' },
+    { field: 'sss_number', value: data.sss_number, label: 'SSS number' },
+    { field: 'philhealth_number', value: data.philhealth_number, label: 'PhilHealth number' },
+    { field: 'pagibig_number', value: data.pagibig_number, label: 'Pag-IBIG number' },
+  ];
+
+  for (const check of checks) {
+    if (!check.value || check.value.trim() === '') continue;
+    const { data: existing } = await supabaseAdmin
+      .from('employees')
+      .select('id')
+      .eq(check.field, check.value)
+      .limit(1);
+    if (existing && existing.length > 0) {
+      return `An employee with this ${check.label} already exists`;
+    }
+  }
+  return null;
 }
 
 Deno.serve(async (req) => {
@@ -55,154 +74,101 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // Custom JWT verification
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error("Missing or invalid authorization header");
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: 'Missing authorization' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-    
     if (userError || !user) {
-      console.error("Token verification failed:", userError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Check if user is HR admin
     const { data: roleData, error: roleError } = await supabaseAdmin
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-
+      .from('user_roles').select('role').eq('user_id', user.id).single();
     if (roleError || roleData?.role !== 'hr_admin') {
-      console.error("Authorization failed: user is not hr_admin", roleError);
-      return new Response(
-        JSON.stringify({ error: 'Only HR admins can create employees' }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: 'Only HR admins can create employees' }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-
-    console.log("Authorized user:", user.id, "with role:", roleData.role);
 
     const employeeData: EmployeeData = await req.json();
-    
-    // 1. Create user account in auth.users
+
+    // Check for duplicates before creating
+    const duplicateError = await checkDuplicates(supabaseAdmin, employeeData);
+    if (duplicateError) {
+      return new Response(JSON.stringify({ error: duplicateError }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Create user account
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: employeeData.email,
       password: employeeData.password,
       email_confirm: true,
-      user_metadata: {
-        first_name: employeeData.first_name,
-        last_name: employeeData.last_name,
-      }
+      user_metadata: { first_name: employeeData.first_name, last_name: employeeData.last_name }
     });
 
     if (authError) {
-      console.error("Auth error:", authError);
-      return new Response(
-        JSON.stringify({ error: authError.message }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      const msg = authError.message.toLowerCase().includes('already been registered')
+        ? 'An employee with this email already exists'
+        : authError.message;
+      return new Response(JSON.stringify({ error: msg }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const userId = authData.user.id;
 
-    // 2. Update user_roles to set the correct role (trigger creates 'employee' by default)
+    // Set role if not employee
     if (employeeData.role !== 'employee') {
-      const { error: roleError } = await supabaseAdmin
-        .from('user_roles')
-        .update({ role: employeeData.role })
-        .eq('user_id', userId);
-
-      if (roleError) {
-        console.error("Role update error:", roleError);
-      }
+      await supabaseAdmin.from('user_roles').update({ role: employeeData.role }).eq('user_id', userId);
     }
 
-    // 3. If branch_manager, add to branch_managers table
+    // Branch manager assignment
     if (employeeData.role === 'branch_manager' && employeeData.branch_id) {
-      const { error: bmError } = await supabaseAdmin
-        .from('branch_managers')
-        .insert({ user_id: userId, branch_id: employeeData.branch_id });
-
-      if (bmError) {
-        console.error("Branch manager assignment error:", bmError);
-      }
+      await supabaseAdmin.from('branch_managers').insert({ user_id: userId, branch_id: employeeData.branch_id });
     }
 
-    // 4. Create employee record linked to the user
+    // Create employee record
     const { password, role, ...employeeFields } = employeeData;
     const cleanedFields = cleanData(employeeFields);
-    
-    // Remove any undefined/empty optional fields
-    const insertData: Record<string, unknown> = {
-      ...cleanedFields,
-      user_id: userId,
-      basic_salary: employeeData.basic_salary || 0,
-    };
-    
-    console.log("Inserting employee:", JSON.stringify(insertData));
-    
+    const insertData: Record<string, unknown> = { ...cleanedFields, user_id: userId, basic_salary: employeeData.basic_salary || 0 };
+
     const { data: employee, error: employeeError } = await supabaseAdmin
-      .from('employees')
-      .insert(insertData)
-      .select()
-      .single();
+      .from('employees').insert(insertData).select().single();
 
     if (employeeError) {
-      console.error("Employee creation error:", employeeError);
-      // Rollback: delete the created user
       await supabaseAdmin.auth.admin.deleteUser(userId);
-      return new Response(
-        JSON.stringify({ error: employeeError.message }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: employeeError.message }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Send welcome email with credentials
+    // Send welcome email (non-blocking)
     try {
       await supabaseAdmin.functions.invoke('send-notification-email', {
         body: {
-          type: 'account_created',
-          to: employeeData.email,
+          type: 'account_created', to: employeeData.email,
           name: `${employeeData.first_name} ${employeeData.last_name}`,
-          email: employeeData.email,
-          password: employeeData.password,
-          role: employeeData.role,
-          portalUrl: 'https://migrant-path-hr.lovable.app'
+          email: employeeData.email, password: employeeData.password,
+          role: employeeData.role, portalUrl: 'https://migrant-path-hr.lovable.app'
         }
       });
-      console.log("Welcome email sent to:", employeeData.email);
     } catch (emailError) {
       console.error("Failed to send welcome email:", emailError);
-      // Don't fail the entire operation if email fails
     }
 
-    return new Response(
-      JSON.stringify({ success: true, employee, userId }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: true, employee, userId }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (error) {
-    console.error("Error:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: errorMessage }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

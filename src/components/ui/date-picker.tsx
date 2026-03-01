@@ -41,6 +41,12 @@ export function DatePicker({
   disabledDates,
 }: DatePickerProps) {
   const [calendarDate, setCalendarDate] = React.useState<Date>(date || new Date());
+  const [open, setOpen] = React.useState(false);
+
+  const handleSelect = (newDate: Date | undefined) => {
+    onDateChange(newDate);
+    setOpen(false);
+  };
 
   const handleMonthChange = (month: string) => {
     const newDate = setMonth(calendarDate, parseInt(month));
@@ -53,7 +59,7 @@ export function DatePicker({
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -108,7 +114,7 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={date}
-          onSelect={onDateChange}
+          onSelect={handleSelect}
           month={calendarDate}
           onMonthChange={setCalendarDate}
           disabled={disabledDates}

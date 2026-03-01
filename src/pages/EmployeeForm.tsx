@@ -57,15 +57,37 @@ export default function EmployeeForm() {
     });
   };
 
+  const checkDuplicatesOnEdit = async (payload: Record<string, unknown>, employeeId: string): Promise<string | null> => {
+    const checks: { field: keyof typeof payload; value: unknown; label: string; column: 'email' | 'phone' | 'rfid_card_number' | 'sss_number' | 'philhealth_number' | 'pagibig_number' }[] = [
+      { field: 'email', value: payload.email, label: 'email', column: 'email' },
+      { field: 'phone', value: payload.phone, label: 'phone number', column: 'phone' },
+      { field: 'rfid_card_number', value: payload.rfid_card_number, label: 'RFID card number', column: 'rfid_card_number' },
+      { field: 'sss_number', value: payload.sss_number, label: 'SSS number', column: 'sss_number' },
+      { field: 'philhealth_number', value: payload.philhealth_number, label: 'PhilHealth number', column: 'philhealth_number' },
+      { field: 'pagibig_number', value: payload.pagibig_number, label: 'Pag-IBIG number', column: 'pagibig_number' },
+    ];
+
+    for (const check of checks) {
+      if (!check.value || (typeof check.value === 'string' && check.value.trim() === '')) continue;
+      const { data: existing } = await supabase
+        .from('employees')
+        .select('id')
+        .eq(check.column, check.value as string)
+        .neq('id', employeeId)
+        .limit(1);
+      if (existing && existing.length > 0) {
+        return `An employee with this ${check.label} already exists`;
+      }
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     if (id) {
-      // Update existing employee (no user/role changes)
       const { password, role, ...payload } = form;
-      
-      // Clean empty strings to undefined for optional fields
       const cleanPayload: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(payload)) {
         if (value === '') {
@@ -75,6 +97,14 @@ export default function EmployeeForm() {
         } else {
           cleanPayload[key] = value;
         }
+      }
+
+      // Check for duplicates
+      const duplicateError = await checkDuplicatesOnEdit(cleanPayload, id);
+      if (duplicateError) {
+        toast.error(duplicateError);
+        setLoading(false);
+        return;
       }
       
       const { error } = await supabase.from('employees').update(cleanPayload).eq('id', id);

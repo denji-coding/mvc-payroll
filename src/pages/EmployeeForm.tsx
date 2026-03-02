@@ -130,8 +130,27 @@ export default function EmployeeForm() {
       });
 
       setLoading(false);
-      if (error || data?.error) {
-        toast.error(data?.error || error?.message);
+      if (error) {
+        // Edge function returns error details in the response body
+        let errorMessage = 'Failed to create employee';
+        try {
+          if (error.context?.body) {
+            const reader = error.context.body.getReader();
+            const { value } = await reader.read();
+            const text = new TextDecoder().decode(value);
+            const parsed = JSON.parse(text);
+            errorMessage = parsed.error || errorMessage;
+          } else {
+            errorMessage = error.message || errorMessage;
+          }
+        } catch {
+          errorMessage = error.message || errorMessage;
+        }
+        toast.error(errorMessage);
+        return;
+      }
+      if (data?.error) {
+        toast.error(data.error);
         return;
       }
       toast.success('Employee created successfully');

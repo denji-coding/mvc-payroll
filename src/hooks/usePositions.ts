@@ -87,7 +87,7 @@ export function useDeletePosition() {
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('positions')
-        .update({ is_active: false })
+        .delete()
         .eq('id', id);
       if (error) throw error;
     },

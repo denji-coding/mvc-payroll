@@ -25,6 +25,13 @@ const LEAVE_TYPE_ICON_MAP: Record<string, { icon: React.ComponentType<{ classNam
   'unpaid': { icon: Ban, color: 'text-muted-foreground' },
 };
 
+// Map leave type names to enum values for leave_requests table
+const NAME_TO_ENUM: Record<string, string> = {
+  'Sick Leave': 'sick', 'Vacation Leave': 'vacation', 'Emergency Leave': 'emergency',
+  'Maternity/Paternity Leave': 'maternity', 'Maternity Leave': 'maternity',
+  'Paternity Leave': 'paternity', 'Bereavement Leave': 'bereavement', 'Unpaid Leave': 'unpaid',
+};
+
 const getLeaveTypeVisuals = (name: string) => {
   const lower = name.toLowerCase();
   for (const [key, val] of Object.entries(LEAVE_TYPE_ICON_MAP)) { if (lower.includes(key)) return val; }
@@ -40,12 +47,8 @@ export default function Leaves() {
 
   const activeLeaveTypes = (leaveTypes || []).filter(lt => lt.is_active).map(lt => {
     const visuals = getLeaveTypeVisuals(lt.name);
-    const nameToEnum: Record<string, string> = {
-      'Sick Leave': 'sick', 'Vacation Leave': 'vacation', 'Emergency Leave': 'emergency',
-      'Maternity/Paternity Leave': 'maternity', 'Bereavement Leave': 'bereavement', 'Unpaid Leave': 'unpaid',
-    };
-    const enumVal = nameToEnum[lt.name] || lt.name.toLowerCase().replace(/\s+/g, '_');
-    return { value: enumVal, label: lt.name, icon: visuals.icon, defaultCredits: lt.default_credits, color: visuals.color };
+    // Use the leave type name directly as the value (matches leave_credits.leave_type text column)
+    return { value: lt.name, label: lt.name, icon: visuals.icon, defaultCredits: lt.default_credits, color: visuals.color };
   });
 
   const [open, setOpen] = useState(false);
@@ -89,8 +92,10 @@ export default function Leaves() {
       setUploading(true);
       let medicalCertUrl: string | null = null;
       if (requiresMedicalCert && medicalFile) medicalCertUrl = await uploadMedicalCert();
+      // Convert leave type name to enum for leave_requests table
+      const leaveTypeEnum = NAME_TO_ENUM[form.leave_type] || form.leave_type.toLowerCase().replace(/\s+leave$/i, '').replace(/\s+/g, '_');
       createLeave.mutate({
-        leave_type: form.leave_type as any, start_date: format(startDate, 'yyyy-MM-dd'), end_date: format(endDate, 'yyyy-MM-dd'),
+        leave_type: leaveTypeEnum as any, start_date: format(startDate, 'yyyy-MM-dd'), end_date: format(endDate, 'yyyy-MM-dd'),
         total_days: calculatedDays, reason: form.reason || null, medical_certificate_url: medicalCertUrl, pay_type: form.pay_type,
       }, { onSuccess: () => { setForm({ leave_type: '', reason: '', pay_type: 'with_pay' }); setStartDate(undefined); setEndDate(undefined); setMedicalFile(null); setOpen(false); } });
     } catch { toast.error('Failed to submit leave request'); } finally { setUploading(false); }

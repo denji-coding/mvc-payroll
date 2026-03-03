@@ -141,7 +141,7 @@ export function useCreateLeaveCredit() {
   return useMutation({
     mutationFn: async (credit: {
       employee_id: string;
-      leave_type: 'sick' | 'vacation' | 'emergency';
+      leave_type: string;
       total_credits: number;
     }) => {
       const currentYear = new Date().getFullYear();
@@ -285,12 +285,20 @@ export function useApproveLeaveRequest() {
         if (action === 'approve' && leaveRequest) {
           const currentYear = new Date().getFullYear();
           
-          // Find the leave credit record
+          // Map enum value back to leave type name for leave_credits lookup
+          const enumToName: Record<string, string> = {
+            'sick': 'Sick Leave', 'vacation': 'Vacation Leave', 'emergency': 'Emergency Leave',
+            'maternity': 'Maternity/Paternity Leave', 'paternity': 'Paternity Leave',
+            'bereavement': 'Bereavement Leave', 'unpaid': 'Unpaid Leave',
+          };
+          const leaveTypeName = enumToName[leaveRequest.leave_type] || leaveRequest.leave_type;
+          
+          // Find the leave credit record using text name
           const { data: creditRecord } = await supabase
             .from('leave_credits')
             .select('id, used_credits')
             .eq('employee_id', leaveRequest.employee_id)
-            .eq('leave_type', leaveRequest.leave_type)
+            .eq('leave_type', leaveTypeName)
             .eq('year', currentYear)
             .single();
           

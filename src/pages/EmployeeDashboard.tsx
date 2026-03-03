@@ -100,10 +100,10 @@ export default function EmployeeDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(leaveCredits?.vacation?.total || 0) - (leaveCredits?.vacation?.used || 0)} days
+              {(leaveCredits?.['Vacation Leave']?.total || 0) - (leaveCredits?.['Vacation Leave']?.used || 0)} days
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {leaveCredits?.vacation?.used || 0} used of {leaveCredits?.vacation?.total || 0}
+              {leaveCredits?.['Vacation Leave']?.used || 0} used of {leaveCredits?.['Vacation Leave']?.total || 0}
             </p>
           </CardContent>
         </Card>
@@ -117,10 +117,10 @@ export default function EmployeeDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(leaveCredits?.sick?.total || 0) - (leaveCredits?.sick?.used || 0)} days
+              {(leaveCredits?.['Sick Leave']?.total || 0) - (leaveCredits?.['Sick Leave']?.used || 0)} days
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {leaveCredits?.sick?.used || 0} used of {leaveCredits?.sick?.total || 0}
+              {leaveCredits?.['Sick Leave']?.used || 0} used of {leaveCredits?.['Sick Leave']?.total || 0}
             </p>
           </CardContent>
         </Card>

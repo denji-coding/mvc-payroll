@@ -440,7 +440,7 @@ export type Database = {
           created_at: string | null
           employee_id: string
           id: string
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type: string
           total_credits: number | null
           updated_at: string | null
           used_credits: number | null
@@ -450,7 +450,7 @@ export type Database = {
           created_at?: string | null
           employee_id: string
           id?: string
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type: string
           total_credits?: number | null
           updated_at?: string | null
           used_credits?: number | null
@@ -460,7 +460,7 @@ export type Database = {
           created_at?: string | null
           employee_id?: string
           id?: string
-          leave_type?: Database["public"]["Enums"]["leave_type"]
+          leave_type?: string
           total_credits?: number | null
           updated_at?: string | null
           used_credits?: number | null

@@ -485,7 +485,7 @@ export type Database = {
           hr_id: string | null
           hr_remarks: string | null
           id: string
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type: string
           manager_action_at: string | null
           manager_id: string | null
           manager_remarks: string | null
@@ -505,7 +505,7 @@ export type Database = {
           hr_id?: string | null
           hr_remarks?: string | null
           id?: string
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type: string
           manager_action_at?: string | null
           manager_id?: string | null
           manager_remarks?: string | null
@@ -525,7 +525,7 @@ export type Database = {
           hr_id?: string | null
           hr_remarks?: string | null
           id?: string
-          leave_type?: Database["public"]["Enums"]["leave_type"]
+          leave_type?: string
           manager_action_at?: string | null
           manager_id?: string | null
           manager_remarks?: string | null

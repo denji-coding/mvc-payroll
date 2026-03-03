@@ -93,9 +93,9 @@ export default function Leaves() {
       let medicalCertUrl: string | null = null;
       if (requiresMedicalCert && medicalFile) medicalCertUrl = await uploadMedicalCert();
       // Convert leave type name to enum for leave_requests table
-      const leaveTypeEnum = NAME_TO_ENUM[form.leave_type] || form.leave_type.toLowerCase().replace(/\s+leave$/i, '').replace(/\s+/g, '_');
+      const leaveTypeValue = NAME_TO_ENUM[form.leave_type] || form.leave_type.toLowerCase().replace(/\s+leave$/i, '').replace(/\s+/g, '_');
       createLeave.mutate({
-        leave_type: leaveTypeEnum as any, start_date: format(startDate, 'yyyy-MM-dd'), end_date: format(endDate, 'yyyy-MM-dd'),
+        leave_type: leaveTypeValue as any, start_date: format(startDate, 'yyyy-MM-dd'), end_date: format(endDate, 'yyyy-MM-dd'),
         total_days: calculatedDays, reason: form.reason || null, medical_certificate_url: medicalCertUrl, pay_type: form.pay_type,
       }, { onSuccess: () => { setForm({ leave_type: '', reason: '', pay_type: 'with_pay' }); setStartDate(undefined); setEndDate(undefined); setMedicalFile(null); setOpen(false); } });
     } catch { toast.error('Failed to submit leave request'); } finally { setUploading(false); }

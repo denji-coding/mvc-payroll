@@ -52,25 +52,10 @@ export function useCreateLeaveType() {
 
         if (employees && employees.length > 0) {
           const currentYear = new Date().getFullYear();
-          // Map the leave type name to the enum value
-          const leaveTypeMap: Record<string, string> = {
-            'Sick Leave': 'sick',
-            'Vacation Leave': 'vacation',
-            'Emergency Leave': 'emergency',
-            'Maternity/Paternity Leave': 'maternity',
-            'Maternity Leave': 'maternity',
-            'Paternity Leave': 'paternity',
-            'Bereavement Leave': 'bereavement',
-            'Unpaid Leave': 'unpaid',
-          };
-          // Try exact match first, then try appending " Leave", then fallback to 'unpaid'
-          const enumValue = leaveTypeMap[leaveType.name] 
-            || leaveTypeMap[leaveType.name + ' Leave'] 
-            || 'unpaid';
-
+          // Use the leave type name directly as text value
           const credits = employees.map((emp) => ({
             employee_id: emp.id,
-            leave_type: enumValue as any,
+            leave_type: leaveType.name as any,
             year: currentYear,
             total_credits: data.default_credits,
             used_credits: 0,

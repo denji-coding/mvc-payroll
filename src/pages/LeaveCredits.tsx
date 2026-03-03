@@ -55,10 +55,8 @@ export default function LeaveCredits() {
 
   const getTotalTaken = (leaveTypeName: string) => {
     if (!allCredits) return 0;
-    const typeMap: Record<string, string> = { 'Sick Leave': 'sick', 'Vacation Leave': 'vacation', 'Emergency Leave': 'emergency', 'Maternity/Paternity Leave': 'maternity' };
-    const enumVal = typeMap[leaveTypeName];
-    if (!enumVal) return 0;
-    return allCredits.filter((c: any) => c.leave_type === enumVal).reduce((sum: number, c: any) => sum + (c.used_credits || 0), 0);
+    // leave_credits.leave_type is now stored as text (the leave type name)
+    return allCredits.filter((c: any) => c.leave_type === leaveTypeName).reduce((sum: number, c: any) => sum + (c.used_credits || 0), 0);
   };
 
   if (role !== 'hr_admin') {

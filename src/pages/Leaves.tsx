@@ -59,8 +59,9 @@ export default function Leaves() {
 
   // Credits check
   const credit = credits?.find((c: any) => c.leave_type === form.leave_type);
-  const availableCredits = credit ? (credit.total_credits || 0) - (credit.used_credits || 0) : 0;
-  const hasCredits = !selectedLeaveType || !credit || availableCredits > 0;
+  const totalCredits = selectedLeaveType?.credits_per_application || credit?.total_credits || 0;
+  const availableCredits = totalCredits - (credit?.used_credits || 0);
+  const hasCredits = !selectedLeaveType || availableCredits > 0;
 
   // Max days limit check
   const maxDays = selectedLeaveType?.max_days_per_application || selectedLeaveType?.default_credits;
@@ -175,7 +176,7 @@ export default function Leaves() {
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {activeLeaveTypes.map((leaveType) => {
                 const credit = credits.find((c: any) => c.leave_type === leaveType.name);
-                const total = credit?.total_credits || 0; const used = credit?.used_credits || 0; const available = total - used;
+                const total = leaveType.credits_per_application || credit?.total_credits || 0; const used = credit?.used_credits || 0; const available = total - used;
                 const visuals = getLeaveTypeVisuals(leaveType.name);
                 const Icon = visuals.icon; const isLow = total > 0 && available <= 0;
                 return (

@@ -549,31 +549,46 @@ export type Database = {
       }
       leave_types: {
         Row: {
+          calendar_config: string
           created_at: string
+          credits_per_application: number
           default_credits: number
           description: string | null
           id: string
           is_active: boolean
+          max_days_per_application: number | null
           name: string
+          required_fields: string[]
           updated_at: string
+          upload_condition_days: number | null
         }
         Insert: {
+          calendar_config?: string
           created_at?: string
+          credits_per_application?: number
           default_credits?: number
           description?: string | null
           id?: string
           is_active?: boolean
+          max_days_per_application?: number | null
           name: string
+          required_fields?: string[]
           updated_at?: string
+          upload_condition_days?: number | null
         }
         Update: {
+          calendar_config?: string
           created_at?: string
+          credits_per_application?: number
           default_credits?: number
           description?: string | null
           id?: string
           is_active?: boolean
+          max_days_per_application?: number | null
           name?: string
+          required_fields?: string[]
           updated_at?: string
+          upload_condition_days?: number | null
         }
         Relationships: []
       }

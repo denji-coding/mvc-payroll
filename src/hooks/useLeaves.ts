@@ -303,11 +303,20 @@ export function useApproveLeaveRequest() {
             .single();
           
           if (creditRecord) {
-            // Deduct 1 credit per application (not per day)
+            // Deduct credits per application based on leave type config
+            // Look up the leave type to get credits_per_application
+            const { data: leaveTypeConfig } = await supabase
+              .from('leave_types')
+              .select('credits_per_application')
+              .eq('name', leaveTypeName)
+              .single();
+            
+            const creditsToDeduct = leaveTypeConfig?.credits_per_application || 1;
+            
             await supabase
               .from('leave_credits')
               .update({ 
-                used_credits: (creditRecord.used_credits || 0) + 1 
+                used_credits: (creditRecord.used_credits || 0) + creditsToDeduct 
               })
               .eq('id', creditRecord.id);
           }

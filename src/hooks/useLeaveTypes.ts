@@ -9,6 +9,11 @@ export interface LeaveType {
   default_credits: number;
   description: string | null;
   is_active: boolean;
+  credits_per_application: number;
+  max_days_per_application: number | null;
+  calendar_config: 'disable_past' | 'disable_future' | 'no_disable';
+  required_fields: string[];
+  upload_condition_days: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -35,6 +40,11 @@ export function useCreateLeaveType() {
       default_credits: number;
       description?: string;
       applyToAll?: boolean;
+      credits_per_application?: number;
+      max_days_per_application?: number | null;
+      calendar_config?: string;
+      required_fields?: string[];
+      upload_condition_days?: number | null;
     }) => {
       const { applyToAll, ...insertData } = leaveType;
       const { data, error } = await supabase
@@ -44,7 +54,6 @@ export function useCreateLeaveType() {
         .single();
       if (error) throw error;
 
-      // If applyToAll, create leave_credits for all employees (regardless of status)
       if (applyToAll) {
         const { data: employees } = await supabase
           .from('employees')
@@ -52,12 +61,11 @@ export function useCreateLeaveType() {
 
         if (employees && employees.length > 0) {
           const currentYear = new Date().getFullYear();
-          // Use the leave type name directly as text value
           const credits = employees.map((emp) => ({
             employee_id: emp.id,
             leave_type: leaveType.name as any,
             year: currentYear,
-            total_credits: data.default_credits,
+            total_credits: leaveType.credits_per_application || data.credits_per_application || 1,
             used_credits: 0,
           }));
 

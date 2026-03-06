@@ -24,6 +24,7 @@ import { useRolePermissions, useUpdatePermission, AVAILABLE_PERMISSIONS } from '
 import { useBenefitRates, useUpdateBenefitRates, BenefitRates } from '@/hooks/useBenefitRates';
 import { useTheme } from '@/components/theme-provider';
 import { Database } from '@/integrations/supabase/types';
+import { generateDataDictionaryPdf } from '@/lib/generateDataDictionaryPdf';
 
 type AppRole = Database['public']['Enums']['app_role'];
 

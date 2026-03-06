@@ -242,7 +242,7 @@ export default function EmployeeForm() {
                       required
                       placeholder="Generate employee ID"
                       className="flex-1"
-                      disabled={!!id}
+                      readOnly
                     />
                     {!id && (
                       <Button

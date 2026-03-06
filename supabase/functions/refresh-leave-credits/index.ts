@@ -17,6 +17,28 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
+    // Authenticate caller
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Missing authorization' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Only HR admins can refresh leave credits
+    const { data: roleData } = await supabaseAdmin
+      .from('user_roles').select('role').eq('user_id', user.id).single();
+    if (roleData?.role !== 'hr_admin') {
+      return new Response(JSON.stringify({ error: 'Only HR admins can refresh leave credits' }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const currentYear = new Date().getFullYear();
 
     // Get all leave credits for current year where used_credits > 0

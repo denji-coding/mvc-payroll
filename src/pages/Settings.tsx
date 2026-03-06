@@ -171,6 +171,27 @@ function GeneralSettings() {
           </div>
         </CardContent>
       </Card>
+
+      {isHR && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Database Documentation
+            </CardTitle>
+            <CardDescription>Export the complete data dictionary and entity relationship diagram</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => generateDataDictionaryPdf()} variant="outline" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Download Data Dictionary PDF
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              Includes all 22 tables, column definitions, enums, functions, and ERD relationships.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

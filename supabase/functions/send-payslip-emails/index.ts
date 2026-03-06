@@ -31,6 +31,29 @@ Deno.serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Authenticate caller
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Missing authorization' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Only HR admins can send payslip emails
+    const { data: roleData } = await supabase
+      .from('user_roles').select('role').eq('user_id', user.id).single();
+    if (roleData?.role !== 'hr_admin') {
+      return new Response(JSON.stringify({ error: 'Only HR admins can send payslip emails' }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { payroll_period_id }: PayslipEmailRequest = await req.json();
 
     if (!payroll_period_id) {

@@ -240,6 +240,7 @@ export default function EmployeeForm() {
                       value={form.employee_id}
                       onChange={(e) => updateField("employee_id", e.target.value)}
                       required
+                      placeholder="Generate employee ID"
                       className="flex-1"
                       disabled={!!id}
                     />
@@ -250,7 +251,6 @@ export default function EmployeeForm() {
                         size="icon"
                         onClick={generateEmployeeId}
                         title="Generate ID"
-                        aria-label="Generate employee ID"
                       >
                         <RefreshCw className="h-4 w-4" />
                       </Button>

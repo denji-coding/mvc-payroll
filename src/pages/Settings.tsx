@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateInput } from '@/components/ui/date-picker';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +24,7 @@ import { useRolePermissions, useUpdatePermission, AVAILABLE_PERMISSIONS } from '
 import { useBenefitRates, useUpdateBenefitRates, BenefitRates } from '@/hooks/useBenefitRates';
 import { useTheme } from '@/components/theme-provider';
 import { Database } from '@/integrations/supabase/types';
+import { generateDataDictionaryPdf } from '@/lib/generateDataDictionaryPdf';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -106,6 +107,8 @@ export default function Settings() {
 
 function GeneralSettings() {
   const { theme, setTheme } = useTheme();
+  const { role } = useAuth();
+  const isHR = role === 'hr_admin';
 
   return (
     <div className="space-y-4">
@@ -170,6 +173,27 @@ function GeneralSettings() {
           </div>
         </CardContent>
       </Card>
+
+      {isHR && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Database Documentation
+            </CardTitle>
+            <CardDescription>Export the complete data dictionary and entity relationship diagram</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => generateDataDictionaryPdf()} variant="outline" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Download Data Dictionary PDF
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              Includes all 22 tables, column definitions, enums, functions, and ERD relationships.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

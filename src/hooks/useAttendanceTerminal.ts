@@ -13,8 +13,8 @@ interface AttendanceResult {
   status?: string;
 }
 
-// Get the terminal secret from environment (set this in your deployment)
-const TERMINAL_SECRET = import.meta.env.VITE_RFID_TERMINAL_SECRET || '';
+// Terminal secret is no longer sent from the client.
+// Physical RFID terminals should send the secret directly to the edge function.
 
 export function useAttendanceTerminal() {
   const [currentTime, setCurrentTime] = useState(new Date());

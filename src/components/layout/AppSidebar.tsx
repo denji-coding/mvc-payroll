@@ -239,7 +239,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="border-b border-sidebar-border p-2">
+      <SidebarHeader className=" border-sidebar-border p-2">
         <NavLink
           to="/"
           end

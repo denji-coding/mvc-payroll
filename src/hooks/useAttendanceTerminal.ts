@@ -99,7 +99,6 @@ export function useAttendanceTerminal() {
     try {
       const { data, error } = await supabase.functions.invoke('rfid-attendance', {
         body: { employee_id: trimmedInput },
-        headers: TERMINAL_SECRET ? { 'x-terminal-secret': TERMINAL_SECRET } : {},
       });
 
       if (error) {

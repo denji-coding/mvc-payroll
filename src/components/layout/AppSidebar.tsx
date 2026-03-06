@@ -251,7 +251,7 @@ export function AppSidebar() {
             className={`object-contain flex-shrink-0 aspect-square ${collapsed ? "h-10 w-10" : "h-28 w-28"}`}
           />
           {!collapsed && (
-            <span className="font-semibold text-sidebar-foreground text-center text-xs mt-2 leading-tight group-hover:text-sidebar-accent-foreground block">
+            <span className="font-semibold text-sidebar-foreground text-center text-xs mt-1 mb-1 leading-tight group-hover:text-sidebar-accent-foreground block">
               <span className="block text-2xl font-bold ">Migrants Venture</span>
               <span className="block text-2xl font-bold">Corporation</span>
             </span>

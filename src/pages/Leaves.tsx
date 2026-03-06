@@ -87,8 +87,8 @@ export default function Leaves() {
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
     const { error } = await supabase.storage.from('medical-certificates').upload(fileName, attachmentFile);
     if (error) throw new Error('Failed to upload attachment');
-    const { data: { publicUrl } } = supabase.storage.from('medical-certificates').getPublicUrl(fileName);
-    return publicUrl;
+    // Store just the file path — bucket is private, use signed URLs to view
+    return fileName;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

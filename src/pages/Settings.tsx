@@ -107,6 +107,8 @@ export default function Settings() {
 
 function GeneralSettings() {
   const { theme, setTheme } = useTheme();
+  const { role } = useAuth();
+  const isHR = role === 'hr_admin';
 
   return (
     <div className="space-y-4">

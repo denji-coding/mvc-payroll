@@ -64,7 +64,8 @@ export function useAttendanceTerminal() {
       }
 
       if (data.error) {
-        setResult({ success: false, error: data.error, employee_name: data.employee_name });
+        const errorMessage = getTerminalErrorMessage(data.error, data.message, 'rfid');
+        setResult({ success: false, error: errorMessage, employee_name: data.employee_name });
         return;
       }
 

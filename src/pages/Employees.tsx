@@ -102,8 +102,8 @@ export default function Employees() {
     {
       id: 'name',
       header: 'Name',
-      accessorFn: (row) => `${row.first_name} ${row.last_name}`,
-      cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}`,
+      accessorFn: (row) => formatFullName(row.first_name, row.last_name),
+      cell: ({ row }) => formatFullName(row.original.first_name, row.original.last_name),
     },
     { accessorKey: 'position', header: 'Position' },
     {

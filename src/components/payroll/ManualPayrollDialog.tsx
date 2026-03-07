@@ -126,10 +126,10 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
           <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
             <h3 className="font-semibold text-sm text-foreground">Worked Details</h3>
             <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm text-muted-foreground">
-              <span>Days Worked: {daysWorked || "0"}</span>
-              <span>Late (mins): {lateMins || "0"}</span>
-              <span>LWP: {lwp || "0"}</span>
-              <span>LWOP: {lwop || "0"}</span>
+              <span>Days Worked: </span>
+              <span>Late (mins): </span>
+              <span>LWP: </span>
+              <span>LWOP: </span>
             </div>
           </div>
 

@@ -410,7 +410,7 @@ export default function AttendanceTerminal() {
                       </TableCell>
                       <TableCell className="py-4">
                         <div className="font-medium text-gray-900">
-                          {record.employees?.first_name} {record.employees?.last_name}
+                          {formatFullName(record.employees?.first_name, record.employees?.last_name)}
                         </div>
                       </TableCell>
                       <TableCell className="py-4">

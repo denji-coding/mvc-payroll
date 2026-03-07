@@ -534,12 +534,12 @@ export default function AttendanceTerminal() {
             ) : (
               <>
                 <h2 className="text-2xl font-bold text-red-600 mb-3">
-                  {result.error || 'Attendance Failed'}
+                  Attendance Failed
                 </h2>
                 {result.employee_name && (
-                  <p className="text-gray-600 text-lg">{result.employee_name}</p>
+                  <p className="text-gray-600 text-lg mb-2">{result.employee_name}</p>
                 )}
-                <p className="text-gray-400 mt-4">Please try again or contact HR</p>
+                <p className="text-gray-500 mt-2 text-sm leading-relaxed">{result.error || 'Please try again or contact HR'}</p>
               </>
             )}
 

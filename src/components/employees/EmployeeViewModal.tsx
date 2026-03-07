@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { EmployeeAvatar } from '@/components/employees/EmployeeAvatar';
 import { format } from 'date-fns';
-import { User, Briefcase, Building2, CreditCard, Phone, Mail, MapPin, Calendar, Shield, Wallet } from 'lucide-react';
+import { User, Briefcase, Building2, CreditCard, Phone, Mail, MapPin, Calendar, Shield } from 'lucide-react';
 
 interface EmployeeViewModalProps {
   employee: any;

@@ -93,7 +93,7 @@ export default function TimeSchedule() {
 
   const scheduleColumns: ColumnDef<any, any>[] = [
     { id: 'emp_id', header: 'Employee ID', accessorFn: (row) => row.employee?.employee_id || '-' },
-    { id: 'name', header: 'Name', accessorFn: (row) => `${row.employee?.first_name} ${row.employee?.last_name}` },
+    { id: 'name', header: 'Name', accessorFn: (row) => formatFullName(row.employee?.first_name, row.employee?.last_name) },
     {
       id: 'duty_days', header: 'Duty Days',
       cell: ({ row }) => {

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatFullName } from '@/lib/formatName';
 import { Calendar, Save, Clock, Edit, Trash2 } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeScheduleByEmployee, useEmployeeSchedules, useSaveEmployeeSchedule, useDeleteEmployeeSchedule, getDayName, type DaySchedule } from '@/hooks/useEmployeeSchedule';

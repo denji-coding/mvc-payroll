@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { formatFullName } from '@/lib/formatName';
 
 export default function LeaveApprovals() {
   const { role } = useAuth();
@@ -44,7 +45,7 @@ export default function LeaveApprovals() {
   };
 
   const columns: ColumnDef<any, any>[] = [
-    { id: 'employee', header: 'Employee', accessorFn: (row) => `${row.employees?.first_name} ${row.employees?.last_name}` },
+    { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name) },
     { accessorKey: 'leave_type', header: 'Type', cell: ({ getValue }) => <span className="capitalize">{getValue() as string}</span> },
     { accessorKey: 'pay_type', header: 'Pay Type', cell: ({ getValue }) => <span className="capitalize">{((getValue() as string) || 'with_pay').replace('_', ' ')}</span> },
     { accessorKey: 'start_date', header: 'Start', cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy') },

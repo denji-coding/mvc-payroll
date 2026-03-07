@@ -9,6 +9,7 @@ import { useAttendanceTerminal } from '@/hooks/useAttendanceTerminal';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import companyLogo from '@/assets/company-logo.png';
+import { formatFullName } from '@/lib/formatName';
 
 export default function AttendanceTerminal() {
   const [mode, setMode] = useState<'rfid' | 'manual'>('rfid');
@@ -410,7 +411,7 @@ export default function AttendanceTerminal() {
                       </TableCell>
                       <TableCell className="py-4">
                         <div className="font-medium text-gray-900">
-                          {record.employees?.first_name} {record.employees?.last_name}
+                          {formatFullName(record.employees?.first_name, record.employees?.last_name)}
                         </div>
                       </TableCell>
                       <TableCell className="py-4">
@@ -534,22 +535,15 @@ export default function AttendanceTerminal() {
             ) : (
               <>
                 <h2 className="text-2xl font-bold text-red-600 mb-3">
-                  {result.error || 'Attendance Failed'}
+                  Attendance Failed
                 </h2>
                 {result.employee_name && (
-                  <p className="text-gray-600 text-lg">{result.employee_name}</p>
+                  <p className="text-gray-600 text-lg mb-2">{result.employee_name}</p>
                 )}
-                <p className="text-gray-400 mt-4">Please try again or contact HR</p>
+                <p className="text-gray-500 mt-2 text-sm leading-relaxed">{result.error || 'Please try again or contact HR'}</p>
               </>
             )}
 
-            <Button
-              onClick={clearResult}
-              className="mt-8 bg-[#1a3d2b] hover:bg-[#2d5a40] text-white px-10 h-12 text-base font-semibold rounded-xl shadow-lg"
-              size="lg"
-            >
-              Done
-            </Button>
           </div>
         </div>
       )}

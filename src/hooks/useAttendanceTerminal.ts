@@ -13,8 +13,36 @@ interface AttendanceResult {
   status?: string;
 }
 
-// Terminal secret is no longer sent from the client.
-// Physical RFID terminals should send the secret directly to the edge function.
+function getTerminalErrorMessage(error: string, message?: string, mode?: 'rfid' | 'manual'): string {
+  const lowerError = error.toLowerCase();
+  
+  if (lowerError.includes('no schedule assigned') || lowerError.includes('no time schedule')) {
+    return 'This employee has no schedule yet. Please contact the HR Admin for assistance. Thank you.';
+  }
+  if (lowerError.includes('employee not found') || lowerError.includes('not found or inactive')) {
+    if (mode === 'rfid') {
+      return 'This RFID card is not registered in the system. Please contact the HR Admin for assistance. Thank you.';
+    }
+    return 'Employee ID not found. Please check and try again, or contact the HR Admin for assistance. Thank you.';
+  }
+  if (lowerError.includes('no duty today')) {
+    return 'You are not scheduled to work today. If this is incorrect, please contact the HR Admin. Thank you.';
+  }
+  if (lowerError.includes('currently on leave')) {
+    return message || 'You are currently on leave. Attendance is not required.';
+  }
+  if (lowerError.includes('already completed')) {
+    return 'You have already completed all attendance logs for today. Thank you.';
+  }
+  if (lowerError.includes('manual entry is disabled')) {
+    return 'Manual entry is disabled. Please use your RFID card to log attendance. Thank you.';
+  }
+  if (lowerError.includes('terminal is currently disabled')) {
+    return 'The attendance terminal is currently disabled. Please contact the HR Admin. Thank you.';
+  }
+  
+  return message || error || 'An error occurred. Please try again or contact HR.';
+}
 
 export function useAttendanceTerminal() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -64,7 +92,8 @@ export function useAttendanceTerminal() {
       }
 
       if (data.error) {
-        setResult({ success: false, error: data.error, employee_name: data.employee_name });
+        const errorMessage = getTerminalErrorMessage(data.error, data.message, 'rfid');
+        setResult({ success: false, error: errorMessage, employee_name: data.employee_name });
         return;
       }
 
@@ -107,7 +136,8 @@ export function useAttendanceTerminal() {
       }
 
       if (data.error) {
-        setResult({ success: false, error: data.error, employee_name: data.employee_name });
+        const errorMessage = getTerminalErrorMessage(data.error, data.message, 'manual');
+        setResult({ success: false, error: errorMessage, employee_name: data.employee_name });
         return;
       }
 

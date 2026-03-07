@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO } from 'date-fns';
 import { DatePicker } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { formatFullName } from '@/lib/formatName';
 
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -40,7 +41,7 @@ export default function Attendance() {
 
   const columns: ColumnDef<any, any>[] = [
     { id: 'emp_id', header: 'Employee ID', accessorFn: (row) => row.employees?.employee_id },
-    { id: 'name', header: 'Name', accessorFn: (row) => `${row.employees?.first_name} ${row.employees?.last_name}` },
+    { id: 'name', header: 'Name', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name) },
     { id: 'am_in', header: 'AM In', accessorFn: (row) => row.morning_in || row.time_in, cell: ({ getValue }) => formatTime(getValue() as string) },
     { id: 'am_out', header: 'AM Out', accessorFn: (row) => row.morning_out, cell: ({ getValue }) => formatTime(getValue() as string) },
     { id: 'pm_in', header: 'PM In', accessorFn: (row) => row.afternoon_in, cell: ({ getValue }) => formatTime(getValue() as string) },

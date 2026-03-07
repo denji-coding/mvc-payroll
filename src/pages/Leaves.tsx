@@ -181,7 +181,6 @@ export default function Leaves() {
                 const Icon = visuals.icon; const isLow = total > 0 && available <= 0;
                 return (
                   <div key={leaveType.name} className={cn("flex items-center gap-4 p-4 rounded-lg border", isLow ? "border-destructive/50 bg-destructive/5" : "border-border bg-muted/30")}>
-                    <div className={cn("p-2 rounded-full bg-background", visuals.color)}><Icon className="h-5 w-5" /></div>
                     <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{leaveType.name}</p><div className="flex items-baseline gap-1"><span className={cn("text-2xl font-bold", isLow && "text-destructive")}>{available}</span><span className="text-sm text-muted-foreground">/ {total}</span></div>{used > 0 && <p className="text-xs text-muted-foreground">{used} used</p>}</div>
                   </div>
                 );

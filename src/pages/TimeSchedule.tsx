@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatFullName } from '@/lib/formatName';
 import { Calendar, Save, Clock, Edit, Trash2 } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeScheduleByEmployee, useEmployeeSchedules, useSaveEmployeeSchedule, useDeleteEmployeeSchedule, getDayName, type DaySchedule } from '@/hooks/useEmployeeSchedule';
@@ -93,7 +94,7 @@ export default function TimeSchedule() {
 
   const scheduleColumns: ColumnDef<any, any>[] = [
     { id: 'emp_id', header: 'Employee ID', accessorFn: (row) => row.employee?.employee_id || '-' },
-    { id: 'name', header: 'Name', accessorFn: (row) => `${row.employee?.first_name} ${row.employee?.last_name}` },
+    { id: 'name', header: 'Name', accessorFn: (row) => formatFullName(row.employee?.first_name, row.employee?.last_name) },
     {
       id: 'duty_days', header: 'Duty Days',
       cell: ({ row }) => {

@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, RotateCcw, Eye } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { formatFullName } from '@/lib/formatName';
 import { EmployeeAvatar } from '@/components/employees/EmployeeAvatar';
 import { EmployeeViewModal } from '@/components/employees/EmployeeViewModal';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
@@ -102,8 +103,8 @@ export default function Employees() {
     {
       id: 'name',
       header: 'Name',
-      accessorFn: (row) => `${row.first_name} ${row.last_name}`,
-      cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}`,
+      accessorFn: (row) => formatFullName(row.first_name, row.last_name),
+      cell: ({ row }) => formatFullName(row.original.first_name, row.original.last_name),
     },
     { accessorKey: 'position', header: 'Position' },
     {

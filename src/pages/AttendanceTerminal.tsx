@@ -543,13 +543,6 @@ export default function AttendanceTerminal() {
               </>
             )}
 
-            <Button
-              onClick={clearResult}
-              className="mt-8 bg-[#1a3d2b] hover:bg-[#2d5a40] text-white px-10 h-12 text-base font-semibold rounded-xl shadow-lg"
-              size="lg"
-            >
-              Done
-            </Button>
           </div>
         </div>
       )}

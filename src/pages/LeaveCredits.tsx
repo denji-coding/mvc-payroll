@@ -186,9 +186,9 @@ export default function LeaveCredits() {
       cell: ({ row }) => {
         const lt = row.original;
         return (
-          <div className="flex items-center gap-3">
-            <div className={cn("p-2 rounded-full", lt.is_active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}><CheckSquare className="h-5 w-5" /></div>
-            <div><p className="font-medium">{lt.name}</p>{lt.description && <p className="text-xs text-muted-foreground">{lt.description}</p>}</div>
+          <div>
+            <p className="font-medium">{lt.name}</p>
+            {lt.description && <p className="text-xs text-muted-foreground">{lt.description}</p>}
           </div>
         );
       },

@@ -16,6 +16,12 @@ import { DateInput } from "@/components/ui/date-picker";
 import { PasswordInput } from "@/components/ui/password-input";
 import { usePositions } from "@/hooks/usePositions";
 
+const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
+  <Label>
+    {children} <span className="text-destructive">*</span>
+  </Label>
+);
+
 export default function EmployeeForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -117,8 +123,48 @@ export default function EmployeeForm() {
     return null;
   };
 
+  const validateRequiredFields = (): boolean => {
+    const requiredFields: { field: string; label: string }[] = [
+      { field: "employee_id", label: "Employee ID" },
+      { field: "first_name", label: "First Name" },
+      { field: "last_name", label: "Last Name" },
+      { field: "middle_name", label: "Middle Name" },
+      { field: "email", label: "Email" },
+      { field: "phone", label: "Phone" },
+      { field: "date_of_birth", label: "Date of Birth" },
+      { field: "gender", label: "Gender" },
+      { field: "civil_status", label: "Civil Status" },
+      { field: "address", label: "Address" },
+      { field: "position", label: "Position" },
+      { field: "branch_id", label: "Branch" },
+      { field: "date_hired", label: "Date Hired" },
+      { field: "basic_salary", label: "Basic Salary" },
+      { field: "emergency_contact_name", label: "Emergency Contact Name" },
+      { field: "emergency_contact_phone", label: "Emergency Contact Phone" },
+    ];
+
+    if (!id) {
+      requiredFields.push({ field: "password", label: "Password" });
+    }
+
+    const missingFields = requiredFields.filter(
+      ({ field }) => !form[field as keyof typeof form] || (form[field as keyof typeof form] as string).trim() === ""
+    );
+
+    if (missingFields.length > 0) {
+      const fieldNames = missingFields.map(f => f.label).join(", ");
+      toast.error(`Please fill in the following required fields: ${fieldNames}`);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateRequiredFields()) return;
+
     setLoading(true);
 
     if (id) {
@@ -234,12 +280,11 @@ export default function EmployeeForm() {
               {/* Personal Info Fields */}
               <div className="flex-1 grid gap-4 md:grid-cols-3">
                 <div>
-                  <Label>Employee ID *</Label>
+                  <RequiredLabel>Employee ID</RequiredLabel>
                   <div className="flex gap-2">
                     <Input
                       value={form.employee_id}
                       onChange={(e) => updateField("employee_id", e.target.value)}
-                      required
                       placeholder="Generate employee ID"
                       className="flex-1"
                       readOnly
@@ -258,25 +303,23 @@ export default function EmployeeForm() {
                   </div>
                 </div>
                 <div>
-                  <Label>First Name *</Label>
+                  <RequiredLabel>First Name</RequiredLabel>
                   <Input
                     value={form.first_name}
                     onChange={(e) => updateField("first_name", e.target.value)}
-                    required
                     placeholder="e.g. Juan"
                   />
                 </div>
                 <div>
-                  <Label>Last Name *</Label>
+                  <RequiredLabel>Last Name</RequiredLabel>
                   <Input
                     value={form.last_name}
                     onChange={(e) => updateField("last_name", e.target.value)}
-                    required
                     placeholder="e.g. Dela Cruz"
                   />
                 </div>
                 <div>
-                  <Label>Middle Name</Label>
+                  <RequiredLabel>Middle Name</RequiredLabel>
                   <Input
                     value={form.middle_name}
                     onChange={(e) => updateField("middle_name", e.target.value)}
@@ -284,17 +327,16 @@ export default function EmployeeForm() {
                   />
                 </div>
                 <div>
-                  <Label>Email *</Label>
+                  <RequiredLabel>Email</RequiredLabel>
                   <Input
                     type="email"
                     value={form.email}
                     onChange={(e) => updateField("email", e.target.value)}
-                    required
                     placeholder="e.g. juan@company.com"
                   />
                 </div>
                 <div>
-                  <Label>Phone</Label>
+                  <RequiredLabel>Phone</RequiredLabel>
                   <Input
                     value={form.phone}
                     onChange={(e) => updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 11))}
@@ -303,11 +345,11 @@ export default function EmployeeForm() {
                   />
                 </div>
                 <div>
-                  <Label>Date of Birth</Label>
+                  <RequiredLabel>Date of Birth</RequiredLabel>
                   <DateInput value={form.date_of_birth} onChange={(v) => updateField("date_of_birth", v)} />
                 </div>
                 <div>
-                  <Label>Gender</Label>
+                  <RequiredLabel>Gender</RequiredLabel>
                   <Select value={form.gender} onValueChange={(v) => updateField("gender", v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select" />
@@ -319,7 +361,7 @@ export default function EmployeeForm() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Civil Status</Label>
+                  <RequiredLabel>Civil Status</RequiredLabel>
                   <Select value={form.civil_status} onValueChange={(v) => updateField("civil_status", v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select" />
@@ -332,7 +374,7 @@ export default function EmployeeForm() {
                   </Select>
                 </div>
                 <div className="md:col-span-3">
-                  <Label>Address</Label>
+                  <RequiredLabel>Address</RequiredLabel>
                   <Input
                     value={form.address}
                     onChange={(e) => updateField("address", e.target.value)}
@@ -350,7 +392,7 @@ export default function EmployeeForm() {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <div>
-              <Label>Position *</Label>
+              <RequiredLabel>Position</RequiredLabel>
               <Select value={form.position} onValueChange={(v) => updateField("position", v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select position" />
@@ -366,7 +408,7 @@ export default function EmployeeForm() {
             </div>
 
             <div>
-              <Label>Branch</Label>
+              <RequiredLabel>Branch</RequiredLabel>
               <Select value={form.branch_id} onValueChange={(v) => updateField("branch_id", v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select branch" />
@@ -381,11 +423,11 @@ export default function EmployeeForm() {
               </Select>
             </div>
             <div>
-              <Label>Date Hired *</Label>
+              <RequiredLabel>Date Hired</RequiredLabel>
               <DateInput value={form.date_hired} onChange={(v) => updateField("date_hired", v)} />
             </div>
             <div>
-              <Label>Basic Salary (₱)</Label>
+              <RequiredLabel>Basic Salary (₱)</RequiredLabel>
               <Input
                 type="number"
                 value={form.basic_salary}
@@ -419,7 +461,7 @@ export default function EmployeeForm() {
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
               <div>
-                <Label>Role *</Label>
+                <RequiredLabel>Role</RequiredLabel>
                 <Select value={form.role} onValueChange={(v) => updateField("role", v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select role" />
@@ -432,7 +474,7 @@ export default function EmployeeForm() {
                 </Select>
               </div>
               <div>
-                <Label>Password *</Label>
+                <RequiredLabel>Password</RequiredLabel>
                 <PasswordInput
                   value={form.password}
                   onChange={(e) => updateField("password", e.target.value)}
@@ -487,7 +529,7 @@ export default function EmployeeForm() {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label>Emergency Contact Name</Label>
+              <RequiredLabel>Emergency Contact Name</RequiredLabel>
               <Input
                 value={form.emergency_contact_name}
                 onChange={(e) => updateField("emergency_contact_name", e.target.value)}
@@ -495,7 +537,7 @@ export default function EmployeeForm() {
               />
             </div>
             <div>
-              <Label>Emergency Contact Phone</Label>
+              <RequiredLabel>Emergency Contact Phone</RequiredLabel>
               <Input
                 value={form.emergency_contact_phone}
                 onChange={(e) => updateField("emergency_contact_phone", e.target.value.replace(/\D/g, "").slice(0, 11))}

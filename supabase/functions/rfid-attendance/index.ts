@@ -34,12 +34,14 @@ serve(async (req) => {
     const terminalSecret = Deno.env.get('RFID_TERMINAL_SECRET');
     const providedSecret = req.headers.get('x-terminal-secret');
     
-    if (terminalSecret && terminalSecret.trim() !== '' && providedSecret && providedSecret !== terminalSecret) {
-      console.error('Invalid terminal secret provided');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized terminal' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (terminalSecret && terminalSecret.trim() !== '') {
+      if (!providedSecret || providedSecret !== terminalSecret) {
+        console.error('Invalid or missing terminal secret');
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized terminal' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Fetch terminal settings

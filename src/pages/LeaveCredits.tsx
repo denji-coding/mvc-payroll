@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Eye, EyeOff, Trash2, CheckSquare, RefreshCw, Edit } from 'lucide-react';
+import { Plus, Eye, EyeOff, Trash2, RefreshCw, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 

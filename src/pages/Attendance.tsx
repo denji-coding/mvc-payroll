@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO } from 'date-fns';
 import { DatePicker } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { formatFullName } from '@/lib/formatName';
 
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());

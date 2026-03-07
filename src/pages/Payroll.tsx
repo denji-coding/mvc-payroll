@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { DateInput } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { formatFullName } from '@/lib/formatName';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function Payroll() {

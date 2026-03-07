@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { formatFullName } from '@/lib/formatName';
 
 export default function LeaveApprovals() {
   const { role } = useAuth();

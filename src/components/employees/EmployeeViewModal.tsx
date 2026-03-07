@@ -38,9 +38,9 @@ export function EmployeeViewModal({ employee, open, onClose }: EmployeeViewModal
   };
 
   const InfoRow = ({ label, value }: { label: string; value: string | null | undefined }) => (
-    <div className="flex justify-between py-1.5 border-b border-border/50 last:border-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium text-right max-w-[60%]">{value || '-'}</span>
+    <div className="flex justify-between py-1.5 border-b border-border/50 last:border-0 gap-2">
+      <span className="text-sm text-muted-foreground shrink-0">{label}</span>
+      <span className="text-sm font-medium text-right max-w-[60%] break-all">{value || '-'}</span>
     </div>
   );
 

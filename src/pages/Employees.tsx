@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, RotateCcw, Eye } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { formatFullName } from '@/lib/formatName';
 import { EmployeeAvatar } from '@/components/employees/EmployeeAvatar';
 import { EmployeeViewModal } from '@/components/employees/EmployeeViewModal';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';

@@ -9,6 +9,7 @@ import { useAttendanceTerminal } from '@/hooks/useAttendanceTerminal';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import companyLogo from '@/assets/company-logo.png';
+import { formatFullName } from '@/lib/formatName';
 
 export default function AttendanceTerminal() {
   const [mode, setMode] = useState<'rfid' | 'manual'>('rfid');

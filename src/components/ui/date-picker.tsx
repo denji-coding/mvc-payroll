@@ -1,6 +1,6 @@
 import * as React from "react";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { format, setMonth, setYear } from "date-fns";
+import { CalendarIcon, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
+const YEARS = Array.from({ length: 51 }, (_, i) => 2000 + i);
 
 interface DatePickerProps {
   date: Date | undefined;
@@ -28,7 +42,25 @@ export function DatePicker({
   className,
   disabledDates,
 }: DatePickerProps) {
+  const [calendarDate, setCalendarDate] = React.useState<Date>(date || new Date());
   const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (date) setCalendarDate(date);
+  }, [date]);
+
+  const handleSelect = (newDate: Date | undefined) => {
+    onDateChange(newDate);
+    setOpen(false);
+  };
+
+  const handleMonthChange = (month: string) => {
+    setCalendarDate(setMonth(calendarDate, parseInt(month)));
+  };
+
+  const handleYearChange = (year: string) => {
+    setCalendarDate(setYear(calendarDate, parseInt(year)));
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -49,18 +81,67 @@ export function DatePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+        <div className="flex items-center justify-between gap-1 border-b border-border px-3 py-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0"
+            onClick={() => setCalendarDate(setMonth(calendarDate, calendarDate.getMonth() - 1))}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-1">
+            <Select
+              value={calendarDate.getMonth().toString()}
+              onValueChange={handleMonthChange}
+            >
+              <SelectTrigger className="h-7 border-0 bg-transparent px-2 text-sm font-medium shadow-none focus:ring-0 gap-0.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {MONTHS.map((month, index) => (
+                  <SelectItem key={month} value={index.toString()}>
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={calendarDate.getFullYear().toString()}
+              onValueChange={handleYearChange}
+            >
+              <SelectTrigger className="h-7 border-0 bg-transparent px-2 text-sm font-medium shadow-none focus:ring-0 gap-0.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {YEARS.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0"
+            onClick={() => setCalendarDate(setMonth(calendarDate, calendarDate.getMonth() + 1))}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
         <Calendar
           mode="single"
           selected={date}
-          defaultMonth={date}
-          captionLayout="dropdown"
-          fromYear={2000}
-          toYear={2050}
-          onSelect={(newDate) => {
-            onDateChange(newDate);
-            setOpen(false);
-          }}
+          onSelect={handleSelect}
+          month={calendarDate}
+          onMonthChange={setCalendarDate}
           disabled={disabledDates}
+          classNames={{
+            caption: "hidden",
+            nav: "hidden",
+          }}
           className="p-3 pointer-events-auto"
         />
       </PopoverContent>

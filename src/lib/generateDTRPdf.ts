@@ -67,8 +67,8 @@ const formatTime = (timestamp: string | null): string => {
   return format(new Date(timestamp), 'hh:mm a');
 };
 
-const getRemarks = (record: AttendanceRecord | undefined, isWeekendDay: boolean, isFuture: boolean): string => {
-  if (isWeekendDay) return 'Weekend';
+const getRemarks = (record: AttendanceRecord | undefined, isRestDay: boolean, isFuture: boolean): string => {
+  if (isRestDay) return 'Weekend';
   if (isFuture) return '-';
   if (!record) return 'Absent';
   if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) return 'Late';

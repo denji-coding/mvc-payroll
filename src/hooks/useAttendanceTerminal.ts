@@ -288,6 +288,7 @@ export function useAttendanceTerminal() {
     currentTime,
     isLoading,
     result,
+    cooldownRemaining,
     settings,
     settingsLoading,
     submitRfidAttendance,

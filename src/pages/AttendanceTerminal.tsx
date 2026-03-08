@@ -348,7 +348,7 @@ export default function AttendanceTerminal() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gradient-to-r from-[#1a3d2b] to-[#2d5a40] border-0">
-                  <TableHead className="w-14 text-white font-semibold text-xs uppercase tracking-wider py-4">No.</TableHead>
+                  
                   <TableHead className="w-20 text-white font-semibold text-xs uppercase tracking-wider py-4">Photo</TableHead>
                   <TableHead className="text-white font-semibold text-xs uppercase tracking-wider py-4">Employee ID</TableHead>
                   <TableHead className="text-white font-semibold text-xs uppercase tracking-wider py-4">Full Name</TableHead>
@@ -388,9 +388,6 @@ export default function AttendanceTerminal() {
                         index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                       }`}
                     >
-                      <TableCell className="font-medium text-gray-500 text-sm py-4">
-                        {index + 1}
-                      </TableCell>
                       <TableCell className="py-4">
                         <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
                           <AvatarImage src={record.employees?.avatar_url} className="object-cover" />

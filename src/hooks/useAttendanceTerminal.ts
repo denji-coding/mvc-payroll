@@ -13,35 +13,79 @@ interface AttendanceResult {
   status?: string;
 }
 
-function getTerminalErrorMessage(error: string, message?: string, mode?: 'rfid' | 'manual'): string {
+interface TerminalError {
+  title: string;
+  message: string;
+}
+
+function getTerminalError(error: string, message?: string, mode?: 'rfid' | 'manual'): TerminalError {
   const lowerError = error.toLowerCase();
   
   if (lowerError.includes('no schedule assigned') || lowerError.includes('no time schedule')) {
-    return 'This employee has no schedule yet. Please contact the HR Admin for assistance. Thank you.';
+    return {
+      title: 'No Schedule Assigned',
+      message: 'This employee has no schedule yet. Please contact the HR Admin for assistance.',
+    };
   }
   if (lowerError.includes('employee not found') || lowerError.includes('not found or inactive')) {
     if (mode === 'rfid') {
-      return 'This RFID card is not registered in the system. Please contact the HR Admin for assistance. Thank you.';
+      return {
+        title: 'RFID Not Registered',
+        message: 'This RFID is not registered.',
+      };
     }
-    return 'Employee ID not found. Please check and try again, or contact the HR Admin for assistance. Thank you.';
+    return {
+      title: 'Employee ID Not Found',
+      message: 'Employee ID not found.',
+    };
   }
   if (lowerError.includes('no duty today')) {
-    return 'You are not scheduled to work today. If this is incorrect, please contact the HR Admin. Thank you.';
+    return {
+      title: 'No Duty Today',
+      message: 'You are not scheduled to work today. If this is incorrect, please contact the HR Admin.',
+    };
   }
   if (lowerError.includes('currently on leave')) {
-    return message || 'You are currently on leave. Attendance is not required.';
+    return {
+      title: 'On Leave',
+      message: message || 'You are currently on leave. Attendance is not required.',
+    };
   }
   if (lowerError.includes('already completed')) {
-    return 'You have already completed all attendance logs for today. Thank you.';
+    return {
+      title: 'Attendance Already Completed',
+      message: 'You have already completed all attendance logs for today.',
+    };
   }
   if (lowerError.includes('manual entry is disabled')) {
-    return 'Manual entry is disabled. Please use your RFID card to log attendance. Thank you.';
+    return {
+      title: 'Manual Entry Disabled',
+      message: 'Manual entry is disabled. Please use your RFID card to log attendance.',
+    };
   }
-  if (lowerError.includes('terminal is currently disabled')) {
-    return 'The attendance terminal is currently disabled. Please contact the HR Admin. Thank you.';
+  if (lowerError.includes('terminal is currently disabled') || lowerError.includes('attendance terminal is currently disabled')) {
+    return {
+      title: 'Terminal Disabled',
+      message: 'The attendance terminal is currently disabled. Please contact the HR Admin.',
+    };
+  }
+  if (lowerError.includes('rfid card number or employee id is required') || lowerError.includes('invalid input')) {
+    return {
+      title: 'Invalid Input',
+      message: 'Please provide a valid RFID card number or Employee ID.',
+    };
+  }
+  if (lowerError.includes('failed to process attendance')) {
+    return {
+      title: 'Processing Error',
+      message: 'Failed to process attendance. Please try again or contact HR.',
+    };
   }
   
-  return message || error || 'An error occurred. Please try again or contact HR.';
+  return {
+    title: 'Attendance Error',
+    message: message || error || 'An unexpected error occurred. Please try again or contact HR.',
+  };
 }
 
 export function useAttendanceTerminal() {

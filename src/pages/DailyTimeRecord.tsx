@@ -22,6 +22,7 @@ import {
   calculateSummary 
 } from '@/lib/generateDTRPdf';
 import { toast } from 'sonner';
+import { useCountUp } from '@/hooks/useCountUp';
 
 const months = [
   'January', 'February', 'March', 'April', 'May', 'June',

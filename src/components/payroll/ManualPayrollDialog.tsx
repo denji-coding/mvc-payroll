@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEmployees } from "@/hooks/useEmployees";
-import { useCreateManualPayroll } from "@/hooks/usePayroll";
+import { useCreateManualPayroll, usePayrollPeriods } from "@/hooks/usePayroll";
 import { calculateSalary } from "@/lib/salaryCalculations";
-import { useEmployeeScheduleByEmployee } from "@/hooks/useEmployeeSchedule";
+import { useEmployeeAttendance } from "@/hooks/useAttendance";
 
 interface ManualPayrollDialogProps {
   periodId: string;

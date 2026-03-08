@@ -54,6 +54,8 @@ export function DatePicker({
           selected={date}
           defaultMonth={date}
           captionLayout="dropdown"
+          fromYear={2000}
+          toYear={2050}
           onSelect={(newDate) => {
             onDateChange(newDate);
             setOpen(false);

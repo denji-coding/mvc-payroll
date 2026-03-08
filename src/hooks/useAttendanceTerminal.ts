@@ -9,6 +9,7 @@ interface AttendanceResult {
   employee_name?: string;
   timestamp?: string;
   error?: string;
+  error_title?: string;
   late_minutes?: number;
   status?: string;
 }

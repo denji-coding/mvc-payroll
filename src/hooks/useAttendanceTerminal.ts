@@ -93,9 +93,31 @@ export function useAttendanceTerminal() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AttendanceResult | null>(null);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
   
   // Fetch terminal settings
   const { data: settings, isLoading: settingsLoading } = useTerminalSettings();
+
+  // Cooldown countdown timer
+  useEffect(() => {
+    if (!cooldownUntil) {
+      setCooldownRemaining(0);
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setCooldownUntil(null);
+        setCooldownRemaining(0);
+      } else {
+        setCooldownRemaining(remaining);
+      }
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [cooldownUntil]);
 
   // Update clock every second
   useEffect(() => {
@@ -118,6 +140,13 @@ export function useAttendanceTerminal() {
   const submitRfidAttendance = useCallback(async (rfidCardNumber: string) => {
     const trimmedInput = rfidCardNumber.trim();
     if (!trimmedInput || isLoading) return;
+
+    // Cooldown check
+    if (cooldownUntil && Date.now() < cooldownUntil) {
+      const secs = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
+      return;
+    }
     
     // Basic validation
     if (trimmedInput.length > 50) {
@@ -162,6 +191,7 @@ export function useAttendanceTerminal() {
         return;
       }
 
+      setCooldownUntil(Date.now() + 60000);
       setResult({
         success: true,
         action: data.action,
@@ -177,11 +207,18 @@ export function useAttendanceTerminal() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, cooldownUntil]);
 
   const submitManualAttendance = useCallback(async (employeeId: string) => {
     const trimmedInput = employeeId.trim();
     if (!trimmedInput || isLoading) return;
+
+    // Cooldown check
+    if (cooldownUntil && Date.now() < cooldownUntil) {
+      const secs = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
+      return;
+    }
     
     // Basic validation
     if (trimmedInput.length > 50) {
@@ -225,6 +262,7 @@ export function useAttendanceTerminal() {
         return;
       }
 
+      setCooldownUntil(Date.now() + 60000);
       setResult({
         success: true,
         action: data.action,
@@ -240,7 +278,7 @@ export function useAttendanceTerminal() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, cooldownUntil]);
 
   const clearResult = useCallback(() => {
     setResult(null);
@@ -250,6 +288,7 @@ export function useAttendanceTerminal() {
     currentTime,
     isLoading,
     result,
+    cooldownRemaining,
     settings,
     settingsLoading,
     submitRfidAttendance,

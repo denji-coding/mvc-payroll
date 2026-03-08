@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Building2, Clock, DollarSign, CalendarDays, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useCountUp } from '@/hooks/useCountUp';
 import {
   ChartContainer,
   ChartTooltip,

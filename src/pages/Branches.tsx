@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -66,7 +67,7 @@ export default function Branches() {
   const handleDelete = async (id: string) => {
     const branch = branchesWithCounts.find(b => b.id === id);
     if (branch && branch.employee_count > 0) { toast({ variant: 'destructive', title: 'Cannot Delete', description: 'Reassign employees first.' }); return; }
-    if (confirm('Delete this branch?')) await deleteMutation.mutateAsync(id);
+    await deleteMutation.mutateAsync(id);
   };
 
   const columns: ColumnDef<BranchWithCounts, any>[] = [
@@ -81,7 +82,25 @@ export default function Branches() {
       cell: ({ row }) => (
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)}><Edit className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" onClick={() => handleDelete(row.original.id)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Branch</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete the branch "{row.original.name}"? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleDelete(row.original.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       ),
     },

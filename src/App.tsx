@@ -115,6 +115,7 @@ function AppRoutes() {
         <Route path="attendance" element={<Attendance />} />
         <Route path="clock-in-out" element={<ClockInOut />} />
         <Route path="my-attendance" element={<MyAttendance />} />
+        <Route path="my-schedule" element={<MySchedule />} />
         <Route path="dtr" element={<DailyTimeRecord />} />
         <Route path="time-schedule" element={<TimeSchedule />} />
         <Route path="leaves" element={<Leaves />} />

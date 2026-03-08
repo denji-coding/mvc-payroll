@@ -446,6 +446,8 @@ export default function DailyTimeRecord() {
                     const record = attendanceMap.get(dateStr);
                     const isWeekendDay = isWeekend(day);
                     const isFuture = day > new Date();
+                    const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
+                    const isBeforeCreation = employeeStart ? day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate()) : false;
 
                     return (
                       <TableRow 
@@ -458,15 +460,17 @@ export default function DailyTimeRecord() {
                         <TableCell className={isWeekendDay ? 'text-muted-foreground' : ''}>
                           {format(day, 'EEE')}
                         </TableCell>
-                        <TableCell>{formatTime(record?.morning_in ?? null)}</TableCell>
-                        <TableCell>{formatTime(record?.morning_out ?? null)}</TableCell>
-                        <TableCell>{formatTime(record?.afternoon_in ?? null)}</TableCell>
-                        <TableCell>{formatTime(record?.afternoon_out ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.morning_in ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.morning_out ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.afternoon_in ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.afternoon_out ?? null)}</TableCell>
                         <TableCell className="text-right">
-                          {record?.hours_worked ? record.hours_worked.toFixed(2) : '-'}
+                          {isBeforeCreation ? '' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-')}
                         </TableCell>
                         <TableCell className="text-center">
-                          {isWeekendDay ? (
+                          {isBeforeCreation ? (
+                            <span className="text-muted-foreground">-</span>
+                          ) : isWeekendDay ? (
                             <Badge variant="outline">Weekend</Badge>
                           ) : isFuture ? (
                             <Badge variant="outline">-</Badge>

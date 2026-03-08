@@ -1,88 +1,70 @@
 
 
-# Plan: Employee Fixes, Leave Credit Improvements, and Reports Cleanup
+## Plan: Fix Manual Payroll, Attendance Terminal, My Payslips, Time Schedule, and Form Asterisks
 
-## 1. Fix Employee Form Duplicate Error Messages
+### 1. Fix Manual Payroll Dialog (`src/components/payroll/ManualPayrollDialog.tsx`)
 
-### Edge Function (`supabase/functions/create-employee/index.ts`)
-- Before creating the auth user, check for duplicates in the `employees` table: email, phone, rfid_card_number, sss_number, philhealth_number, pagibig_number
-- Return specific error messages like "An employee with this email already exists", "An employee with this phone number already exists", etc.
-- Also catch the Supabase Auth duplicate email error and return a clearer message
+**Current issues**: Work Details card is static/broken, fields are mismatched (e.g., "Late (mins)" maps to `night_differential`, "LWP" maps to `total_allowances`), contributions are editable, no auto-calculation.
 
-### Employee Edit Form (`src/pages/EmployeeForm.tsx`)
-- On update, before saving, query for duplicates (excluding current employee ID) for email, phone, RFID, and government IDs
-- Show specific toast error messages for each duplicate field
+**Changes**:
+- Add new form fields: `late_minutes`, `lwp_days`, `lwop_days` (editable)
+- When employee is selected, auto-fill `basic_pay` from employee record and set `days_worked` to a sensible default
+- Use `calculateSalary` from `src/lib/salaryCalculations.ts` (or inline the contribution functions `computeSSS`, `computePhilHealth`, `computePagIBIG`) to auto-compute SSS, PhilHealth, Pag-IBIG based on basic salary
+- Recalculate on every change to `days_worked`, `late_minutes`, or `lwp_days`
+- Make SSS, PhilHealth, Pag-IBIG fields read-only (display only, not editable inputs)
+- Fix the Work Details card to show actual values from the form (days worked, late mins, LWP, LWOP)
+- Calculate: `basic_pay = (monthly_salary / 22) * days_worked`, late deduction, LWP earnings, LWOP deduction
+- Gross = basic_pay + LWP earnings - late deduction
+- Deductions = SSS + PhilHealth + PagIBIG + LWOP deduction
+- Net = Gross - Deductions
 
-### Date Picker Auto-Close (`src/components/ui/date-picker.tsx`)
-- Add open/close state control to the `Popover` in `DatePicker`
-- When `onSelect` fires on the Calendar, close the popover automatically
+### 2. Fix Attendance Terminal (`supabase/functions/rfid-attendance/index.ts`)
 
-## 2. Permanent Delete on Deleted Tab + 6-Month Expiry
+**Current issues**: 
+- `dayOfWeek` uses `now.getDay()` which uses UTC, not PHT — could return wrong day
+- Past-date recording not explicitly prevented (the `today` variable is correct in PHT, but day-of-week check uses UTC)
 
-### Employees Page (`src/pages/Employees.tsx`)
-- Add a permanent delete button (Trash2 icon) in the "deleted" tab actions alongside the restore button
-- Add confirmation dialog warning this is irreversible
-- The handler calls the edge function or directly deletes (via a new edge function) the employee and their auth user
+**Changes**:
+- Fix `dayOfWeek` to use PHT timezone: parse the PHT date string to get the correct day of week instead of `now.getDay()`
+- The attendance record already uses `today` (PHT date) so it only saves to current day — this is correct
+- Add a comment clarifying that attendance is always for current PHT date only
 
-### Edge Function (`supabase/functions/delete-employee/index.ts`) — New
-- Accepts employee ID, verifies HR admin role
-- Deletes the employee record and their auth user via `supabaseAdmin.auth.admin.deleteUser()`
-- Cleans up related records (attendance, leave_requests, leave_credits, payroll_records, etc.)
+**Frontend** (`src/pages/AttendanceTerminal.tsx`):
+- After successful attendance, immediately refetch (already done via `useEffect` on `result?.success`)
+- Ensure table is ordered by most recent first (already `ascending: false` on `created_at`)
 
-### 6-Month Auto-Purge — Database
-- Create a database function `purge_expired_deleted_employees()` that deletes employees where `employment_status = 'terminated'` and `updated_at < now() - interval '6 months'`
-- Set up a `pg_cron` job to run this monthly
-- The function will also need to call auth admin to delete users, so this is better handled as a cron-triggered edge function
+### 3. Add Payslip View Modal on My Payslips (`src/pages/MyPayslips.tsx`)
 
-### Edge Function (`supabase/functions/purge-deleted-employees/index.ts`) — New
-- Queries terminated employees older than 6 months
-- Deletes their auth accounts and employee records
-- Scheduled via `pg_cron` + `pg_net`
+**Changes**:
+- Add an Eye icon button in the Action column next to the Download button
+- Create a `PayslipViewDialog` component (inline or separate) that shows payslip details in a modal:
+  - Employee info, pay period, pay date
+  - Earnings breakdown (basic pay, overtime, holiday, allowances)
+  - Deductions breakdown (SSS, PhilHealth, PagIBIG, tax, other)
+  - Gross pay, total deductions, net pay
+- Use existing payroll record data (already fetched)
 
-## 3. Leave Credit Fixes
+### 4. Fix Time Input on Time Schedule (`src/pages/TimeSchedule.tsx`)
 
-### Leave Type Creation (`src/hooks/useLeaveTypes.ts`)
-- Fix `useCreateLeaveType`: when `applyToAll` is true, use the correct `default_credits` value from the newly created leave type
-- The current code already does this correctly, but the enum mapping may fail for custom leave types — fix the mapping to handle custom types properly
+**Changes**:
+- Increase the `w-24` class on time inputs to `w-32` or `w-[140px]` so the clock icon displays properly without being cut off
 
-### Database Trigger for Auto-Assignment
-- The existing `assign_leave_credits_to_employee` trigger already assigns credits on employee creation
-- Need to ensure new leave types also get assigned — the `useCreateLeaveType` hook handles this with `applyToAll`
+### 5. Red Asterisks on Positions and Branches Forms
 
-### Monthly Credit Refresh Logic
-- Create a new edge function `refresh-leave-credits/index.ts` that runs monthly via `pg_cron`
-- Logic: For each employee's leave credit record:
-  - If `used_credits > 0`: reset `used_credits` to 0 (refresh consumed credits)
-  - If `used_credits = 0`: do nothing (balance stays the same, doesn't increase)
-- Schedule via `pg_cron` on the 1st of each month
+**Positions** (`src/pages/Positions.tsx`):
+- Change `Position Name *` label to use JSX with `<span className="text-destructive">*</span>`
 
-## 4. Remove Branch Performance from Reports
+**Branches** (`src/pages/Branches.tsx`):
+- Same for `Branch Name *` and `Branch Code *` labels
 
-### Reports Page (`src/pages/Reports.tsx`)
-- Remove the `branch-performance` entry from the `reports` array
-- Remove the `case 'branch-performance'` block from `generateReport`
-- Remove the `Building2` import if no longer used
+### Files to Change
 
-## Files to Create/Edit
-
-| File | Action |
+| File | Change |
 |------|--------|
-| `supabase/functions/create-employee/index.ts` | Add duplicate checks before creating |
-| `src/pages/EmployeeForm.tsx` | Add duplicate validation on edit |
-| `src/components/ui/date-picker.tsx` | Auto-close popover on date selection |
-| `src/pages/Employees.tsx` | Add permanent delete button in deleted tab |
-| `supabase/functions/delete-employee/index.ts` | New — permanent delete with auth cleanup |
-| `supabase/functions/purge-deleted-employees/index.ts` | New — cron job for 6-month expiry |
-| `src/hooks/useLeaveTypes.ts` | Fix enum mapping for custom leave types |
-| `supabase/functions/refresh-leave-credits/index.ts` | New — monthly credit refresh |
-| `src/pages/Reports.tsx` | Remove branch performance section |
-| Database | Enable `pg_cron`/`pg_net`, schedule purge + refresh jobs |
-
-## Implementation Order
-1. Date picker auto-close (quick fix)
-2. Reports page cleanup (quick fix)
-3. Employee form duplicate validation (edge function + frontend)
-4. Permanent delete feature (new edge function + UI)
-5. Leave credit fixes (enum mapping + new refresh edge function)
-6. Cron jobs for auto-purge and credit refresh
+| `src/components/payroll/ManualPayrollDialog.tsx` | Redesign with auto-calculation, proper field mapping, read-only contributions |
+| `supabase/functions/rfid-attendance/index.ts` | Fix PHT day-of-week calculation |
+| `src/pages/MyPayslips.tsx` | Add eye icon + payslip view dialog |
+| `src/pages/TimeSchedule.tsx` | Widen time input fields |
+| `src/pages/Positions.tsx` | Red asterisks on required fields |
+| `src/pages/Branches.tsx` | Red asterisks on required fields |
 

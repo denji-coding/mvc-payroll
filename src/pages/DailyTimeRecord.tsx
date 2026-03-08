@@ -11,9 +11,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { FileText, Clock, AlertCircle, Calendar, Printer, Download } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, getDay } from 'date-fns';
 import { PrintableDTR } from '@/components/dtr/PrintableDTR';
-import { 
+import { useEmployeeScheduleByEmployee } from '@/hooks/useEmployeeSchedule';
+import {
   generateDTRPdf, 
   generateMultiMonthDTRPdf, 
   generateMonthsFromRange, 

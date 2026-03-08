@@ -46,12 +46,21 @@ function AdminDashboard() {
   const { data: employeesByBranch } = useEmployeesByBranch();
   const { data: payrollSummary } = usePayrollSummary();
 
+  const chartConfig = {
+    present: { label: 'Present', color: 'hsl(var(--chart-1))' },
+    absent: { label: 'Absent', color: 'hsl(var(--chart-2))' },
+    employees: { label: 'Employees', color: 'hsl(var(--chart-3))' },
+    total: { label: 'Total', color: 'hsl(var(--chart-4))' },
+  };
+
+  const pieColors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+
   const statCards = [
     { title: 'Total Employees', numValue: stats?.employeeCount ?? 0, prefix: '', suffix: '', icon: Users, change: '' },
     { title: 'Active Branches', numValue: stats?.branchCount ?? 0, prefix: '', suffix: '', icon: Building2, change: '' },
     { title: 'Present Today', numValue: stats?.presentToday ?? 0, prefix: '', suffix: '', icon: Clock, change: stats?.attendanceRate ? `${stats.attendanceRate}%` : '' },
     { title: 'Pending Leaves', numValue: stats?.pendingLeaves ?? 0, prefix: '', suffix: '', icon: CalendarDays, change: '' },
-    { title: 'Payroll This Month', numValue: stats?.payrollTotal ? Math.round(stats.payrollTotal / 1000) : 0, prefix: '₱', suffix: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 'M' : stats?.payrollTotal ? 'K' : '', icon: DollarSign, change: '', decimals: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 1 : 0, rawDivisor: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 1000 : 1 },
+    { title: 'Payroll This Month', numValue: stats?.payrollTotal ? Math.round(stats.payrollTotal / 1000) : 0, prefix: '₱', suffix: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 'M' : stats?.payrollTotal ? 'K' : '', icon: DollarSign, change: '' },
     { title: 'Avg. Attendance', numValue: stats?.attendanceRate ?? 0, prefix: '', suffix: '%', icon: TrendingUp, change: '' },
   ];
 

@@ -26,6 +26,11 @@ import {
 } from 'recharts';
 import EmployeeDashboard from './EmployeeDashboard';
 
+function AnimatedValue({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) {
+  const animated = useCountUp(value);
+  return <div className="text-2xl font-bold">{prefix}{animated.toLocaleString()}{suffix}</div>;
+}
+
 export default function Dashboard() {
   const { profile, role } = useAuth();
 

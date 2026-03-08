@@ -8,12 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Save, User, Lock, Phone, Mail, Loader2 } from 'lucide-react';
 
 export default function Profile() {
   const { profile, user, refreshProfile } = useAuth();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [form, setForm] = useState({
@@ -67,9 +66,9 @@ export default function Profile() {
     setLoading(true);
     const { error } = await supabase.from('profiles').update(form).eq('id', user.id);
     setLoading(false);
-    if (error) { toast({ variant: 'destructive', title: 'Error', description: error.message }); return; }
+    if (error) { toast.error(error.message); return; }
     await refreshProfile();
-    toast({ title: 'Profile Updated' });
+    toast.success('Profile Updated');
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -77,12 +76,12 @@ export default function Profile() {
     if (!user) return;
 
     if (passwordForm.new_password !== passwordForm.confirm_password) {
-      toast({ variant: 'destructive', title: 'Error', description: 'New passwords do not match' });
+      toast.error('New passwords do not match');
       return;
     }
 
     if (passwordForm.new_password.length < 6) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Password must be at least 6 characters' });
+      toast.error('Password must be at least 6 characters');
       return;
     }
 
@@ -96,7 +95,7 @@ export default function Profile() {
 
     if (signInError) {
       setPasswordLoading(false);
-      toast({ variant: 'destructive', title: 'Error', description: 'Current password is incorrect' });
+      toast.error('Current password is incorrect');
       return;
     }
 
@@ -108,11 +107,11 @@ export default function Profile() {
     setPasswordLoading(false);
 
     if (error) {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast.error(error.message);
       return;
     }
 
-    toast({ title: 'Password Updated', description: 'Your password has been changed successfully' });
+    toast.success('Password updated successfully');
     setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
   };
 

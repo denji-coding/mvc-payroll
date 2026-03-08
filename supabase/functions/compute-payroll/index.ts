@@ -183,10 +183,12 @@ serve(async (req) => {
       .single();
     
     const benefitRates = benefitRatesData?.value as { 
+      sss_contribution?: number;
       philhealth_rate?: number; 
       pagibig_employee_rate?: number; 
     } || {};
     
+    const sssFixed = benefitRates.sss_contribution ?? 1350;
     const philhealthFixed = benefitRates.philhealth_rate ?? 500;
     const pagibigFixed = benefitRates.pagibig_employee_rate ?? 200;
 

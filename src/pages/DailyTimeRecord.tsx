@@ -222,14 +222,15 @@ export default function DailyTimeRecord() {
             year,
             daysInMonth: days,
             attendanceMap: attMap,
-            summary: calculateSummary(monthAttendance || [], days)
+            summary: calculateSummary(monthAttendance || [], days, employee.created_at || undefined)
           };
         })
       );
 
       generateMultiMonthDTRPdf({
         employee,
-        monthsData
+        monthsData,
+        employeeCreatedAt: employee.created_at || undefined
       });
 
       toast.success('PDF exported successfully!');

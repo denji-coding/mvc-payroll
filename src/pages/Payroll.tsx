@@ -187,7 +187,7 @@ export default function Payroll() {
                     <div className="bg-warning/10 text-warning p-4 rounded-lg mb-4 text-center"><p className="text-sm font-medium">Payroll is not yet processed. View and download will be available after processing.</p></div>
                   )}
                   {isHR && selectedPeriodData?.status === 'draft' && (
-                    <div className="mb-4"><Button onClick={() => setManualPayrollOpen(true)}><FileEdit className="mr-2 h-4 w-4" /> Add Manual Payroll</Button></div>
+                    <div className="mb-4"><Button onClick={() => { setEditingRecord(null); setManualPayrollOpen(true); }}><FileEdit className="mr-2 h-4 w-4" /> Add Manual Payroll</Button></div>
                   )}
                   {recordsLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
                     <DataTable columns={recordColumns} data={records || []} searchPlaceholder="Search records..." emptyMessage="No records" />

@@ -162,7 +162,7 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
             <Label>Employee</Label>
             {isEditMode ? (
               <Input
-                value={`${selectedEmployee?.employee_id || ""} - ${selectedEmployee?.first_name || ""} ${selectedEmployee?.last_name || ""}`}
+                value={`${selectedEmployee?.employee_id || ""} - ${formatFullName(selectedEmployee?.first_name, selectedEmployee?.last_name)}`}
                 disabled
                 className="bg-muted"
               />

@@ -160,8 +160,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Monthly Salary</Label>
-                    <div className="h-8 flex items-center text-sm font-medium">{fmt(monthlySalary)}</div>
+                    <Label className="text-xs text-muted-foreground">Daily Rate</Label>
+                    <div className="h-8 flex items-center text-sm font-medium">{fmt(dailyRate)}</div>
                   </div>
                 </div>
               </div>

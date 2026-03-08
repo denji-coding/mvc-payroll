@@ -281,12 +281,11 @@ serve(async (req) => {
       const monthlyGross = grossPay * 2; // Semi-monthly payroll
 
       // Government contributions (employee share only) - using fixed amounts
-      const sss = computeSSS(monthlyGross);
       const philhealth = computePhilHealth(philhealthFixed);
       const pagibig = computePagIBIG(pagibigFixed);
 
       // For semi-monthly, divide by 2
-      const sssContribution = sss.employee / 2;
+      const sssContribution = sssFixed / 2;
       const philhealthContribution = philhealth.employee / 2;
       const pagibigContribution = pagibig.employee / 2;
 

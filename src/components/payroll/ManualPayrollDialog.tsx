@@ -85,8 +85,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   // Late deduction: daily rate / 8 hours / 60 mins * late minutes
   const lateDeduction = Math.round((dailyRate / 8 / 60) * lateMinutes * 100) / 100;
 
-  const grossPay = calc ? calc.grossPay - lateDeduction : 0;
-  const totalDeductions = calc ? calc.sssContribution + calc.philhealthContribution + calc.pagibigContribution + calc.withholdingTax : 0;
+  const grossPay = calc ? calc.grossPay : 0;
+  const totalDeductions = calc ? calc.sssContribution + calc.philhealthContribution + calc.pagibigContribution + calc.withholdingTax + lateDeduction : 0;
   const netPay = grossPay - totalDeductions;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -200,12 +200,6 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                         <span>{fmt(calc?.leaveWithPayEarnings || 0)}</span>
                       </div>
                     )}
-                    {lateMinutes > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Late Deduction ({lateMinutes} mins)</span>
-                        <span className="text-destructive">-{fmt(lateDeduction)}</span>
-                      </div>
-                    )}
                     <div className="flex justify-between pt-2 border-t font-semibold text-sm">
                       <span>Gross Pay</span>
                       <span style={{ color: 'hsl(var(--success))' }}>{fmt(grossPay)}</span>
@@ -233,6 +227,12 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       <span className="text-muted-foreground">Withholding Tax</span>
                       <span>{fmt(calc?.withholdingTax || 0)}</span>
                     </div>
+                    {lateMinutes > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Late Deduction ({lateMinutes} mins)</span>
+                        <span>{fmt(lateDeduction)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between pt-2 border-t font-semibold text-sm">
                       <span>Total Deductions</span>
                       <span className="text-destructive">{fmt(totalDeductions)}</span>

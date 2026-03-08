@@ -202,7 +202,8 @@ export default function DailyTimeRecord() {
         summary,
         month: months[selectedMonth],
         year: selectedYear,
-        employeeCreatedAt: employee.created_at || undefined
+        employeeCreatedAt: employee.created_at || undefined,
+        weekendDutyDays
       });
     } else {
       // Multi-month export

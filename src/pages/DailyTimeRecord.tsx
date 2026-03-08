@@ -127,11 +127,16 @@ export default function DailyTimeRecord() {
     const absentDays = daysInMonth.filter(day => {
       const dateStr = format(day, 'yyyy-MM-dd');
       if (employeeStart && day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate())) return false;
-      return !isWeekend(day) && !attendedDates.has(dateStr) && day <= new Date();
+      const dayOfWeek = getDay(day);
+      const isWeekendDay = isWeekend(day);
+      const isDutyWeekend = isWeekendDay && weekendDutyDays.has(dayOfWeek);
+      // Count as absent only on work days (non-weekend OR weekend duty days)
+      if (isWeekendDay && !isDutyWeekend) return false;
+      return !attendedDates.has(dateStr) && day <= new Date();
     }).length;
 
     return { daysWorked, totalHours, lateDays, absentDays };
-  }, [attendance, daysInMonth]);
+  }, [attendance, daysInMonth, weekendDutyDays]);
 
   // Validate date range
   const isValidRange = useMemo(() => {

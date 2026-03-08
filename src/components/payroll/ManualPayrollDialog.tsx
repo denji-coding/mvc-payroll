@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEmployees } from "@/hooks/useEmployees";
-import { useCreateManualPayroll } from "@/hooks/usePayroll";
+import { useCreateManualPayroll, usePayrollPeriods } from "@/hooks/usePayroll";
 import { calculateSalary } from "@/lib/salaryCalculations";
-import { useEmployeeScheduleByEmployee } from "@/hooks/useEmployeeSchedule";
+import { useEmployeeAttendance } from "@/hooks/useAttendance";
 
 interface ManualPayrollDialogProps {
   periodId: string;
@@ -17,6 +17,7 @@ interface ManualPayrollDialogProps {
 
 export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDialogProps) {
   const { data: employees } = useEmployees();
+  const { data: periods } = usePayrollPeriods();
   const createManualPayroll = useCreateManualPayroll();
 
   const [employeeId, setEmployeeId] = useState("");
@@ -27,7 +28,18 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const activeEmployees = employees?.filter((e) => e.employment_status === "active") || [];
   const selectedEmployee = activeEmployees.find((e) => e.id === employeeId);
   const monthlySalary = selectedEmployee?.basic_salary || 0;
-  const { data: schedules } = useEmployeeScheduleByEmployee(employeeId || null);
+
+  // Get period date range
+  const selectedPeriod = periods?.find((p) => p.id === periodId);
+  const periodStart = selectedPeriod?.period_start;
+  const periodEnd = selectedPeriod?.period_end;
+
+  // Fetch attendance records for this employee within the payroll period
+  const { data: attendanceRecords } = useEmployeeAttendance(
+    employeeId || undefined,
+    periodStart,
+    periodEnd
+  );
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -39,13 +51,18 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
     }
   }, [open]);
 
-  // Auto-populate days worked from employee schedule
+  // Auto-calculate days worked from attendance hours (hours / 8 = days)
   useEffect(() => {
-    if (schedules && schedules.length > 0) {
-      const dutyDays = schedules.filter(s => s.is_duty_day).length;
-      setDaysWorked(Math.round(dutyDays / 2 * 10) / 10); // semi-monthly
+    if (attendanceRecords && attendanceRecords.length > 0) {
+      const totalHours = attendanceRecords.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
+      const days = Math.round((totalHours / 8) * 100) / 100;
+      setDaysWorked(days);
+
+      // Also sum late minutes from attendance
+      const totalLate = attendanceRecords.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
+      setLateMinutes(totalLate);
     }
-  }, [schedules]);
+  }, [attendanceRecords]);
 
   // basic_salary is the daily rate
   const dailyRate = monthlySalary;

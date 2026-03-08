@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useCountUp } from '@/hooks/useCountUp';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
@@ -8,6 +9,16 @@ import { format, parseISO } from 'date-fns';
 import { DatePicker } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { formatFullName } from '@/lib/formatName';
+
+function AttendanceStatCard({ label, value, colorClass, loading }: { label: string; value: number; colorClass: string; loading: boolean }) {
+  const animated = useCountUp(value);
+  return (
+    <Card className="stat-card">
+      <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{label}</CardTitle></CardHeader>
+      <CardContent>{loading ? <Skeleton className="h-8 w-12" /> : <div className={`text-2xl font-bold ${colorClass}`}>{animated}</div>}</CardContent>
+    </Card>
+  );
+}
 
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -62,10 +73,10 @@ export default function Attendance() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <Card className="stat-card"><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Present</CardTitle></CardHeader><CardContent>{statsLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold text-success">{stats?.present || 0}</div>}</CardContent></Card>
-        <Card className="stat-card"><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Late</CardTitle></CardHeader><CardContent>{statsLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold text-warning">{stats?.late || 0}</div>}</CardContent></Card>
-        <Card className="stat-card"><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Absent</CardTitle></CardHeader><CardContent>{statsLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold text-destructive">{stats?.absent || 0}</div>}</CardContent></Card>
-        <Card className="stat-card"><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">On Leave</CardTitle></CardHeader><CardContent>{statsLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold text-info">{stats?.onLeave || 0}</div>}</CardContent></Card>
+        <AttendanceStatCard label="Present" value={stats?.present || 0} colorClass="text-success" loading={statsLoading} />
+        <AttendanceStatCard label="Late" value={stats?.late || 0} colorClass="text-warning" loading={statsLoading} />
+        <AttendanceStatCard label="Absent" value={stats?.absent || 0} colorClass="text-destructive" loading={statsLoading} />
+        <AttendanceStatCard label="On Leave" value={stats?.onLeave || 0} colorClass="text-info" loading={statsLoading} />
       </div>
 
       <Card>

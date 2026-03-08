@@ -47,7 +47,7 @@ export default function DailyTimeRecord() {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('employees')
-        .select('id, first_name, last_name, employee_id, position, department')
+        .select('id, first_name, last_name, employee_id, position, department, created_at')
         .eq('user_id', user.id)
         .single();
       if (error) throw error;

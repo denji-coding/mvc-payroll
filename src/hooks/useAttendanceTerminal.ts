@@ -207,7 +207,7 @@ export function useAttendanceTerminal() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, cooldownUntil]);
 
   const submitManualAttendance = useCallback(async (employeeId: string) => {
     const trimmedInput = employeeId.trim();

@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useCountUp } from '@/hooks/useCountUp';
 import { useEmployeeScheduleByEmployee } from '@/hooks/useEmployeeSchedule';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';

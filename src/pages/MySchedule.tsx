@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useCountUp } from '@/hooks/useCountUp';
 import { useEmployeeScheduleByEmployee } from '@/hooks/useEmployeeSchedule';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -107,7 +108,7 @@ export default function MySchedule() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Duty Days</p>
-                <p className="text-2xl font-bold">{dutyDaysCount} days</p>
+                <p className="text-2xl font-bold">{useCountUp(dutyDaysCount)} days</p>
               </div>
             </div>
           </CardContent>
@@ -120,7 +121,7 @@ export default function MySchedule() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Weekly Hours</p>
-                <p className="text-2xl font-bold">{totalHoursFormatted} hrs</p>
+                <p className="text-2xl font-bold">{useCountUp(parseFloat(totalHoursFormatted))} hrs</p>
               </div>
             </div>
           </CardContent>
@@ -133,7 +134,7 @@ export default function MySchedule() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Rest Days</p>
-                <p className="text-2xl font-bold">{7 - dutyDaysCount} days</p>
+                <p className="text-2xl font-bold">{useCountUp(7 - dutyDaysCount)} days</p>
               </div>
             </div>
           </CardContent>

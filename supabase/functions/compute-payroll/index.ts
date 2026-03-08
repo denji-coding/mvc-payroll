@@ -185,12 +185,10 @@ serve(async (req) => {
     const benefitRates = benefitRatesData?.value as { 
       philhealth_rate?: number; 
       pagibig_employee_rate?: number; 
-      pagibig_ceiling?: number;
     } || {};
     
-    const philhealthRate = benefitRates.philhealth_rate ?? 5.0;
-    const pagibigRate = benefitRates.pagibig_employee_rate ?? 2.0;
-    const pagibigCeiling = benefitRates.pagibig_ceiling ?? 5000;
+    const philhealthFixed = benefitRates.philhealth_rate ?? 500;
+    const pagibigFixed = benefitRates.pagibig_employee_rate ?? 200;
 
     // Get employees
     let employeesQuery = supabase

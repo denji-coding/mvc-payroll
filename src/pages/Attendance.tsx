@@ -10,6 +10,16 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { formatFullName } from '@/lib/formatName';
 
+function AttendanceStatCard({ label, value, colorClass, loading }: { label: string; value: number; colorClass: string; loading: boolean }) {
+  const animated = useCountUp(value);
+  return (
+    <Card className="stat-card">
+      <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{label}</CardTitle></CardHeader>
+      <CardContent>{loading ? <Skeleton className="h-8 w-12" /> : <div className={`text-2xl font-bold ${colorClass}`}>{animated}</div>}</CardContent>
+    </Card>
+  );
+}
+
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const dateStr = format(selectedDate, 'yyyy-MM-dd');

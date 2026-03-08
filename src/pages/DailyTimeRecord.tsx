@@ -179,7 +179,8 @@ export default function DailyTimeRecord() {
         attendanceMap,
         summary,
         month: months[selectedMonth],
-        year: selectedYear
+        year: selectedYear,
+        employeeCreatedAt: employee.created_at || undefined
       });
     } else {
       // Multi-month export

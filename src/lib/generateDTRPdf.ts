@@ -256,7 +256,7 @@ export function generateDTRPdf(params: GenerateDTRPdfParams): void {
     format: 'a4'
   });
 
-  addMonthPage(doc, employee, daysInMonth, attendanceMap, summary, month, year);
+  addMonthPage(doc, employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt);
 
   const fileName = `DTR_${employee.last_name}_${employee.first_name}_${month}_${year}.pdf`;
   doc.save(fileName);

@@ -143,84 +143,37 @@ Deno.serve(async (req) => {
         currency: "PHP",
       }).format(record.total_deductions || 0);
 
-      const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f4f4;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;">
-    <tr>
-      <td align="center" style="padding:30px 0;">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-          <!-- Header -->
-          <tr>
-            <td style="background-color:#1a6b3c;padding:30px 40px;text-align:center;">
-              <img src="https://migrant-path-hr.lovable.app/favicon.png" alt="MVC Logo" width="60" height="60" style="display:block;margin:0 auto 15px auto;border-radius:8px;" />
-              <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;">Your Payslip is Ready</h1>
-            </td>
-          </tr>
-          <!-- Body -->
-          <tr>
-            <td style="padding:35px 40px;">
-              <p style="color:#333;font-size:16px;line-height:1.6;margin:0 0 20px;">Dear <strong>${employee.first_name} ${employee.last_name}</strong>,</p>
-              <p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 25px;">Your payslip for the period <strong>${periodStart} - ${periodEnd}</strong> is now available. Here is a summary:</p>
-              
-              <!-- Pay Summary -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f0faf3;border:1px solid #d4edda;border-radius:10px;margin:0 0 20px;">
-                <tr><td style="padding:25px;text-align:center;">
-                  <p style="color:#666;font-size:13px;margin:0 0 5px;text-transform:uppercase;letter-spacing:1px;">Net Pay</p>
-                  <p style="color:#1a6b3c;font-size:34px;font-weight:700;margin:0;">${netPay}</p>
-                </td></tr>
-              </table>
-
-              <!-- Breakdown -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f9f9f9;border-radius:10px;margin:0 0 25px;">
-                <tr><td style="padding:20px 25px;">
-                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td style="color:#666;font-size:14px;padding:8px 0;border-bottom:1px solid #eee;">Basic Pay</td>
-                      <td style="color:#333;font-size:14px;font-weight:600;padding:8px 0;text-align:right;border-bottom:1px solid #eee;">${basicPay}</td>
-                    </tr>
-                    <tr>
-                      <td style="color:#666;font-size:14px;padding:8px 0;border-bottom:1px solid #eee;">Gross Pay</td>
-                      <td style="color:#333;font-size:14px;font-weight:600;padding:8px 0;text-align:right;border-bottom:1px solid #eee;">${grossPay}</td>
-                    </tr>
-                    <tr>
-                      <td style="color:#d9534f;font-size:14px;padding:8px 0;">Total Deductions</td>
-                      <td style="color:#d9534f;font-size:14px;font-weight:600;padding:8px 0;text-align:right;">-${totalDeductions}</td>
-                    </tr>
-                  </table>
-                </td></tr>
-              </table>
-              
-              <p style="color:#333;font-size:14px;line-height:1.6;margin:0 0 25px;">For a detailed breakdown of your payslip, please log in to the HR portal.</p>
-              
-              <!-- CTA Button -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr><td align="center" style="padding:10px 0 25px;">
-                  <a href="https://migrant-path-hr.lovable.app/my-payslips" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:14px 35px;border-radius:8px;font-size:15px;font-weight:600;">View Full Payslip</a>
-                </td></tr>
-              </table>
-
-              <p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 10px;">If you have any questions about your payslip, please contact the HR department.</p>
-              <p style="color:#333;font-size:14px;line-height:1.6;margin:20px 0 0;">Best regards,<br /><strong>Migrants Venture Corporation HR Team</strong></p>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="background-color:#f8f8f8;padding:20px 40px;text-align:center;border-top:1px solid #eeeeee;">
-              <p style="color:#999;font-size:12px;margin:0 0 5px;">This is an automated message. Please do not reply to this email.</p>
-              <p style="color:#999;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} Migrants Venture Corporation. All rights reserved.</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+      const html = [
+        '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>',
+        '<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f4f4;">',
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;"><tr><td align="center" style="padding:30px 0;">',
+        '<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">',
+        '<tr><td style="background-color:#1a6b3c;padding:30px 40px;text-align:center;">',
+        '<img src="https://migrant-path-hr.lovable.app/favicon.png" alt="MVC Logo" width="60" height="60" style="display:block;margin:0 auto 15px auto;border-radius:8px;" />',
+        '<h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;">Your Payslip is Ready</h1>',
+        '</td></tr>',
+        '<tr><td style="padding:35px 40px;">',
+        `<p style="color:#333;font-size:16px;line-height:1.6;margin:0 0 20px;">Dear <strong>${employee.first_name} ${employee.last_name}</strong>,</p>`,
+        `<p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 25px;">Your payslip for the period <strong>${periodStart} - ${periodEnd}</strong> is now available. Here is a summary:</p>`,
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f0faf3;border:1px solid #d4edda;border-radius:10px;margin:0 0 20px;">',
+        `<tr><td style="padding:25px;text-align:center;"><p style="color:#666;font-size:13px;margin:0 0 5px;text-transform:uppercase;letter-spacing:1px;">Net Pay</p><p style="color:#1a6b3c;font-size:34px;font-weight:700;margin:0;">${netPay}</p></td></tr></table>`,
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f9f9f9;border-radius:10px;margin:0 0 25px;"><tr><td style="padding:20px 25px;">',
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">',
+        `<tr><td style="color:#666;font-size:14px;padding:8px 0;border-bottom:1px solid #eee;">Basic Pay</td><td style="color:#333;font-size:14px;font-weight:600;padding:8px 0;text-align:right;border-bottom:1px solid #eee;">${basicPay}</td></tr>`,
+        `<tr><td style="color:#666;font-size:14px;padding:8px 0;border-bottom:1px solid #eee;">Gross Pay</td><td style="color:#333;font-size:14px;font-weight:600;padding:8px 0;text-align:right;border-bottom:1px solid #eee;">${grossPay}</td></tr>`,
+        `<tr><td style="color:#d9534f;font-size:14px;padding:8px 0;">Total Deductions</td><td style="color:#d9534f;font-size:14px;font-weight:600;padding:8px 0;text-align:right;">-${totalDeductions}</td></tr>`,
+        '</table></td></tr></table>',
+        '<p style="color:#333;font-size:14px;line-height:1.6;margin:0 0 25px;">For a detailed breakdown of your payslip, please log in to the HR portal.</p>',
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">',
+        '<tr><td align="center" style="padding:10px 0 25px;"><a href="https://migrant-path-hr.lovable.app/my-payslips" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:14px 35px;border-radius:8px;font-size:15px;font-weight:600;">View Full Payslip</a></td></tr></table>',
+        '<p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 10px;">If you have any questions about your payslip, please contact the HR department.</p>',
+        '<p style="color:#333;font-size:14px;line-height:1.6;margin:20px 0 0;">Best regards,<br /><strong>Migrants Venture Corporation HR Team</strong></p>',
+        '</td></tr>',
+        '<tr><td style="background-color:#f8f8f8;padding:20px 40px;text-align:center;border-top:1px solid #eeeeee;">',
+        '<p style="color:#999;font-size:12px;margin:0 0 5px;">This is an automated message. Please do not reply to this email.</p>',
+        `<p style="color:#999;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} Migrants Venture Corporation. All rights reserved.</p>`,
+        '</td></tr></table></td></tr></table></body></html>',
+      ].join('');
 
       try {
         await client.send({

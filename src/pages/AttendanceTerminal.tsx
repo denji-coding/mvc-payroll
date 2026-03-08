@@ -388,9 +388,6 @@ export default function AttendanceTerminal() {
                         index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                       }`}
                     >
-                      <TableCell className="font-medium text-gray-500 text-sm py-4">
-                        {index + 1}
-                      </TableCell>
                       <TableCell className="py-4">
                         <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
                           <AvatarImage src={record.employees?.avatar_url} className="object-cover" />

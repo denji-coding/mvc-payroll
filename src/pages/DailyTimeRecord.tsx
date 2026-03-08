@@ -244,6 +244,7 @@ export default function DailyTimeRecord() {
         summary={summary}
         month={months[selectedMonth]}
         year={selectedYear}
+        employeeCreatedAt={employee.created_at || undefined}
       />
 
       <div className="page-header print-hide">

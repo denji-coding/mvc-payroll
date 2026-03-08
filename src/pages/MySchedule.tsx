@@ -134,7 +134,7 @@ export default function MySchedule() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Rest Days</p>
-                <p className="text-2xl font-bold">{7 - dutyDaysCount} days</p>
+                <p className="text-2xl font-bold">{useCountUp(7 - dutyDaysCount)} days</p>
               </div>
             </div>
           </CardContent>

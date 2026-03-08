@@ -93,7 +93,7 @@ export function useAttendanceTerminal() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AttendanceResult | null>(null);
-  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [cooldownMap, setCooldownMap] = useState<Record<string, number>>({});
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   
   // Fetch terminal settings

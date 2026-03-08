@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEmployees } from "@/hooks/useEmployees";
-import { useCreateManualPayroll, usePayrollPeriods } from "@/hooks/usePayroll";
+import { useCreateManualPayroll, useUpdatePayrollRecord, usePayrollPeriods } from "@/hooks/usePayroll";
 import { calculateSalary } from "@/lib/salaryCalculations";
 import { useEmployeeAttendance } from "@/hooks/useAttendance";
 import { useBenefitRates } from "@/hooks/useBenefitRates";
@@ -14,13 +14,17 @@ interface ManualPayrollDialogProps {
   periodId: string;
   open: boolean;
   onClose: () => void;
+  editRecord?: any; // existing payroll record for edit mode
 }
 
-export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDialogProps) {
+export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: ManualPayrollDialogProps) {
   const { data: employees } = useEmployees();
   const { data: periods } = usePayrollPeriods();
   const { data: benefitRates } = useBenefitRates();
   const createManualPayroll = useCreateManualPayroll();
+  const updatePayrollRecord = useUpdatePayrollRecord();
+
+  const isEditMode = !!editRecord;
 
   const [employeeId, setEmployeeId] = useState("");
   const [daysWorkedStr, setDaysWorkedStr] = useState("11");
@@ -32,7 +36,10 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const lwpDays = parseFloat(lwpDaysStr) || 0;
 
   const activeEmployees = employees?.filter((e) => e.employment_status === "active") || [];
-  const selectedEmployee = activeEmployees.find((e) => e.id === employeeId);
+  const selectedEmployee = isEditMode
+    ? employees?.find((e) => e.id === editRecord.employee_id)
+    : activeEmployees.find((e) => e.id === employeeId);
+  const currentEmployeeId = isEditMode ? editRecord.employee_id : employeeId;
   const monthlySalary = selectedEmployee?.basic_salary || 0;
 
   // Get period date range
@@ -42,24 +49,35 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
 
   // Fetch attendance records for this employee within the payroll period
   const { data: attendanceRecords } = useEmployeeAttendance(
-    employeeId || undefined,
+    currentEmployeeId || undefined,
     periodStart,
     periodEnd
   );
 
-  // Reset form when dialog opens/closes
+  // Reset form when dialog opens/closes or populate with edit data
   useEffect(() => {
     if (!open) {
       setEmployeeId("");
       setDaysWorkedStr("11");
       setLateMinutesStr("0");
       setLwpDaysStr("0");
+    } else if (isEditMode && editRecord) {
+      setEmployeeId(editRecord.employee_id);
+      setDaysWorkedStr(String(editRecord.days_worked || 0));
+      // Calculate late minutes from other_deductions if available
+      const dailyRate = selectedEmployee?.basic_salary || 0;
+      const minuteRate = dailyRate / 8 / 60;
+      const estimatedLateMinutes = minuteRate > 0 ? Math.round((editRecord.other_deductions || 0) / minuteRate) : 0;
+      setLateMinutesStr(String(estimatedLateMinutes));
+      // LWP from total_allowances
+      const lwpEstimate = dailyRate > 0 ? Math.round(((editRecord.total_allowances || 0) / dailyRate) * 100) / 100 : 0;
+      setLwpDaysStr(String(lwpEstimate));
     }
-  }, [open]);
+  }, [open, isEditMode, editRecord, selectedEmployee?.basic_salary]);
 
-  // Auto-calculate days worked from attendance hours (hours / 8 = days)
+  // Auto-calculate days worked from attendance hours (hours / 8 = days) - only in create mode
   useEffect(() => {
-    if (attendanceRecords && attendanceRecords.length > 0) {
+    if (!isEditMode && attendanceRecords && attendanceRecords.length > 0) {
       const totalHours = attendanceRecords.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
       const days = Math.round((totalHours / 8) * 100) / 100;
       setDaysWorkedStr(String(days));
@@ -68,7 +86,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
       const totalLate = attendanceRecords.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
       setLateMinutesStr(String(totalLate));
     }
-  }, [attendanceRecords]);
+  }, [attendanceRecords, isEditMode]);
 
   // basic_salary is the daily rate
   const dailyRate = monthlySalary;
@@ -100,11 +118,11 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!employeeId || !calc) return;
+    if (!currentEmployeeId || !calc) return;
 
-    await createManualPayroll.mutateAsync({
+    const payrollData = {
       payroll_period_id: periodId,
-      employee_id: employeeId,
+      employee_id: currentEmployeeId,
       basic_pay: calc.basicPay,
       days_worked: daysWorked,
       overtime_pay: 0,
@@ -116,39 +134,54 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
       pagibig_contribution: calc.pagibigContribution,
       withholding_tax: 0,
       other_deductions: lateDeduction,
-    });
+    };
+
+    if (isEditMode) {
+      await updatePayrollRecord.mutateAsync({ id: editRecord.id, ...payrollData });
+    } else {
+      await createManualPayroll.mutateAsync(payrollData);
+    }
 
     onClose();
   };
 
+  const isPending = createManualPayroll.isPending || updatePayrollRecord.isPending;
   const fmt = (n: number) => `₱${n.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Manual Payroll</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Payroll Record" : "Add Manual Payroll"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Employee Selection */}
           <div className="space-y-2">
             <Label>Employee</Label>
-            <Select value={employeeId} onValueChange={setEmployeeId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select employee" />
-              </SelectTrigger>
-              <SelectContent>
-                {activeEmployees.map((emp) => (
-                  <SelectItem key={emp.id} value={emp.id}>
-                    {emp.employee_id} - {emp.first_name} {emp.last_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isEditMode ? (
+              <Input
+                value={`${selectedEmployee?.employee_id || ""} - ${selectedEmployee?.first_name || ""} ${selectedEmployee?.last_name || ""}`}
+                disabled
+                className="bg-muted"
+              />
+            ) : (
+              <Select value={employeeId} onValueChange={setEmployeeId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select employee" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeEmployees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.employee_id} - {emp.first_name} {emp.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
-          {employeeId && selectedEmployee && (
+          {currentEmployeeId && selectedEmployee && (
             <>
               {/* Work Details Card */}
               <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
@@ -259,8 +292,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={!employeeId || createManualPayroll.isPending}>
-              {createManualPayroll.isPending ? "Creating..." : "Create Payroll"}
+            <Button type="submit" disabled={!currentEmployeeId || isPending}>
+              {isPending ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Payroll" : "Create Payroll")}
             </Button>
           </DialogFooter>
         </form>

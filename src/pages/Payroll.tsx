@@ -39,9 +39,11 @@ export default function Payroll() {
 
   const selectedPeriodData = periods?.find((p: any) => p.id === selectedPeriod);
   const isPeriodProcessed = selectedPeriodData?.status !== 'draft';
+  const isPeriodNotApproved = selectedPeriodData?.status === 'draft' || selectedPeriodData?.status === 'processing';
 
   const [createOpen, setCreateOpen] = useState(false);
   const [manualPayrollOpen, setManualPayrollOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<any>(null);
   const [periodForm, setPeriodForm] = useState({ period_start: '', period_end: '', pay_date: '' });
   const [viewPayslip, setViewPayslip] = useState<any>(null);
 

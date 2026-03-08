@@ -132,7 +132,7 @@ export function useAttendanceTerminal() {
       });
 
       if (error) {
-        setResult({ success: false, error: 'Failed to process attendance. Please try again.' });
+        setResult({ success: false, error: 'Failed to process attendance. Please try again.', error_title: 'Connection Error' });
         return;
       }
 

@@ -115,7 +115,7 @@ export default function Payroll() {
             {isHR && isPeriodNotApproved && (
               <AlertDialog>
                 <AlertDialogTrigger asChild><Button size="sm" variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {r.employees?.first_name} {r.employees?.last_name}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {formatFullName(r.employees?.first_name, r.employees?.last_name)}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
               </AlertDialog>
             )}
           </div>

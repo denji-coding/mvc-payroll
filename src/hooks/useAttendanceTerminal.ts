@@ -99,25 +99,24 @@ export function useAttendanceTerminal() {
   // Fetch terminal settings
   const { data: settings, isLoading: settingsLoading } = useTerminalSettings();
 
-  // Cooldown countdown timer
+  // Cleanup expired cooldowns periodically
   useEffect(() => {
-    if (!cooldownUntil) {
-      setCooldownRemaining(0);
-      return;
-    }
-    const tick = () => {
-      const remaining = Math.ceil((cooldownUntil - Date.now()) / 1000);
-      if (remaining <= 0) {
-        setCooldownUntil(null);
-        setCooldownRemaining(0);
-      } else {
-        setCooldownRemaining(remaining);
-      }
-    };
-    tick();
-    const timer = setInterval(tick, 1000);
+    const timer = setInterval(() => {
+      setCooldownMap(prev => {
+        const now = Date.now();
+        const updated = { ...prev };
+        let changed = false;
+        for (const key in updated) {
+          if (updated[key] <= now) {
+            delete updated[key];
+            changed = true;
+          }
+        }
+        return changed ? updated : prev;
+      });
+    }, 1000);
     return () => clearInterval(timer);
-  }, [cooldownUntil]);
+  }, []);
 
   // Update clock every second
   useEffect(() => {

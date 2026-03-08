@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Calculator, Plus, Eye, CheckCircle, Edit, Trash2, Download, FileEdit, Loader2 } from 'lucide-react';
+import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2 } from 'lucide-react';
 import { SalaryCalculator } from '@/components/payroll/SalaryCalculator';
 import { ManualPayrollDialog } from '@/components/payroll/ManualPayrollDialog';
 import { usePayrollPeriods, usePayrollRecords, useCreatePayrollPeriod, useRunPayroll, useApprovePayroll, useDeletePayrollPeriod, useDeletePayrollRecord } from '@/hooks/usePayroll';

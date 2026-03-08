@@ -41,80 +41,37 @@ function getAccountCreatedHtml(data: AccountCreatedEmail): string {
   const roleLabel = data.role === 'hr_admin' ? 'HR Administrator' : 
                     data.role === 'branch_manager' ? 'Branch Manager' : 'Employee';
   
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f4f4;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;">
-    <tr>
-      <td align="center" style="padding:30px 0;">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-          <!-- Header with logo and green background -->
-          <tr>
-            <td style="background-color:#1a6b3c;padding:30px 40px;text-align:center;">
-              <img src="https://migrant-path-hr.lovable.app/favicon.png" alt="MVC Logo" width="60" height="60" style="display:block;margin:0 auto 15px auto;border-radius:8px;" />
-              <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;letter-spacing:0.5px;">Welcome to Migrants Venture Corporation</h1>
-            </td>
-          </tr>
-          <!-- Body -->
-          <tr>
-            <td style="padding:35px 40px;">
-              <p style="color:#333333;font-size:16px;line-height:1.6;margin:0 0 20px;">Dear <strong>${data.name}</strong>,</p>
-              <p style="color:#333333;font-size:15px;line-height:1.6;margin:0 0 25px;">Your account has been created successfully. You can now access the HR &amp; Payroll Portal using the credentials below:</p>
-              
-              <!-- Credentials Card -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f0faf3;border:1px solid #d4edda;border-radius:10px;margin:0 0 25px;">
-                <tr>
-                  <td style="padding:20px 25px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="color:#666;font-size:14px;padding:6px 0;">Role:</td>
-                        <td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${roleLabel}</td>
-                      </tr>
-                      <tr>
-                        <td style="color:#666;font-size:14px;padding:6px 0;">Email:</td>
-                        <td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.email}</td>
-                      </tr>
-                      <tr>
-                        <td style="color:#666;font-size:14px;padding:6px 0;">Password:</td>
-                        <td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.password}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="color:#d9534f;font-size:14px;line-height:1.6;margin:0 0 25px;font-weight:600;">Important: Please change your password after your first login for security purposes.</p>
-              
-              <!-- CTA Button -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center" style="padding:10px 0 25px;">
-                    <a href="${data.portalUrl}" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:14px 35px;border-radius:8px;font-size:15px;font-weight:600;">Access HR Portal</a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 10px;">If you have any questions, please contact the HR department.</p>
-              <p style="color:#333;font-size:14px;line-height:1.6;margin:20px 0 0;">Best regards,<br /><strong>Migrants Venture Corporation HR Team</strong></p>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="background-color:#f8f8f8;padding:20px 40px;text-align:center;border-top:1px solid #eeeeee;">
-              <p style="color:#999;font-size:12px;margin:0 0 5px;">This is an automated message. Please do not reply to this email.</p>
-              <p style="color:#999;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} Migrants Venture Corporation. All rights reserved.</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  return [
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>',
+    '<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f4f4;">',
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;"><tr><td align="center" style="padding:30px 0;">',
+    '<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">',
+    '<tr><td style="background-color:#1a6b3c;padding:30px 40px;text-align:center;">',
+    '<img src="https://migrant-path-hr.lovable.app/favicon.png" alt="MVC Logo" width="60" height="60" style="display:block;margin:0 auto 15px auto;border-radius:8px;" />',
+    '<h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;letter-spacing:0.5px;">Welcome to Migrants Venture Corporation</h1>',
+    '</td></tr>',
+    '<tr><td style="padding:35px 40px;">',
+    `<p style="color:#333333;font-size:16px;line-height:1.6;margin:0 0 20px;">Dear <strong>${data.name}</strong>,</p>`,
+    '<p style="color:#333333;font-size:15px;line-height:1.6;margin:0 0 25px;">Your account has been created successfully. You can now access the HR &amp; Payroll Portal using the credentials below:</p>',
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f0faf3;border:1px solid #d4edda;border-radius:10px;margin:0 0 25px;">',
+    '<tr><td style="padding:20px 25px;">',
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">',
+    `<tr><td style="color:#666;font-size:14px;padding:6px 0;">Role:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${roleLabel}</td></tr>`,
+    `<tr><td style="color:#666;font-size:14px;padding:6px 0;">Email:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.email}</td></tr>`,
+    `<tr><td style="color:#666;font-size:14px;padding:6px 0;">Password:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.password}</td></tr>`,
+    '</table></td></tr></table>',
+    '<p style="color:#d9534f;font-size:14px;line-height:1.6;margin:0 0 25px;font-weight:600;">Important: Please change your password after your first login for security purposes.</p>',
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">',
+    `<tr><td align="center" style="padding:10px 0 25px;"><a href="${data.portalUrl}" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:14px 35px;border-radius:8px;font-size:15px;font-weight:600;">Access HR Portal</a></td></tr>`,
+    '</table>',
+    '<p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 10px;">If you have any questions, please contact the HR department.</p>',
+    '<p style="color:#333;font-size:14px;line-height:1.6;margin:20px 0 0;">Best regards,<br /><strong>Migrants Venture Corporation HR Team</strong></p>',
+    '</td></tr>',
+    '<tr><td style="background-color:#f8f8f8;padding:20px 40px;text-align:center;border-top:1px solid #eeeeee;">',
+    '<p style="color:#999;font-size:12px;margin:0 0 5px;">This is an automated message. Please do not reply to this email.</p>',
+    `<p style="color:#999;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} Migrants Venture Corporation. All rights reserved.</p>`,
+    '</td></tr></table></td></tr></table></body></html>',
+  ].join('');
 }
 
 function getLeaveApprovedHtml(data: LeaveApprovedEmail): string {

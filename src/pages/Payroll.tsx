@@ -197,7 +197,7 @@ export default function Payroll() {
             </CardContent>
           </Card>
           {viewPayslip && <PayslipDialog record={viewPayslip} onClose={() => setViewPayslip(null)} formatCurrency={formatCurrency} periodStatus={selectedPeriodData?.status} />}
-          {selectedPeriod && <ManualPayrollDialog periodId={selectedPeriod} open={manualPayrollOpen} onClose={() => setManualPayrollOpen(false)} />}
+          {selectedPeriod && <ManualPayrollDialog periodId={selectedPeriod} open={manualPayrollOpen} onClose={() => { setManualPayrollOpen(false); setEditingRecord(null); }} editRecord={editingRecord} />}
         </TabsContent>
 
         <TabsContent value="components" className="mt-4">

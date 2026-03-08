@@ -107,7 +107,7 @@ export default function Positions() {
         <DialogContent>
           <DialogHeader><DialogTitle>Edit Position</DialogTitle></DialogHeader>
           <form onSubmit={handleEdit} className="space-y-4">
-            <div><Label>Position Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
+            <div><Label>Position Name <span className="text-destructive">*</span></Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
             <div><Label>Description</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="flex items-center justify-between">
               <Label htmlFor="edit-status">Active</Label>

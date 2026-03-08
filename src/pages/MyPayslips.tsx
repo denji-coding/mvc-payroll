@@ -8,7 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Calendar, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { FileText, Download, Calendar, DollarSign, TrendingUp, TrendingDown, Eye } from 'lucide-react';
 import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 
@@ -19,6 +21,7 @@ const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => curr
 export default function MyPayslips() {
   const { user } = useAuth();
   const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [viewRecord, setViewRecord] = useState<any>(null);
 
   const { data: employee, isLoading: employeeLoading } = useQuery({
     queryKey: ['my-employee-record', user?.id],
@@ -73,6 +76,8 @@ export default function MyPayslips() {
   const totalDeductions = approvedRecords.reduce((sum, r) => sum + Number(r.total_deductions || 0), 0);
   const totalNetPay = approvedRecords.reduce((sum, r) => sum + Number(r.net_pay || 0), 0);
 
+  const fmt = (n: number) => `₱${n.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
+
   if (employeeLoading) return <div className="space-y-6 p-6"><Skeleton className="h-8 w-48" /><div className="grid grid-cols-1 md:grid-cols-3 gap-4"><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /></div><Skeleton className="h-96" /></div>;
   if (!employee) return <div className="p-6"><Card><CardContent className="flex flex-col items-center justify-center py-12"><FileText className="h-12 w-12 text-muted-foreground mb-4" /><p className="text-muted-foreground">No employee record found.</p></CardContent></Card></div>;
 
@@ -91,16 +96,25 @@ export default function MyPayslips() {
       },
     },
     { id: 'pay_date', header: 'Pay Date', accessorFn: (row) => row.payroll_periods.pay_date, cell: ({ row }) => format(new Date(row.original.payroll_periods.pay_date), 'MMM d, yyyy') },
-    { accessorKey: 'gross_pay', header: 'Gross Pay', cell: ({ getValue }) => `₱${Number(getValue() || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` },
-    { accessorKey: 'total_deductions', header: 'Deductions', cell: ({ getValue }) => <span className="text-destructive">-₱{Number(getValue() || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span> },
-    { accessorKey: 'net_pay', header: 'Net Pay', cell: ({ getValue }) => <span className="font-semibold">₱{Number(getValue() || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span> },
+    { accessorKey: 'gross_pay', header: 'Gross Pay', cell: ({ getValue }) => fmt(Number(getValue() || 0)) },
+    { accessorKey: 'total_deductions', header: 'Deductions', cell: ({ getValue }) => <span className="text-destructive">-{fmt(Number(getValue() || 0))}</span> },
+    { accessorKey: 'net_pay', header: 'Net Pay', cell: ({ getValue }) => <span className="font-semibold">{fmt(Number(getValue() || 0))}</span> },
     { id: 'status', header: 'Status', accessorFn: (row) => row.payroll_periods.status, cell: ({ getValue }) => getStatusBadge(getValue() as string || 'draft') },
     {
       id: 'action', header: 'Action', enableSorting: false,
       cell: ({ row }) => {
         const r = row.original;
         const canDownload = r.payroll_periods.status === 'approved' || r.payroll_periods.status === 'paid';
-        return <Button size="sm" variant="outline" disabled={!canDownload} onClick={() => handleDownloadPayslip(r)}><Download className="h-4 w-4 mr-1" />{canDownload ? 'Download' : 'Pending'}</Button>;
+        return (
+          <div className="flex gap-1">
+            <Button size="sm" variant="outline" onClick={() => setViewRecord(r)} title="View Payslip">
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button size="sm" variant="outline" disabled={!canDownload} onClick={() => handleDownloadPayslip(r)}>
+              <Download className="h-4 w-4 mr-1" />{canDownload ? 'Download' : 'Pending'}
+            </Button>
+          </div>
+        );
       },
     },
   ];
@@ -113,9 +127,9 @@ export default function MyPayslips() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Earnings</CardTitle><TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">₱{totalEarnings.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div><p className="text-xs text-muted-foreground">Gross pay for {selectedYear}</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Deductions</CardTitle><TrendingDown className="h-4 w-4 text-destructive" /></CardHeader><CardContent><div className="text-2xl font-bold text-destructive">₱{totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div><p className="text-xs text-muted-foreground">Deductions for {selectedYear}</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Net Pay</CardTitle><DollarSign className="h-4 w-4 text-primary" /></CardHeader><CardContent><div className="text-2xl font-bold">₱{totalNetPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div><p className="text-xs text-muted-foreground">Take-home pay for {selectedYear}</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Earnings</CardTitle><TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{fmt(totalEarnings)}</div><p className="text-xs text-muted-foreground">Gross pay for {selectedYear}</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Deductions</CardTitle><TrendingDown className="h-4 w-4 text-destructive" /></CardHeader><CardContent><div className="text-2xl font-bold text-destructive">{fmt(totalDeductions)}</div><p className="text-xs text-muted-foreground">Deductions for {selectedYear}</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Net Pay</CardTitle><DollarSign className="h-4 w-4 text-primary" /></CardHeader><CardContent><div className="text-2xl font-bold">{fmt(totalNetPay)}</div><p className="text-xs text-muted-foreground">Take-home pay for {selectedYear}</p></CardContent></Card>
       </div>
 
       <Card>
@@ -126,6 +140,63 @@ export default function MyPayslips() {
           )}
         </CardContent>
       </Card>
+
+      {/* Payslip View Dialog */}
+      <Dialog open={!!viewRecord} onOpenChange={(open) => { if (!open) setViewRecord(null); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Payslip Details</DialogTitle>
+          </DialogHeader>
+          {viewRecord && (
+            <div className="space-y-4">
+              {/* Period Info */}
+              <div className="text-sm space-y-1">
+                <div className="flex justify-between"><span className="text-muted-foreground">Pay Period</span><span className="font-medium">{format(new Date(viewRecord.payroll_periods.period_start), 'MMM d')} - {format(new Date(viewRecord.payroll_periods.period_end), 'MMM d, yyyy')}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Pay Date</span><span className="font-medium">{format(new Date(viewRecord.payroll_periods.pay_date), 'MMM d, yyyy')}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Days Worked</span><span className="font-medium">{Number(viewRecord.days_worked || 0)}</span></div>
+              </div>
+
+              <Separator />
+
+              {/* Earnings */}
+              <div>
+                <h4 className="font-semibold text-sm mb-2" style={{ color: 'hsl(var(--success))' }}>Earnings</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Basic Pay</span><span>{fmt(Number(viewRecord.basic_pay || 0))}</span></div>
+                  {Number(viewRecord.overtime_pay) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Overtime Pay</span><span>{fmt(Number(viewRecord.overtime_pay))}</span></div>}
+                  {Number(viewRecord.holiday_pay) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Holiday Pay</span><span>{fmt(Number(viewRecord.holiday_pay))}</span></div>}
+                  {Number(viewRecord.night_differential) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Night Differential</span><span>{fmt(Number(viewRecord.night_differential))}</span></div>}
+                  {Number(viewRecord.total_allowances) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Allowances</span><span>{fmt(Number(viewRecord.total_allowances))}</span></div>}
+                  <div className="flex justify-between font-semibold pt-1 border-t"><span>Gross Pay</span><span style={{ color: 'hsl(var(--success))' }}>{fmt(Number(viewRecord.gross_pay || 0))}</span></div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Deductions */}
+              <div>
+                <h4 className="font-semibold text-destructive text-sm mb-2">Deductions</h4>
+                <div className="space-y-1 text-sm">
+                  {Number(viewRecord.sss_contribution) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SSS</span><span>{fmt(Number(viewRecord.sss_contribution))}</span></div>}
+                  {Number(viewRecord.philhealth_contribution) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">PhilHealth</span><span>{fmt(Number(viewRecord.philhealth_contribution))}</span></div>}
+                  {Number(viewRecord.pagibig_contribution) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Pag-IBIG</span><span>{fmt(Number(viewRecord.pagibig_contribution))}</span></div>}
+                  {Number(viewRecord.withholding_tax) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Withholding Tax</span><span>{fmt(Number(viewRecord.withholding_tax))}</span></div>}
+                  {Number(viewRecord.other_deductions) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Other Deductions</span><span>{fmt(Number(viewRecord.other_deductions))}</span></div>}
+                  <div className="flex justify-between font-semibold pt-1 border-t"><span>Total Deductions</span><span className="text-destructive">{fmt(Number(viewRecord.total_deductions || 0))}</span></div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Net Pay */}
+              <div className="bg-primary/10 rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground">Net Pay</p>
+                <p className="text-2xl font-bold text-primary">{fmt(Number(viewRecord.net_pay || 0))}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

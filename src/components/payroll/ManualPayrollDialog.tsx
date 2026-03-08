@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEmployees } from "@/hooks/useEmployees";
-import { useCreateManualPayroll, type ManualPayrollData } from "@/hooks/usePayroll";
+import { useCreateManualPayroll } from "@/hooks/usePayroll";
+import { calculateSalary } from "@/lib/salaryCalculations";
 
 interface ManualPayrollDialogProps {
   periodId: string;
@@ -17,85 +18,72 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const { data: employees } = useEmployees();
   const createManualPayroll = useCreateManualPayroll();
 
-  const [form, setForm] = useState({
-    employee_id: "",
-    basic_pay: 0,
-    days_worked: 0,
-    overtime_pay: 0,
-    holiday_pay: 0,
-    night_differential: 0,
-    total_allowances: 0,
-    sss_contribution: 0,
-    philhealth_contribution: 0,
-    pagibig_contribution: 0,
-    withholding_tax: 0,
-    other_deductions: 0,
-  });
+  const [employeeId, setEmployeeId] = useState("");
+  const [daysWorked, setDaysWorked] = useState(11);
+  const [lateMinutes, setLateMinutes] = useState(0);
+  const [lwpDays, setLwpDays] = useState(0);
 
   const activeEmployees = employees?.filter((e) => e.employment_status === "active") || [];
+  const selectedEmployee = activeEmployees.find((e) => e.id === employeeId);
+  const monthlySalary = selectedEmployee?.basic_salary || 0;
 
-  // Calculate totals
-  const grossPay =
-    form.basic_pay + form.overtime_pay + form.holiday_pay + form.night_differential + form.total_allowances;
-  const totalDeductions =
-    form.sss_contribution +
-    form.philhealth_contribution +
-    form.pagibig_contribution +
-    form.withholding_tax +
-    form.other_deductions;
-  const netPay = grossPay - totalDeductions;
-
-  // Auto-fill basic salary when employee is selected
+  // Reset form when dialog opens/closes
   useEffect(() => {
-    if (form.employee_id) {
-      const emp = activeEmployees.find((e) => e.id === form.employee_id);
-      if (emp) {
-        setForm((prev) => ({ ...prev, basic_pay: emp.basic_salary || 0 }));
-      }
+    if (!open) {
+      setEmployeeId("");
+      setDaysWorked(11);
+      setLateMinutes(0);
+      setLwpDays(0);
     }
-  }, [form.employee_id, activeEmployees]);
+  }, [open]);
+
+  const calc = useMemo(() => {
+    if (!monthlySalary) return null;
+    return calculateSalary({
+      basicMonthlySalary: monthlySalary,
+      daysWorked,
+      overtimeHours: 0,
+      allowances: 0,
+      loanDeductions: 0,
+      otherDeductions: 0,
+      workingDaysPerMonth: 22,
+      leaveWithPayDays: lwpDays,
+      leaveWithoutPayDays: 0,
+    });
+  }, [monthlySalary, daysWorked, lwpDays]);
+
+  // Late deduction: daily rate / 8 hours / 60 mins * late minutes
+  const dailyRate = monthlySalary / 22;
+  const lateDeduction = Math.round((dailyRate / 8 / 60) * lateMinutes * 100) / 100;
+
+  const grossPay = calc ? calc.grossPay - lateDeduction : 0;
+  const totalDeductions = calc ? calc.sssContribution + calc.philhealthContribution + calc.pagibigContribution + calc.withholdingTax : 0;
+  const netPay = grossPay - totalDeductions;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.employee_id) return;
+    if (!employeeId || !calc) return;
 
     await createManualPayroll.mutateAsync({
       payroll_period_id: periodId,
-      ...form,
-    });
-
-    onClose();
-    // Reset form
-    setForm({
-      employee_id: "",
-      basic_pay: 0,
-      days_worked: 0,
+      employee_id: employeeId,
+      basic_pay: calc.basicPay,
+      days_worked: daysWorked,
       overtime_pay: 0,
       holiday_pay: 0,
       night_differential: 0,
-      total_allowances: 0,
-      sss_contribution: 0,
-      philhealth_contribution: 0,
-      pagibig_contribution: 0,
-      withholding_tax: 0,
-      other_deductions: 0,
+      total_allowances: calc.leaveWithPayEarnings,
+      sss_contribution: calc.sssContribution,
+      philhealth_contribution: calc.philhealthContribution,
+      pagibig_contribution: calc.pagibigContribution,
+      withholding_tax: calc.withholdingTax,
+      other_deductions: lateDeduction,
     });
+
+    onClose();
   };
 
-  const formatCurrency = (amount: number) => `₱${amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
-
-  const NumberInput = ({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) => (
-    <div className="space-y-1">
-      <Label className="text-xs">{label}</Label>
-      <Input
-        type="number"
-        step="0.01"
-        value={value || ""}
-        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-        className="h-8 text-sm"
-      />
-    </div>
-  );
+  const fmt = (n: number) => `₱${n.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -108,7 +96,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
           {/* Employee Selection */}
           <div className="space-y-2">
             <Label>Employee</Label>
-            <Select value={form.employee_id} onValueChange={(v) => setForm({ ...form, employee_id: v })}>
+            <Select value={employeeId} onValueChange={setEmployeeId}>
               <SelectTrigger>
                 <SelectValue placeholder="Select employee" />
               </SelectTrigger>
@@ -122,94 +110,119 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
             </Select>
           </div>
 
-          {/* Worked Details */}
-          <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
-            <h3 className="font-semibold text-sm text-foreground">Worked Details</h3>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm text-muted-foreground">
-              <span>Days Worked: </span>
-              <span>Late (mins): </span>
-              <span>LWP: </span>
-              <span>LWOP: </span>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Earnings */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-success text-sm">Earnings</h4>
-              <div className="bg-success/5 rounded-lg p-3 space-y-2">
-                <NumberInput
-                  label="Basic Pay"
-                  value={form.basic_pay}
-                  onChange={(v) => setForm({ ...form, basic_pay: v })}
-                />
-                <NumberInput
-                  label="Days Worked"
-                  value={form.days_worked}
-                  onChange={(v) => setForm({ ...form, days_worked: v })}
-                />
-
-                <NumberInput
-                  label="Late (mins)"
-                  value={form.night_differential}
-                  onChange={(v) => setForm({ ...form, night_differential: v })}
-                />
-                <NumberInput
-                  label="LWP"
-                  value={form.total_allowances}
-                  onChange={(v) => setForm({ ...form, total_allowances: v })}
-                />
-                <div className="flex justify-between pt-2 border-t font-semibold text-sm">
-                  <span>Gross Pay</span>
-                  <span className="text-success">{formatCurrency(grossPay)}</span>
+          {employeeId && selectedEmployee && (
+            <>
+              {/* Work Details Card */}
+              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                <h3 className="font-semibold text-sm text-foreground">Work Details</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Days Worked</Label>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      max="22"
+                      value={daysWorked}
+                      onChange={(e) => setDaysWorked(parseFloat(e.target.value) || 0)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Late (mins)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={lateMinutes}
+                      onChange={(e) => setLateMinutes(parseInt(e.target.value) || 0)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">LWP (days)</Label>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={lwpDays}
+                      onChange={(e) => setLwpDays(parseFloat(e.target.value) || 0)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Monthly Salary</Label>
+                    <div className="h-8 flex items-center text-sm font-medium">{fmt(monthlySalary)}</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Deductions */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-destructive text-sm">Deductions</h4>
-              <div className="bg-destructive/5 rounded-lg p-3 space-y-2">
-                <NumberInput
-                  label="LWOP"
-                  value={form.withholding_tax}
-                  onChange={(v) => setForm({ ...form, withholding_tax: v })}
-                />
-                <NumberInput
-                  label="SSS Contribution"
-                  value={form.sss_contribution}
-                  onChange={(v) => setForm({ ...form, sss_contribution: v })}
-                />
-                <NumberInput
-                  label="PhilHealth Contribution"
-                  value={form.philhealth_contribution}
-                  onChange={(v) => setForm({ ...form, philhealth_contribution: v })}
-                />
-                <NumberInput
-                  label="Pag-IBIG Contribution"
-                  value={form.pagibig_contribution}
-                  onChange={(v) => setForm({ ...form, pagibig_contribution: v })}
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Earnings */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm" style={{ color: 'hsl(var(--success))' }}>Earnings</h4>
+                  <div className="rounded-lg p-3 space-y-2 bg-success/5">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Basic Pay ({daysWorked} days)</span>
+                      <span>{fmt(calc?.basicPay || 0)}</span>
+                    </div>
+                    {lwpDays > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">LWP ({lwpDays} days)</span>
+                        <span>{fmt(calc?.leaveWithPayEarnings || 0)}</span>
+                      </div>
+                    )}
+                    {lateMinutes > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Late Deduction ({lateMinutes} mins)</span>
+                        <span className="text-destructive">-{fmt(lateDeduction)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between pt-2 border-t font-semibold text-sm">
+                      <span>Gross Pay</span>
+                      <span style={{ color: 'hsl(var(--success))' }}>{fmt(grossPay)}</span>
+                    </div>
+                  </div>
+                </div>
 
-                <div className="flex justify-between pt-2 border-t font-semibold text-sm">
-                  <span>Total Deductions</span>
-                  <span className="text-destructive">{formatCurrency(totalDeductions)}</span>
+                {/* Deductions */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-destructive text-sm">Deductions</h4>
+                  <div className="bg-destructive/5 rounded-lg p-3 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">SSS</span>
+                      <span>{fmt(calc?.sssContribution || 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">PhilHealth</span>
+                      <span>{fmt(calc?.philhealthContribution || 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Pag-IBIG</span>
+                      <span>{fmt(calc?.pagibigContribution || 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Withholding Tax</span>
+                      <span>{fmt(calc?.withholdingTax || 0)}</span>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t font-semibold text-sm">
+                      <span>Total Deductions</span>
+                      <span className="text-destructive">{fmt(totalDeductions)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Net Pay Summary */}
-          <div className="bg-primary/10 rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground">Net Pay</p>
-            <p className="text-2xl font-bold text-primary">{formatCurrency(netPay)}</p>
-          </div>
+              {/* Net Pay Summary */}
+              <div className="bg-primary/10 rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground">Net Pay</p>
+                <p className="text-2xl font-bold text-primary">{fmt(netPay)}</p>
+              </div>
+            </>
+          )}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!form.employee_id || createManualPayroll.isPending}>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={!employeeId || createManualPayroll.isPending}>
               {createManualPayroll.isPending ? "Creating..." : "Create Payroll"}
             </Button>
           </DialogFooter>

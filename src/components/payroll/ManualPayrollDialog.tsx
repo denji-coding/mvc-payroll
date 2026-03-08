@@ -85,8 +85,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   // Late deduction: daily rate / 8 hours / 60 mins * late minutes
   const lateDeduction = Math.round((dailyRate / 8 / 60) * lateMinutes * 100) / 100;
 
-  const grossPay = calc ? calc.grossPay - lateDeduction : 0;
-  const totalDeductions = calc ? calc.sssContribution + calc.philhealthContribution + calc.pagibigContribution + calc.withholdingTax : 0;
+  const grossPay = calc ? calc.grossPay : 0;
+  const totalDeductions = calc ? calc.sssContribution + calc.philhealthContribution + calc.pagibigContribution + calc.withholdingTax + lateDeduction : 0;
   const netPay = grossPay - totalDeductions;
 
   const handleSubmit = async (e: React.FormEvent) => {

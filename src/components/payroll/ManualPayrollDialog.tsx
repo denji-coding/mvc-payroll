@@ -49,9 +49,9 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   useEffect(() => {
     if (!open) {
       setEmployeeId("");
-      setDaysWorked(11);
-      setLateMinutes(0);
-      setLwpDays(0);
+      setDaysWorkedStr("11");
+      setLateMinutesStr("0");
+      setLwpDaysStr("0");
     }
   }, [open]);
 

@@ -473,6 +473,8 @@ export default function DailyTimeRecord() {
                     const dateStr = format(day, 'yyyy-MM-dd');
                     const record = attendanceMap.get(dateStr);
                     const isWeekendDay = isWeekend(day);
+                    const isDutyWeekend = isWeekendDay && weekendDutyDays.has(getDay(day));
+                    const isRestDay = isWeekendDay && !isDutyWeekend;
                     const isFuture = day > new Date();
                     const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
                     const isBeforeCreation = employeeStart ? day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate()) : false;
@@ -480,25 +482,25 @@ export default function DailyTimeRecord() {
                     return (
                       <TableRow 
                         key={dateStr}
-                        className={isWeekendDay ? 'bg-muted/30' : ''}
+                        className={isRestDay ? 'bg-muted/30' : ''}
                       >
                         <TableCell className="font-medium">
                           {format(day, 'MMM dd')}
                         </TableCell>
-                        <TableCell className={isWeekendDay ? 'text-muted-foreground' : ''}>
+                        <TableCell className={isRestDay ? 'text-muted-foreground' : ''}>
                           {format(day, 'EEE')}
                         </TableCell>
-                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.morning_in ?? null)}</TableCell>
-                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.morning_out ?? null)}</TableCell>
-                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.afternoon_in ?? null)}</TableCell>
-                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.afternoon_out ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation || isRestDay ? '' : formatTime(record?.morning_in ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation || isRestDay ? '' : formatTime(record?.morning_out ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation || isRestDay ? '' : formatTime(record?.afternoon_in ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation || isRestDay ? '' : formatTime(record?.afternoon_out ?? null)}</TableCell>
                         <TableCell className="text-right">
-                          {isBeforeCreation ? '' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-')}
+                          {isBeforeCreation || isRestDay ? '' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-')}
                         </TableCell>
                         <TableCell className="text-center">
                           {isBeforeCreation ? (
                             <span className="text-muted-foreground">-</span>
-                          ) : isWeekendDay ? (
+                          ) : isRestDay ? (
                             <Badge variant="outline">Weekend</Badge>
                           ) : isFuture ? (
                             <Badge variant="outline">-</Badge>

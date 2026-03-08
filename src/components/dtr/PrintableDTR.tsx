@@ -58,8 +58,8 @@ export function PrintableDTR({
     return format(new Date(timestamp), 'hh:mm a');
   };
 
-  const getRemarks = (record: AttendanceRecord | undefined, isWeekendDay: boolean, isFuture: boolean) => {
-    if (isWeekendDay) return 'Weekend';
+  const getRemarks = (record: AttendanceRecord | undefined, restDay: boolean, isFuture: boolean) => {
+    if (restDay) return 'Weekend';
     if (isFuture) return '';
     if (!record) return 'Absent';
     if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) {

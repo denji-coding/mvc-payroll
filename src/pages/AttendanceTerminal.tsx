@@ -527,7 +527,7 @@ export default function AttendanceTerminal() {
             ) : (
               <>
                 <h2 className="text-2xl font-bold text-red-600 mb-3">
-                  Attendance Failed
+                  {result.error_title || 'Attendance Failed'}
                 </h2>
                 {result.employee_name && (
                   <p className="text-gray-600 text-lg mb-2">{result.employee_name}</p>

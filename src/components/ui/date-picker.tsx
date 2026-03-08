@@ -1,6 +1,6 @@
 import * as React from "react";
-import { format, setMonth, setYear } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,18 +10,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
 
 interface DatePickerProps {
   date: Date | undefined;
@@ -35,28 +23,12 @@ interface DatePickerProps {
 export function DatePicker({
   date,
   onDateChange,
-  placeholder = "Pick a date",
+  placeholder = "Select date",
   disabled = false,
   className,
   disabledDates,
 }: DatePickerProps) {
-  const [calendarDate, setCalendarDate] = React.useState<Date>(date || new Date());
   const [open, setOpen] = React.useState(false);
-
-  const handleSelect = (newDate: Date | undefined) => {
-    onDateChange(newDate);
-    setOpen(false);
-  };
-
-  const handleMonthChange = (month: string) => {
-    const newDate = setMonth(calendarDate, parseInt(month));
-    setCalendarDate(newDate);
-  };
-
-  const handleYearChange = (increment: number) => {
-    const newDate = setYear(calendarDate, calendarDate.getFullYear() + increment);
-    setCalendarDate(newDate);
-  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -71,54 +43,22 @@ export function DatePicker({
           disabled={disabled}
         >
           <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-          <span className="truncate">{date ? format(date, "MMM d, yyyy") : placeholder}</span>
+          <span className="truncate">
+            {date ? format(date, "MMM d, yyyy") : placeholder}
+          </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <div className="flex items-center justify-between px-3 pt-3 pb-1">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => handleYearChange(-1)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-1">
-            <Select
-              value={calendarDate.getMonth().toString()}
-              onValueChange={handleMonthChange}
-            >
-              <SelectTrigger className="h-7 w-[110px] text-xs font-medium focus:ring-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {MONTHS.map((month, index) => (
-                  <SelectItem key={month} value={index.toString()}>
-                    {month}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-sm font-medium">{calendarDate.getFullYear()}</span>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => handleYearChange(1)}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+      <PopoverContent className="w-auto overflow-hidden p-0" align="start">
         <Calendar
           mode="single"
           selected={date}
-          onSelect={handleSelect}
-          month={calendarDate}
-          onMonthChange={setCalendarDate}
+          defaultMonth={date}
+          captionLayout="dropdown"
+          onSelect={(newDate) => {
+            onDateChange(newDate);
+            setOpen(false);
+          }}
           disabled={disabledDates}
-          initialFocus
           className="p-3 pointer-events-auto"
         />
       </PopoverContent>
@@ -137,11 +77,11 @@ interface DateInputProps {
 export function DateInput({
   value,
   onChange,
-  placeholder = "Pick a date",
+  placeholder = "Select date",
   disabled = false,
   className,
 }: DateInputProps) {
-  const date = value ? new Date(value + 'T00:00:00') : undefined;
+  const date = value ? new Date(value + "T00:00:00") : undefined;
 
   const handleDateChange = (newDate: Date | undefined) => {
     if (newDate) {

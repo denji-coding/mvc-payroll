@@ -223,24 +223,28 @@ function BenefitsSettingsTab() {
   const { data: rates, isLoading } = useBenefitRates();
   const updateRates = useUpdateBenefitRates();
   
-  const [form, setForm] = useState<BenefitRates>({
-    sss_contribution: 1350,
-    philhealth_rate: 500,
-    pagibig_employee_rate: 200,
-  });
+  const [sssStr, setSssStr] = useState("1350");
+  const [philhealthStr, setPhilhealthStr] = useState("500");
+  const [pagibigStr, setPagibigStr] = useState("200");
 
   useEffect(() => {
     if (rates) {
-      setForm({
-        sss_contribution: rates.sss_contribution ?? 1350,
-        philhealth_rate: rates.philhealth_rate ?? 500,
-        pagibig_employee_rate: rates.pagibig_employee_rate ?? 200,
-      });
+      setSssStr(String(rates.sss_contribution ?? 1350));
+      setPhilhealthStr(String(rates.philhealth_rate ?? 500));
+      setPagibigStr(String(rates.pagibig_employee_rate ?? 200));
     }
   }, [rates]);
 
+  const sssVal = parseFloat(sssStr) || 0;
+  const philhealthVal = parseFloat(philhealthStr) || 0;
+  const pagibigVal = parseFloat(pagibigStr) || 0;
+
   const handleSave = () => {
-    updateRates.mutate(form);
+    updateRates.mutate({
+      sss_contribution: sssVal,
+      philhealth_rate: philhealthVal,
+      pagibig_employee_rate: pagibigVal,
+    });
   };
 
   if (isLoading) {
@@ -267,12 +271,13 @@ function BenefitsSettingsTab() {
             type="number"
             step="1"
             min="0"
-            value={form.sss_contribution}
-            onChange={(e) => setForm({ ...form, sss_contribution: parseFloat(e.target.value) || 0 })}
+            value={sssStr}
+            onChange={(e) => setSssStr(e.target.value)}
+            onBlur={() => { if (sssStr.trim() === "") setSssStr("0"); }}
             className="max-w-40"
           />
           <p className="text-xs text-muted-foreground">
-            Fixed monthly employee SSS contribution. Current: ₱{form.sss_contribution.toLocaleString()}
+            Fixed monthly employee SSS contribution. Current: ₱{sssVal.toLocaleString()}
           </p>
         </div>
 
@@ -282,12 +287,13 @@ function BenefitsSettingsTab() {
             type="number"
             step="1"
             min="0"
-            value={form.philhealth_rate}
-            onChange={(e) => setForm({ ...form, philhealth_rate: parseFloat(e.target.value) || 0 })}
+            value={philhealthStr}
+            onChange={(e) => setPhilhealthStr(e.target.value)}
+            onBlur={() => { if (philhealthStr.trim() === "") setPhilhealthStr("0"); }}
             className="max-w-40"
           />
           <p className="text-xs text-muted-foreground">
-            Fixed monthly contribution (split equally between employee and employer). Current: ₱{form.philhealth_rate.toLocaleString()}
+            Fixed monthly contribution (split equally between employee and employer). Current: ₱{philhealthVal.toLocaleString()}
           </p>
         </div>
 
@@ -297,12 +303,13 @@ function BenefitsSettingsTab() {
             type="number"
             step="1"
             min="0"
-            value={form.pagibig_employee_rate}
-            onChange={(e) => setForm({ ...form, pagibig_employee_rate: parseFloat(e.target.value) || 0 })}
+            value={pagibigStr}
+            onChange={(e) => setPagibigStr(e.target.value)}
+            onBlur={() => { if (pagibigStr.trim() === "") setPagibigStr("0"); }}
             className="max-w-40"
           />
           <p className="text-xs text-muted-foreground">
-            Fixed monthly employee contribution. Current: ₱{form.pagibig_employee_rate.toLocaleString()}
+            Fixed monthly employee contribution. Current: ₱{pagibigVal.toLocaleString()}
           </p>
         </div>
         

@@ -34,6 +34,7 @@ interface PrintableDTRProps {
   month: string;
   year: number;
   employeeCreatedAt?: string;
+  weekendDutyDays?: Set<number>;
 }
 
 export function PrintableDTR({ 

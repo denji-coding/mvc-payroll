@@ -68,6 +68,7 @@ export default function Profile() {
     const { error } = await supabase.from('profiles').update(form).eq('id', user.id);
     setLoading(false);
     if (error) { toast({ variant: 'destructive', title: 'Error', description: error.message }); return; }
+    await refreshProfile();
     toast({ title: 'Profile Updated' });
   };
 

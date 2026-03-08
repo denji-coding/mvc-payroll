@@ -115,6 +115,10 @@ export interface SalaryCalculationInput {
   workingDaysPerMonth?: number; // Default 22
   leaveWithPayDays?: number;
   leaveWithoutPayDays?: number;
+  // Fixed benefit amounts (monthly)
+  fixedSSS?: number;
+  fixedPhilHealth?: number;
+  fixedPagIBIG?: number;
 }
 
 export interface SalaryCalculationResult {

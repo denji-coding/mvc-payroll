@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEmployees } from "@/hooks/useEmployees";
 import { useCreateManualPayroll } from "@/hooks/usePayroll";
 import { calculateSalary } from "@/lib/salaryCalculations";
+import { useEmployeeScheduleByEmployee } from "@/hooks/useEmployeeSchedule";
 
 interface ManualPayrollDialogProps {
   periodId: string;

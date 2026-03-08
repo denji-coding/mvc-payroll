@@ -60,12 +60,12 @@ export function useAttendanceTerminal() {
     return () => clearInterval(timer);
   }, []);
 
-  // Auto-clear result after 5 seconds
+  // Auto-clear result after 3 seconds
   useEffect(() => {
     if (result) {
       const timer = setTimeout(() => {
         setResult(null);
-      }, 5000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [result]);

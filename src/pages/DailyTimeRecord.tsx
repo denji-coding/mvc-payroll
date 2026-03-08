@@ -253,7 +253,8 @@ export default function DailyTimeRecord() {
       generateMultiMonthDTRPdf({
         employee,
         monthsData,
-        employeeCreatedAt: employee.created_at || undefined
+        employeeCreatedAt: employee.created_at || undefined,
+        weekendDutyDays
       });
 
       toast.success('PDF exported successfully!');

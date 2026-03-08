@@ -225,12 +225,8 @@ export function useAttendanceTerminal() {
     const trimmedInput = employeeId.trim();
     if (!trimmedInput || isLoading) return;
 
-    // Cooldown check
-    if (cooldownUntil && Date.now() < cooldownUntil) {
-      const secs = Math.ceil((cooldownUntil - Date.now()) / 1000);
-      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
-      return;
-    }
+    // Cooldown check per employee ID
+    if (checkCooldown(trimmedInput.toLowerCase())) return;
     
     // Basic validation
     if (trimmedInput.length > 50) {
@@ -274,7 +270,9 @@ export function useAttendanceTerminal() {
         return;
       }
 
-      setCooldownUntil(Date.now() + 60000);
+      // Set cooldown per employee ID
+      setCooldown(trimmedInput.toLowerCase());
+      
       setResult({
         success: true,
         action: data.action,
@@ -290,7 +288,7 @@ export function useAttendanceTerminal() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, cooldownUntil]);
+  }, [isLoading, checkCooldown, setCooldown]);
 
   const clearResult = useCallback(() => {
     setResult(null);

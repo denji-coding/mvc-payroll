@@ -1,4 +1,4 @@
-import { format, isWeekend } from 'date-fns';
+import { format, isWeekend, getDay } from 'date-fns';
 
 interface AttendanceRecord {
   date: string;

@@ -148,23 +148,14 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                   value={form.days_worked}
                   onChange={(v) => setForm({ ...form, days_worked: v })}
                 />
+
                 <NumberInput
-                  label="Overtime Pay"
-                  value={form.overtime_pay}
-                  onChange={(v) => setForm({ ...form, overtime_pay: v })}
-                />
-                <NumberInput
-                  label="Holiday Pay"
-                  value={form.holiday_pay}
-                  onChange={(v) => setForm({ ...form, holiday_pay: v })}
-                />
-                <NumberInput
-                  label="Night Differential"
+                  label="Late (mins)"
                   value={form.night_differential}
                   onChange={(v) => setForm({ ...form, night_differential: v })}
                 />
                 <NumberInput
-                  label="Total Allowances"
+                  label="LWP"
                   value={form.total_allowances}
                   onChange={(v) => setForm({ ...form, total_allowances: v })}
                 />
@@ -180,6 +171,11 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
               <h4 className="font-semibold text-destructive text-sm">Deductions</h4>
               <div className="bg-destructive/5 rounded-lg p-3 space-y-2">
                 <NumberInput
+                  label="LWOP"
+                  value={form.withholding_tax}
+                  onChange={(v) => setForm({ ...form, withholding_tax: v })}
+                />
+                <NumberInput
                   label="SSS Contribution"
                   value={form.sss_contribution}
                   onChange={(v) => setForm({ ...form, sss_contribution: v })}
@@ -194,16 +190,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                   value={form.pagibig_contribution}
                   onChange={(v) => setForm({ ...form, pagibig_contribution: v })}
                 />
-                <NumberInput
-                  label="Withholding Tax"
-                  value={form.withholding_tax}
-                  onChange={(v) => setForm({ ...form, withholding_tax: v })}
-                />
-                <NumberInput
-                  label="Other Deductions"
-                  value={form.other_deductions}
-                  onChange={(v) => setForm({ ...form, other_deductions: v })}
-                />
+
                 <div className="flex justify-between pt-2 border-t font-semibold text-sm">
                   <span>Total Deductions</span>
                   <span className="text-destructive">{formatCurrency(totalDeductions)}</span>

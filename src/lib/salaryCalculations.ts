@@ -166,16 +166,15 @@ export function calculateSalary(input: SalaryCalculationInput): SalaryCalculatio
   const philhealthContribution = input.fixedPhilHealth != null ? input.fixedPhilHealth : computePhilHealth(monthlyGross).employee / 2;
   const pagibigContribution = input.fixedPagIBIG != null ? input.fixedPagIBIG : computePagIBIG(monthlyGross).employee / 2;
   
-  // Taxable income (gross - mandatory deductions)
+  // Withholding tax (informational only, not included in deductions)
   const taxableIncome = grossPay - sssContribution - philhealthContribution - pagibigContribution;
-  const withholdingTax = computeWithholdingTax(taxableIncome * 2) / 2; // Monthly tax / 2
+  const withholdingTax = computeWithholdingTax(taxableIncome * 2) / 2;
   
-  // Total deductions
+  // Total deductions (excludes withholding tax, matching manual payroll logic)
   const totalDeductions = 
     sssContribution + 
     philhealthContribution + 
     pagibigContribution + 
-    withholdingTax + 
     input.loanDeductions + 
     input.otherDeductions;
   

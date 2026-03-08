@@ -47,10 +47,13 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
     }
   }, [schedules]);
 
+  // basic_salary is the daily rate
+  const dailyRate = monthlySalary;
+
   const calc = useMemo(() => {
-    if (!monthlySalary) return null;
+    if (!dailyRate) return null;
     return calculateSalary({
-      basicMonthlySalary: monthlySalary,
+      basicMonthlySalary: dailyRate * 22, // convert daily to monthly for calculation
       daysWorked,
       overtimeHours: 0,
       allowances: 0,
@@ -60,10 +63,9 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
       leaveWithPayDays: lwpDays,
       leaveWithoutPayDays: 0,
     });
-  }, [monthlySalary, daysWorked, lwpDays]);
+  }, [dailyRate, daysWorked, lwpDays]);
 
   // Late deduction: daily rate / 8 hours / 60 mins * late minutes
-  const dailyRate = monthlySalary / 22;
   const lateDeduction = Math.round((dailyRate / 8 / 60) * lateMinutes * 100) / 100;
 
   const grossPay = calc ? calc.grossPay - lateDeduction : 0;

@@ -160,8 +160,9 @@ serve(async (req) => {
       );
     }
 
-    // Check today's schedule
-    const dayOfWeek = now.getDay();
+    // Check today's schedule — use PHT date to get correct day of week
+    const phtDate = new Date(`${today}T12:00:00+08:00`); // Parse PHT date at noon to avoid DST issues
+    const dayOfWeek = phtDate.getDay();
     const { data: scheduleData } = await supabase
       .from('employee_schedules')
       .select('*')

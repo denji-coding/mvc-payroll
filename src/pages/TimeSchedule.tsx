@@ -187,10 +187,10 @@ export default function TimeSchedule() {
                           <TableRow key={day.value}>
                             <TableCell className="font-medium">{day.label}</TableCell>
                             <TableCell><Switch checked={isDuty} onCheckedChange={(checked) => handleDayToggle(day.value, checked)} /></TableCell>
-                            <TableCell><Input type="time" value={schedule?.morning_start || '08:00'} onChange={(e) => handleTimeChange(day.value, 'morning_start', e.target.value)} disabled={!isDuty} className="w-24" /></TableCell>
-                            <TableCell><Input type="time" value={schedule?.morning_end || '12:00'} onChange={(e) => handleTimeChange(day.value, 'morning_end', e.target.value)} disabled={!isDuty} className="w-24" /></TableCell>
-                            <TableCell><Input type="time" value={schedule?.afternoon_start || '13:00'} onChange={(e) => handleTimeChange(day.value, 'afternoon_start', e.target.value)} disabled={!isDuty} className="w-24" /></TableCell>
-                            <TableCell><Input type="time" value={schedule?.afternoon_end || '17:00'} onChange={(e) => handleTimeChange(day.value, 'afternoon_end', e.target.value)} disabled={!isDuty} className="w-24" /></TableCell>
+                            <TableCell><Input type="time" value={schedule?.morning_start || '08:00'} onChange={(e) => handleTimeChange(day.value, 'morning_start', e.target.value)} disabled={!isDuty} className="w-[140px]" /></TableCell>
+                            <TableCell><Input type="time" value={schedule?.morning_end || '12:00'} onChange={(e) => handleTimeChange(day.value, 'morning_end', e.target.value)} disabled={!isDuty} className="w-[140px]" /></TableCell>
+                            <TableCell><Input type="time" value={schedule?.afternoon_start || '13:00'} onChange={(e) => handleTimeChange(day.value, 'afternoon_start', e.target.value)} disabled={!isDuty} className="w-[140px]" /></TableCell>
+                            <TableCell><Input type="time" value={schedule?.afternoon_end || '17:00'} onChange={(e) => handleTimeChange(day.value, 'afternoon_end', e.target.value)} disabled={!isDuty} className="w-[140px]" /></TableCell>
                           </TableRow>
                         );
                       })}

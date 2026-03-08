@@ -278,7 +278,7 @@ export function useAttendanceTerminal() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, cooldownUntil]);
 
   const clearResult = useCallback(() => {
     setResult(null);

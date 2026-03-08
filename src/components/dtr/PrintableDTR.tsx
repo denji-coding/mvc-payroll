@@ -33,6 +33,7 @@ interface PrintableDTRProps {
   summary: Summary;
   month: string;
   year: number;
+  employeeCreatedAt?: string;
 }
 
 export function PrintableDTR({ 

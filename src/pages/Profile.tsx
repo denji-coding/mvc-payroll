@@ -95,7 +95,7 @@ export default function Profile() {
 
     if (signInError) {
       setPasswordLoading(false);
-      toast({ variant: 'destructive', title: 'Error', description: 'Current password is incorrect' });
+      toast.error('Current password is incorrect');
       return;
     }
 

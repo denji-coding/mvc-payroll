@@ -79,67 +79,37 @@ function getLeaveApprovedHtml(data: LeaveApprovedEmail): string {
   const statusColor = isApproved ? '#1a6b3c' : '#d9534f';
   const statusBg = isApproved ? '#f0faf3' : '#fdf0f0';
   const statusText = isApproved ? 'Approved' : 'Rejected';
-  
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f4f4;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;">
-    <tr>
-      <td align="center" style="padding:30px 0;">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-          <!-- Header -->
-          <tr>
-            <td style="background-color:#1a6b3c;padding:30px 40px;text-align:center;">
-              <img src="https://migrant-path-hr.lovable.app/favicon.png" alt="MVC Logo" width="60" height="60" style="display:block;margin:0 auto 15px auto;border-radius:8px;" />
-              <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;">Leave Request Update</h1>
-            </td>
-          </tr>
-          <!-- Body -->
-          <tr>
-            <td style="padding:35px 40px;">
-              <p style="color:#333;font-size:16px;line-height:1.6;margin:0 0 20px;">Dear <strong>${data.name}</strong>,</p>
-              <p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 25px;">Your leave request has been reviewed. Here is the status:</p>
-              
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr><td align="center" style="padding:10px 0 20px;">
-                  <span style="display:inline-block;background-color:${statusBg};color:${statusColor};padding:10px 30px;border-radius:25px;font-weight:700;font-size:16px;border:1px solid ${statusColor}30;">${statusText}</span>
-                </td></tr>
-              </table>
+  const statusMsg = isApproved
+    ? '<p style="color:#333;font-size:14px;line-height:1.6;margin:0 0 15px;">Your leave has been approved. Please ensure all your pending tasks are properly handed over before your leave starts.</p>'
+    : '<p style="color:#333;font-size:14px;line-height:1.6;margin:0 0 15px;">Unfortunately, your leave request has been rejected. Please contact your manager or HR for more details.</p>';
 
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f9f9f9;border-radius:10px;margin:0 0 25px;">
-                <tr><td style="padding:20px 25px;">
-                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                    <tr><td style="color:#666;font-size:14px;padding:6px 0;">Leave Type:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.leaveType}</td></tr>
-                    <tr><td style="color:#666;font-size:14px;padding:6px 0;">Start Date:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.startDate}</td></tr>
-                    <tr><td style="color:#666;font-size:14px;padding:6px 0;">End Date:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.endDate}</td></tr>
-                  </table>
-                </td></tr>
-              </table>
-              
-              ${isApproved ? 
-                '<p style="color:#333;font-size:14px;line-height:1.6;margin:0 0 15px;">Your leave has been approved. Please ensure all your pending tasks are properly handed over before your leave starts.</p>' :
-                '<p style="color:#333;font-size:14px;line-height:1.6;margin:0 0 15px;">Unfortunately, your leave request has been rejected. Please contact your manager or HR for more details.</p>'
-              }
-              
-              <p style="color:#333;font-size:14px;line-height:1.6;margin:20px 0 0;">Best regards,<br /><strong>Migrants Venture Corporation HR Team</strong></p>
-            </td>
-          </tr>
-          <tr>
-            <td style="background-color:#f8f8f8;padding:20px 40px;text-align:center;border-top:1px solid #eeeeee;">
-              <p style="color:#999;font-size:12px;margin:0 0 5px;">This is an automated message. Please do not reply to this email.</p>
-              <p style="color:#999;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} Migrants Venture Corporation. All rights reserved.</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  return [
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>',
+    '<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f4f4;">',
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;"><tr><td align="center" style="padding:30px 0;">',
+    '<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">',
+    '<tr><td style="background-color:#1a6b3c;padding:30px 40px;text-align:center;">',
+    '<img src="https://migrant-path-hr.lovable.app/favicon.png" alt="MVC Logo" width="60" height="60" style="display:block;margin:0 auto 15px auto;border-radius:8px;" />',
+    '<h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;">Leave Request Update</h1>',
+    '</td></tr>',
+    '<tr><td style="padding:35px 40px;">',
+    `<p style="color:#333;font-size:16px;line-height:1.6;margin:0 0 20px;">Dear <strong>${data.name}</strong>,</p>`,
+    '<p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 25px;">Your leave request has been reviewed. Here is the status:</p>',
+    `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:10px 0 20px;"><span style="display:inline-block;background-color:${statusBg};color:${statusColor};padding:10px 30px;border-radius:25px;font-weight:700;font-size:16px;border:1px solid ${statusColor}30;">${statusText}</span></td></tr></table>`,
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f9f9f9;border-radius:10px;margin:0 0 25px;"><tr><td style="padding:20px 25px;">',
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">',
+    `<tr><td style="color:#666;font-size:14px;padding:6px 0;">Leave Type:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.leaveType}</td></tr>`,
+    `<tr><td style="color:#666;font-size:14px;padding:6px 0;">Start Date:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.startDate}</td></tr>`,
+    `<tr><td style="color:#666;font-size:14px;padding:6px 0;">End Date:</td><td style="color:#333;font-size:14px;font-weight:600;padding:6px 0;text-align:right;">${data.endDate}</td></tr>`,
+    '</table></td></tr></table>',
+    statusMsg,
+    '<p style="color:#333;font-size:14px;line-height:1.6;margin:20px 0 0;">Best regards,<br /><strong>Migrants Venture Corporation HR Team</strong></p>',
+    '</td></tr>',
+    '<tr><td style="background-color:#f8f8f8;padding:20px 40px;text-align:center;border-top:1px solid #eeeeee;">',
+    '<p style="color:#999;font-size:12px;margin:0 0 5px;">This is an automated message. Please do not reply to this email.</p>',
+    `<p style="color:#999;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} Migrants Venture Corporation. All rights reserved.</p>`,
+    '</td></tr></table></td></tr></table></body></html>',
+  ].join('');
 }
 
 function getPayslipReadyHtml(data: PayslipReadyEmail): string {

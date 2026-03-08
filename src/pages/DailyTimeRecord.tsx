@@ -32,6 +32,21 @@ const months = [
 const currentYear = new Date().getFullYear();
 const years = [currentYear, currentYear - 1, currentYear - 2];
 
+function SummaryCard({ icon, label, value, decimal }: { icon: React.ReactNode; label: string; value: number; decimal?: boolean }) {
+  const animated = useCountUp(decimal ? Math.round(value * 10) : value);
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-2">
+          {icon}
+          <span className="text-sm text-muted-foreground">{label}</span>
+        </div>
+        <p className="text-2xl font-bold mt-1">{decimal ? (animated / 10).toFixed(1) : animated}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DailyTimeRecord() {
   const { user } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());

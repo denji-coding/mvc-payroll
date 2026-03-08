@@ -10,10 +10,18 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { formatFullName } from '@/lib/formatName';
 
+const borderColorMap: Record<string, string> = {
+  'text-success': 'border-l-success',
+  'text-warning': 'border-l-warning',
+  'text-destructive': 'border-l-destructive',
+  'text-info': 'border-l-info',
+};
+
 function AttendanceStatCard({ label, value, colorClass, loading, showBorderL = false }: { label: string; value: number; colorClass: string; loading: boolean; showBorderL?: boolean }) {
   const animated = useCountUp(value);
+  const borderClass = showBorderL ? `border-l-4 ${borderColorMap[colorClass] || ''}` : '';
   return (
-    <Card className={`relative overflow-hidden border border-border/60 bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border group cursor-default ${showBorderL ? `border-l-4 ${colorClass.replace('text-', 'border-l-')}` : ''}`}>
+    <Card className={`relative overflow-hidden border border-border/60 bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border group cursor-default ${borderClass}`}>
       <CardHeader className="pb-1">
         <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</CardTitle>
       </CardHeader>

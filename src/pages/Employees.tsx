@@ -173,8 +173,8 @@ export default function Employees() {
                   <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
-                  <AlertDialogHeader><AlertDialogTitle>Delete Employee?</AlertDialogTitle><AlertDialogDescription>This will set {emp.first_name} {emp.last_name}'s status to terminated.</AlertDialogDescription></AlertDialogHeader>
-                  <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleSoftDelete(emp.id, `${emp.first_name} ${emp.last_name}`)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter>
+                  <AlertDialogHeader><AlertDialogTitle>Delete Employee?</AlertDialogTitle><AlertDialogDescription>This will set {formatFullName(emp.first_name, emp.last_name)}'s status to terminated.</AlertDialogDescription></AlertDialogHeader>
+                  <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleSoftDelete(emp.id, formatFullName(emp.first_name, emp.last_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             )}

@@ -13,9 +13,18 @@ import { formatFullName } from '@/lib/formatName';
 function AttendanceStatCard({ label, value, colorClass, loading }: { label: string; value: number; colorClass: string; loading: boolean }) {
   const animated = useCountUp(value);
   return (
-    <Card className="stat-card">
-      <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{label}</CardTitle></CardHeader>
-      <CardContent>{loading ? <Skeleton className="h-8 w-12" /> : <div className={`text-2xl font-bold ${colorClass}`}>{animated}</div>}</CardContent>
+    <Card className="relative overflow-hidden border border-border/60 bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border group cursor-default">
+      <div className={`absolute top-0 left-0 w-1 h-full ${colorClass.replace('text-', 'bg-')} opacity-80 group-hover:opacity-100 transition-opacity`} />
+      <CardHeader className="pb-1 pl-5">
+        <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</CardTitle>
+      </CardHeader>
+      <CardContent className="pl-5 pb-5">
+        {loading ? <Skeleton className="h-9 w-14 rounded-md" /> : (
+          <div className={`text-3xl font-bold tracking-tight ${colorClass} transition-transform duration-300 group-hover:scale-105 origin-left`}>
+            {animated}
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 }

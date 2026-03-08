@@ -224,9 +224,8 @@ function BenefitsSettingsTab() {
   const updateRates = useUpdateBenefitRates();
   
   const [form, setForm] = useState<BenefitRates>({
-    philhealth_rate: 5.0,
-    pagibig_employee_rate: 2.0,
-    pagibig_ceiling: 5000,
+    philhealth_rate: 500,
+    pagibig_employee_rate: 200,
   });
 
   useEffect(() => {
@@ -258,49 +257,32 @@ function BenefitsSettingsTab() {
         </div>
 
         <div className="space-y-2">
-          <Label>PhilHealth Rate (%)</Label>
+          <Label>PhilHealth Contribution (₱)</Label>
           <Input
             type="number"
-            step="0.1"
+            step="1"
             min="0"
-            max="10"
             value={form.philhealth_rate}
             onChange={(e) => setForm({ ...form, philhealth_rate: parseFloat(e.target.value) || 0 })}
             className="max-w-40"
           />
           <p className="text-xs text-muted-foreground">
-            Total rate (split equally between employee and employer). Current: {form.philhealth_rate}%
+            Fixed monthly contribution (split equally between employee and employer). Current: ₱{form.philhealth_rate.toLocaleString()}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label>Pag-IBIG Employee Rate (%)</Label>
+          <Label>Pag-IBIG Employee Contribution (₱)</Label>
           <Input
             type="number"
-            step="0.1"
+            step="1"
             min="0"
-            max="5"
             value={form.pagibig_employee_rate}
             onChange={(e) => setForm({ ...form, pagibig_employee_rate: parseFloat(e.target.value) || 0 })}
             className="max-w-40"
           />
           <p className="text-xs text-muted-foreground">
-            Employee contribution rate. Current: {form.pagibig_employee_rate}%
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Pag-IBIG Salary Ceiling (₱)</Label>
-          <Input
-            type="number"
-            step="100"
-            min="0"
-            value={form.pagibig_ceiling}
-            onChange={(e) => setForm({ ...form, pagibig_ceiling: parseFloat(e.target.value) || 0 })}
-            className="max-w-40"
-          />
-          <p className="text-xs text-muted-foreground">
-            Maximum salary base for Pag-IBIG computation. Current: ₱{form.pagibig_ceiling.toLocaleString()}
+            Fixed monthly employee contribution. Current: ₱{form.pagibig_employee_rate.toLocaleString()}
           </p>
         </div>
         

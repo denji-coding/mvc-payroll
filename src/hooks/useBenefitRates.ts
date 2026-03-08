@@ -5,13 +5,11 @@ import { toast } from 'sonner';
 export interface BenefitRates {
   philhealth_rate: number;
   pagibig_employee_rate: number;
-  pagibig_ceiling: number;
 }
 
 const DEFAULT_RATES: BenefitRates = {
-  philhealth_rate: 5.0,
-  pagibig_employee_rate: 2.0,
-  pagibig_ceiling: 5000,
+  philhealth_rate: 500,
+  pagibig_employee_rate: 200,
 };
 
 export function useBenefitRates() {

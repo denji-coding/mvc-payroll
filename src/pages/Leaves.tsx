@@ -129,7 +129,7 @@ export default function Leaves() {
         <h1 className="page-title">My Leaves</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Request Leave</Button></DialogTrigger>
-          <DialogContent className="max-w-md max-h-[95vh] overflow-visible">
+          <DialogContent className="max-w-lg max-h-[95vh] overflow-visible">
              <DialogHeader><DialogTitle>New Leave Request</DialogTitle></DialogHeader>
              <div className="max-h-[75vh] overflow-y-auto overflow-x-visible pr-1">
              <form onSubmit={handleSubmit} className="space-y-4">

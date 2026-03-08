@@ -140,6 +140,13 @@ export function useAttendanceTerminal() {
   const submitRfidAttendance = useCallback(async (rfidCardNumber: string) => {
     const trimmedInput = rfidCardNumber.trim();
     if (!trimmedInput || isLoading) return;
+
+    // Cooldown check
+    if (cooldownUntil && Date.now() < cooldownUntil) {
+      const secs = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
+      return;
+    }
     
     // Basic validation
     if (trimmedInput.length > 50) {

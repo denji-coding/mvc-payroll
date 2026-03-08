@@ -212,6 +212,7 @@ export function AppSidebar() {
             "page_dashboard",
             "page_dtr",
             "page_my_attendance",
+            "page_my_schedule",
             "page_leaves",
             "page_payroll",
             "page_my_payslips",

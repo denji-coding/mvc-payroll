@@ -107,7 +107,7 @@ export default function Profile() {
     setPasswordLoading(false);
 
     if (error) {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      toast.error(error.message);
       return;
     }
 

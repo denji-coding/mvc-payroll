@@ -177,8 +177,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       type="number"
                       step="0.5"
                       min="0"
-                      value={lwpDays}
-                      onChange={(e) => setLwpDays(parseFloat(e.target.value) || 0)}
+                      value={lwpDaysStr}
+                      onChange={(e) => setLwpDaysStr(e.target.value)}
                       className="h-8 text-sm"
                     />
                   </div>

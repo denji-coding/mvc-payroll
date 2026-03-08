@@ -401,44 +401,7 @@ export default function DailyTimeRecord() {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 print-hide">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Days Worked</span>
-            </div>
-            <p className="text-2xl font-bold mt-1">{summary.daysWorked}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Total Hours</span>
-            </div>
-            <p className="text-2xl font-bold mt-1">{summary.totalHours.toFixed(1)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-accent-foreground" />
-              <span className="text-sm text-muted-foreground">Late Days</span>
-            </div>
-            <p className="text-2xl font-bold mt-1">{summary.lateDays}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <span className="text-sm text-muted-foreground">Absent Days</span>
-            </div>
-            <p className="text-2xl font-bold mt-1">{summary.absentDays}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <DTRSummaryCards summary={summary} />
 
       {/* DTR Table */}
       <Card className="print-hide">

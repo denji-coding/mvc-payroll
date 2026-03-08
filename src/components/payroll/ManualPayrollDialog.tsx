@@ -181,6 +181,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       min="0"
                       value={lwpDaysStr}
                       onChange={(e) => setLwpDaysStr(e.target.value)}
+                      onBlur={() => { if (lwpDaysStr.trim() === "") setLwpDaysStr("0"); }}
                       className="h-8 text-sm"
                     />
                   </div>

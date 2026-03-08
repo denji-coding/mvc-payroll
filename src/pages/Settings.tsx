@@ -856,7 +856,7 @@ function UserRoleManagement() {
                   {users?.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">
-                        {user.first_name} {user.last_name}
+                        {formatFullName(user.first_name, user.last_name)}
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>

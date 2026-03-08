@@ -269,6 +269,7 @@ export default function DailyTimeRecord() {
         month={months[selectedMonth]}
         year={selectedYear}
         employeeCreatedAt={employee.created_at || undefined}
+        weekendDutyDays={weekendDutyDays}
       />
 
       <div className="page-header print-hide">

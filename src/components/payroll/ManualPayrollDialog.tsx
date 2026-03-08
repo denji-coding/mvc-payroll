@@ -156,8 +156,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       step="0.5"
                       min="0"
                       max="22"
-                      value={daysWorked}
-                      onChange={(e) => setDaysWorked(parseFloat(e.target.value) || 0)}
+                      value={daysWorkedStr}
+                      onChange={(e) => setDaysWorkedStr(e.target.value)}
                       className="h-8 text-sm"
                     />
                   </div>

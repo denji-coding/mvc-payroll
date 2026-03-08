@@ -46,6 +46,7 @@ interface GenerateDTRPdfParams {
   };
   month: string;
   year: number;
+  employeeCreatedAt?: string;
 }
 
 interface GenerateMultiMonthDTRPdfParams {

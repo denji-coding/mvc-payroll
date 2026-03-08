@@ -85,13 +85,15 @@ function addMonthPage(
   summary: { daysWorked: number; totalHours: number; lateDays: number; absentDays: number },
   month: string,
   year: number,
-  employeeCreatedAt?: string
+  employeeCreatedAt?: string,
+  weekendDutyDays: Set<number> = new Set()
 ): void {
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const isBeforeCreation = (day: Date) => {
     if (!employeeStart) return false;
     return day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate());
   };
+  const isRestDay = (day: Date) => isWeekend(day) && !weekendDutyDays.has(getDay(day));
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
   let yPos = 15;

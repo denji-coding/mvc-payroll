@@ -174,7 +174,7 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
                 <SelectContent>
                   {activeEmployees.map((emp) => (
                     <SelectItem key={emp.id} value={emp.id}>
-                      {emp.employee_id} - {emp.first_name} {emp.last_name}
+                      {emp.employee_id} - {formatFullName(emp.first_name, emp.last_name)}
                     </SelectItem>
                   ))}
                 </SelectContent>

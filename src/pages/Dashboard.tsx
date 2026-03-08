@@ -293,7 +293,7 @@ function AdminDashboard() {
                   <div key={leave.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                     <div>
                       <p className="text-sm font-medium">
-                        {leave.employees?.first_name} {leave.employees?.last_name}
+                        {formatFullName(leave.employees?.first_name, leave.employees?.last_name)}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize">
                         {leave.leave_type} leave - {leave.status.replace('_', ' ')}

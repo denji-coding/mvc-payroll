@@ -44,7 +44,7 @@ export default function Branches() {
         let managerName = null;
         if (managerData?.user_id) {
           const { data: profile } = await supabase.from('profiles').select('first_name, last_name').eq('id', managerData.user_id).single();
-          if (profile) managerName = `${profile.first_name} ${profile.last_name}`;
+          if (profile) managerName = formatFullName(profile.first_name, profile.last_name);
         }
         return { ...branch, employee_count: count || 0, manager_name: managerName };
       })

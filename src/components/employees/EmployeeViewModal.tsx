@@ -66,7 +66,7 @@ export function EmployeeViewModal({ employee, open, onClose }: EmployeeViewModal
             />
             <div>
               <DialogTitle className="text-xl">
-                {employee.first_name} {employee.middle_name ? `${employee.middle_name} ` : ''}{employee.last_name}
+                {capitalizeWords(employee.first_name)} {employee.middle_name ? `${capitalizeWords(employee.middle_name)} ` : ''}{capitalizeWords(employee.last_name)}
               </DialogTitle>
               <p className="text-muted-foreground">{employee.position}</p>
               <div className="mt-1">{getStatusBadge(employee.employment_status)}</div>

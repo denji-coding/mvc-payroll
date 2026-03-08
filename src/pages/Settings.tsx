@@ -978,7 +978,7 @@ function UserRoleManagement() {
                     return (
                       <TableRow key={manager.id}>
                         <TableCell className="font-medium">
-                          {user ? `${user.first_name} ${user.last_name}` : 'Unknown'}
+                          {user ? formatFullName(user.first_name, user.last_name) : 'Unknown'}
                         </TableCell>
                         <TableCell>
                           {manager.branch?.name} ({manager.branch?.code})

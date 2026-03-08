@@ -10,15 +10,14 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { formatFullName } from '@/lib/formatName';
 
-function AttendanceStatCard({ label, value, colorClass, loading }: { label: string; value: number; colorClass: string; loading: boolean }) {
+function AttendanceStatCard({ label, value, colorClass, loading, showBorderL = false }: { label: string; value: number; colorClass: string; loading: boolean; showBorderL?: boolean }) {
   const animated = useCountUp(value);
   return (
-    <Card className="relative overflow-hidden border border-border/60 bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border group cursor-default">
-      <div className={`absolute top-0 left-0 w-1 h-full ${colorClass.replace('text-', 'bg-')} opacity-80 group-hover:opacity-100 transition-opacity`} />
-      <CardHeader className="pb-1 pl-5">
+    <Card className={`relative overflow-hidden border border-border/60 bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border group cursor-default ${showBorderL ? `border-l-4 ${colorClass.replace('text-', 'border-l-')}` : ''}`}>
+      <CardHeader className="pb-1">
         <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</CardTitle>
       </CardHeader>
-      <CardContent className="pl-5 pb-5">
+      <CardContent className="pb-5">
         {loading ? <Skeleton className="h-9 w-14 rounded-md" /> : (
           <div className={`text-3xl font-bold tracking-tight ${colorClass} transition-transform duration-300 group-hover:scale-105 origin-left`}>
             {animated}
@@ -84,11 +83,11 @@ export default function Attendance() {
       <div className="grid gap-4 md:grid-cols-4 mb-6">
         <AttendanceStatCard label="Present" value={stats?.present || 0} colorClass="text-success" loading={statsLoading} />
         <AttendanceStatCard label="Late" value={stats?.late || 0} colorClass="text-warning" loading={statsLoading} />
-        <AttendanceStatCard label="Absent" value={stats?.absent || 0} colorClass="text-destructive" loading={statsLoading} />
+        <AttendanceStatCard label="Absent" value={stats?.absent || 0} colorClass="text-destructive" loading={statsLoading} showBorderL />
         <AttendanceStatCard label="On Leave" value={stats?.onLeave || 0} colorClass="text-info" loading={statsLoading} />
       </div>
 
-      <Card className="border-l-4 border-l-primary">
+      <Card>
         <CardHeader>
           <CardTitle>Daily Attendance - {selectedDate.toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
         </CardHeader>

@@ -19,6 +19,7 @@ interface ManualPayrollDialogProps {
 export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDialogProps) {
   const { data: employees } = useEmployees();
   const { data: periods } = usePayrollPeriods();
+  const { data: benefitRates } = useBenefitRates();
   const createManualPayroll = useCreateManualPayroll();
 
   const [employeeId, setEmployeeId] = useState("");

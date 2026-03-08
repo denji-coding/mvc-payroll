@@ -140,8 +140,8 @@ export default function Employees() {
                     <Button variant="ghost" size="icon" className="text-success hover:text-success"><RotateCcw className="h-4 w-4" /></Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
-                    <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {emp.first_name} {emp.last_name} to active status.</AlertDialogDescription></AlertDialogHeader>
-                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleRestore(emp.id, `${emp.first_name} ${emp.last_name}`)}>Restore</AlertDialogAction></AlertDialogFooter>
+                    <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {formatFullName(emp.first_name, emp.last_name)} to active status.</AlertDialogDescription></AlertDialogHeader>
+                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleRestore(emp.id, formatFullName(emp.first_name, emp.last_name))}>Restore</AlertDialogAction></AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
                 <AlertDialog>

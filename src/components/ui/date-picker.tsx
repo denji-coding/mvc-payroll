@@ -81,7 +81,7 @@ export function DatePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-        <div className="flex items-center justify-between gap-1 px-3 py-2">
+        <div className="flex items-center justify-between gap-1 px-3 py-1">
           <Button
             variant="ghost"
             size="icon"
@@ -142,7 +142,7 @@ export function DatePicker({
             caption: "hidden",
             nav: "hidden",
           }}
-          className="p-3 pointer-events-auto"
+          className="p-2 pt-1 pointer-events-auto"
         />
       </PopoverContent>
     </Popover>

@@ -224,6 +224,7 @@ function BenefitsSettingsTab() {
   const updateRates = useUpdateBenefitRates();
   
   const [form, setForm] = useState<BenefitRates>({
+    sss_contribution: 1350,
     philhealth_rate: 500,
     pagibig_employee_rate: 200,
   });

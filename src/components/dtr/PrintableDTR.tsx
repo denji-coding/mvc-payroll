@@ -1,4 +1,5 @@
 import { format, isWeekend, getDay } from 'date-fns';
+import { capitalizeWords } from '@/lib/formatName';
 
 interface AttendanceRecord {
   date: string;

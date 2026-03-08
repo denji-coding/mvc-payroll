@@ -82,7 +82,25 @@ export default function Branches() {
       cell: ({ row }) => (
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)}><Edit className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" onClick={() => handleDelete(row.original.id)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Branch</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete the branch "{row.original.name}"? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleDelete(row.original.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       ),
     },

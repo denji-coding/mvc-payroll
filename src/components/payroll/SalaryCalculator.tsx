@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Calculator } from 'lucide-react';
 import { calculateSalary, SalaryCalculationInput } from '@/lib/salaryCalculations';
+import { useBenefitRates } from '@/hooks/useBenefitRates';
 
 export function SalaryCalculator() {
   const [inputs, setInputs] = useState<SalaryCalculationInput>({

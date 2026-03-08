@@ -67,6 +67,10 @@ export default function MySchedule() {
 
   const totalHoursFormatted = (totalHours / 60).toFixed(1);
 
+  const animatedDutyDays = useCountUp(dutyDaysCount);
+  const animatedWeeklyHours = useCountUp(parseFloat(totalHoursFormatted));
+  const animatedRestDays = useCountUp(7 - dutyDaysCount);
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">

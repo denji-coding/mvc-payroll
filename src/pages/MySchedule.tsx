@@ -121,7 +121,7 @@ export default function MySchedule() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Weekly Hours</p>
-                <p className="text-2xl font-bold">{totalHoursFormatted} hrs</p>
+                <p className="text-2xl font-bold">{useCountUp(parseFloat(totalHoursFormatted))} hrs</p>
               </div>
             </div>
           </CardContent>

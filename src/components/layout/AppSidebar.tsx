@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import { capitalizeWords } from "@/lib/formatName";
 import {
   LayoutDashboard,
   Users,

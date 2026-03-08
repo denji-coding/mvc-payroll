@@ -42,8 +42,14 @@ export function PrintableDTR({
   attendanceMap, 
   summary, 
   month, 
-  year 
+  year,
+  employeeCreatedAt 
 }: PrintableDTRProps) {
+  const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
+  const isBeforeCreation = (day: Date) => {
+    if (!employeeStart) return false;
+    return day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate());
+  };
   const formatTime = (timestamp: string | null) => {
     if (!timestamp) return '';
     return format(new Date(timestamp), 'hh:mm a');

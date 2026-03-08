@@ -11,9 +11,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { FileText, Clock, AlertCircle, Calendar, Printer, Download } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, getDay } from 'date-fns';
 import { PrintableDTR } from '@/components/dtr/PrintableDTR';
-import { 
+import { useEmployeeScheduleByEmployee } from '@/hooks/useEmployeeSchedule';
+import {
   generateDTRPdf, 
   generateMultiMonthDTRPdf, 
   generateMonthsFromRange, 
@@ -83,6 +84,22 @@ export default function DailyTimeRecord() {
     enabled: !!employee?.id,
   });
 
+  // Fetch employee schedule to know weekend duty days
+  const { data: schedules } = useEmployeeScheduleByEmployee(employee?.id || null);
+
+  // Set of day_of_week numbers (0=Sun, 6=Sat) where employee has duty
+  const weekendDutyDays = useMemo(() => {
+    const dutySet = new Set<number>();
+    if (schedules) {
+      for (const s of schedules) {
+        if ((s.day_of_week === 0 || s.day_of_week === 6) && s.is_duty_day) {
+          dutySet.add(s.day_of_week);
+        }
+      }
+    }
+    return dutySet;
+  }, [schedules]);
+
   // Create a map of attendance by date
   const attendanceMap = useMemo(() => {
     if (!attendance) return new Map();
@@ -110,11 +127,16 @@ export default function DailyTimeRecord() {
     const absentDays = daysInMonth.filter(day => {
       const dateStr = format(day, 'yyyy-MM-dd');
       if (employeeStart && day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate())) return false;
-      return !isWeekend(day) && !attendedDates.has(dateStr) && day <= new Date();
+      const dayOfWeek = getDay(day);
+      const isWeekendDay = isWeekend(day);
+      const isDutyWeekend = isWeekendDay && weekendDutyDays.has(dayOfWeek);
+      // Count as absent only on work days (non-weekend OR weekend duty days)
+      if (isWeekendDay && !isDutyWeekend) return false;
+      return !attendedDates.has(dateStr) && day <= new Date();
     }).length;
 
     return { daysWorked, totalHours, lateDays, absentDays };
-  }, [attendance, daysInMonth]);
+  }, [attendance, daysInMonth, weekendDutyDays]);
 
   // Validate date range
   const isValidRange = useMemo(() => {
@@ -180,7 +202,8 @@ export default function DailyTimeRecord() {
         summary,
         month: months[selectedMonth],
         year: selectedYear,
-        employeeCreatedAt: employee.created_at || undefined
+        employeeCreatedAt: employee.created_at || undefined,
+        weekendDutyDays
       });
     } else {
       // Multi-month export
@@ -222,7 +245,7 @@ export default function DailyTimeRecord() {
             year,
             daysInMonth: days,
             attendanceMap: attMap,
-            summary: calculateSummary(monthAttendance || [], days, employee.created_at || undefined)
+            summary: calculateSummary(monthAttendance || [], days, employee.created_at || undefined, weekendDutyDays)
           };
         })
       );
@@ -230,7 +253,8 @@ export default function DailyTimeRecord() {
       generateMultiMonthDTRPdf({
         employee,
         monthsData,
-        employeeCreatedAt: employee.created_at || undefined
+        employeeCreatedAt: employee.created_at || undefined,
+        weekendDutyDays
       });
 
       toast.success('PDF exported successfully!');
@@ -247,6 +271,7 @@ export default function DailyTimeRecord() {
         month={months[selectedMonth]}
         year={selectedYear}
         employeeCreatedAt={employee.created_at || undefined}
+        weekendDutyDays={weekendDutyDays}
       />
 
       <div className="page-header print-hide">
@@ -448,6 +473,8 @@ export default function DailyTimeRecord() {
                     const dateStr = format(day, 'yyyy-MM-dd');
                     const record = attendanceMap.get(dateStr);
                     const isWeekendDay = isWeekend(day);
+                    const isDutyWeekend = isWeekendDay && weekendDutyDays.has(getDay(day));
+                    const isRestDay = isWeekendDay && !isDutyWeekend;
                     const isFuture = day > new Date();
                     const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
                     const isBeforeCreation = employeeStart ? day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate()) : false;
@@ -455,25 +482,25 @@ export default function DailyTimeRecord() {
                     return (
                       <TableRow 
                         key={dateStr}
-                        className={isWeekendDay ? 'bg-muted/30' : ''}
+                        className={isRestDay ? 'bg-muted/30' : ''}
                       >
                         <TableCell className="font-medium">
                           {format(day, 'MMM dd')}
                         </TableCell>
-                        <TableCell className={isWeekendDay ? 'text-muted-foreground' : ''}>
+                        <TableCell className={isRestDay ? 'text-muted-foreground' : ''}>
                           {format(day, 'EEE')}
                         </TableCell>
-                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.morning_in ?? null)}</TableCell>
-                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.morning_out ?? null)}</TableCell>
-                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.afternoon_in ?? null)}</TableCell>
-                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.afternoon_out ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation || isRestDay ? '' : formatTime(record?.morning_in ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation || isRestDay ? '' : formatTime(record?.morning_out ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation || isRestDay ? '' : formatTime(record?.afternoon_in ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation || isRestDay ? '' : formatTime(record?.afternoon_out ?? null)}</TableCell>
                         <TableCell className="text-right">
-                          {isBeforeCreation ? '' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-')}
+                          {isBeforeCreation || isRestDay ? '' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-')}
                         </TableCell>
                         <TableCell className="text-center">
                           {isBeforeCreation ? (
                             <span className="text-muted-foreground">-</span>
-                          ) : isWeekendDay ? (
+                          ) : isRestDay ? (
                             <Badge variant="outline">Weekend</Badge>
                           ) : isFuture ? (
                             <Badge variant="outline">-</Badge>

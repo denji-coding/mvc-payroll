@@ -1,4 +1,4 @@
-import { format, isWeekend } from 'date-fns';
+import { format, isWeekend, getDay } from 'date-fns';
 
 interface AttendanceRecord {
   date: string;
@@ -34,6 +34,7 @@ interface PrintableDTRProps {
   month: string;
   year: number;
   employeeCreatedAt?: string;
+  weekendDutyDays?: Set<number>;
 }
 
 export function PrintableDTR({ 
@@ -43,20 +44,22 @@ export function PrintableDTR({
   summary, 
   month, 
   year,
-  employeeCreatedAt 
+  employeeCreatedAt,
+  weekendDutyDays = new Set() 
 }: PrintableDTRProps) {
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const isBeforeCreation = (day: Date) => {
     if (!employeeStart) return false;
     return day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate());
   };
+  const isRestDay = (day: Date) => isWeekend(day) && !weekendDutyDays.has(getDay(day));
   const formatTime = (timestamp: string | null) => {
     if (!timestamp) return '';
     return format(new Date(timestamp), 'hh:mm a');
   };
 
-  const getRemarks = (record: AttendanceRecord | undefined, isWeekendDay: boolean, isFuture: boolean) => {
-    if (isWeekendDay) return 'Weekend';
+  const getRemarks = (record: AttendanceRecord | undefined, restDay: boolean, isFuture: boolean) => {
+    if (restDay) return 'Weekend';
     if (isFuture) return '';
     if (!record) return 'Absent';
     if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) {
@@ -124,23 +127,23 @@ export function PrintableDTR({
           {daysInMonth.map((day) => {
             const dateStr = format(day, 'yyyy-MM-dd');
             const record = attendanceMap.get(dateStr);
-            const isWeekendDay = isWeekend(day);
+            const rest = isRestDay(day);
             const isFuture = day > new Date();
             const beforeCreation = isBeforeCreation(day);
 
             return (
-              <tr key={dateStr} style={{ backgroundColor: isWeekendDay ? '#f9fafb' : 'white' }}>
+              <tr key={dateStr} style={{ backgroundColor: rest ? '#f9fafb' : 'white' }}>
                 <td className="border border-black px-1 py-0 text-center">{format(day, 'dd')}</td>
                 <td className="border border-black px-1 py-0 text-center">{format(day, 'EEE')}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation ? '' : formatTime(record?.morning_in || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation ? '' : formatTime(record?.morning_out || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation ? '' : formatTime(record?.afternoon_in || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation ? '' : formatTime(record?.afternoon_out || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.morning_in || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.morning_out || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.afternoon_in || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.afternoon_out || null)}</td>
                 <td className="border border-black px-1 py-0 text-center">
-                  {beforeCreation ? '' : (record?.hours_worked ? record.hours_worked.toFixed(1) : '')}
+                  {beforeCreation || rest ? '' : (record?.hours_worked ? record.hours_worked.toFixed(1) : '')}
                 </td>
                 <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>
-                  {beforeCreation ? '' : getRemarks(record, isWeekendDay, isFuture)}
+                  {beforeCreation ? '' : getRemarks(record, rest, isFuture)}
                 </td>
               </tr>
             );

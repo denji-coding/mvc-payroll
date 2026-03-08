@@ -197,7 +197,7 @@ export function useAttendanceTerminal() {
       });
     } catch (err) {
       console.error('Manual attendance error:', err);
-      setResult({ success: false, error: 'Connection error. Please try again.' });
+      setResult({ success: false, error: 'Connection error. Please try again.', error_title: 'Connection Error' });
     } finally {
       setIsLoading(false);
     }

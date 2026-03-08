@@ -150,6 +150,13 @@ const employeePortalItems: NavItem[] = [
     permissionKey: "page_dtr",
   },
   {
+    title: "My Schedule",
+    url: "/my-schedule",
+    icon: CalendarClock,
+    roles: ["hr_admin", "branch_manager", "employee"],
+    permissionKey: "page_my_schedule",
+  },
+  {
     title: "My Attendance",
     url: "/my-attendance",
     icon: IdCard,
@@ -205,6 +212,7 @@ export function AppSidebar() {
             "page_dashboard",
             "page_dtr",
             "page_my_attendance",
+            "page_my_schedule",
             "page_leaves",
             "page_payroll",
             "page_my_payslips",

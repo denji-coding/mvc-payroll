@@ -32,6 +32,7 @@ import ChangePassword from "./pages/ChangePassword";
 import DailyTimeRecord from "./pages/DailyTimeRecord";
 import MyPayslips from "./pages/MyPayslips";
 import LeaveCredits from "./pages/LeaveCredits";
+import MySchedule from "./pages/MySchedule";
 
 // Layout
 import AppLayout from "./components/layout/AppLayout";
@@ -114,6 +115,7 @@ function AppRoutes() {
         <Route path="attendance" element={<Attendance />} />
         <Route path="clock-in-out" element={<ClockInOut />} />
         <Route path="my-attendance" element={<MyAttendance />} />
+        <Route path="my-schedule" element={<MySchedule />} />
         <Route path="dtr" element={<DailyTimeRecord />} />
         <Route path="time-schedule" element={<TimeSchedule />} />
         <Route path="leaves" element={<Leaves />} />

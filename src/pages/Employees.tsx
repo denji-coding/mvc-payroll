@@ -154,7 +154,7 @@ export default function Employees() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Permanently Delete Employee?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete {emp.first_name} {emp.last_name} and all associated records (attendance, payroll, leaves, etc.). This action cannot be undone.
+                        This will permanently delete {formatFullName(emp.first_name, emp.last_name)} and all associated records (attendance, payroll, leaves, etc.). This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

@@ -401,7 +401,7 @@ export default function DailyTimeRecord() {
       </Card>
 
       {/* Summary Cards with count-up animation */}
-      <DTRSummaryCards summary={summary} />
+      <SummaryCards summary={summary} />
 
 
       {/* DTR Table */}

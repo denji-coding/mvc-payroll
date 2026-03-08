@@ -44,13 +44,15 @@ export function PrintableDTR({
   summary, 
   month, 
   year,
-  employeeCreatedAt 
+  employeeCreatedAt,
+  weekendDutyDays = new Set() 
 }: PrintableDTRProps) {
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const isBeforeCreation = (day: Date) => {
     if (!employeeStart) return false;
     return day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate());
   };
+  const isRestDay = (day: Date) => isWeekend(day) && !weekendDutyDays.has(getDay(day));
   const formatTime = (timestamp: string | null) => {
     if (!timestamp) return '';
     return format(new Date(timestamp), 'hh:mm a');

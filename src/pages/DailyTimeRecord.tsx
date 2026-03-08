@@ -84,6 +84,22 @@ export default function DailyTimeRecord() {
     enabled: !!employee?.id,
   });
 
+  // Fetch employee schedule to know weekend duty days
+  const { data: schedules } = useEmployeeScheduleByEmployee(employee?.id || null);
+
+  // Set of day_of_week numbers (0=Sun, 6=Sat) where employee has duty
+  const weekendDutyDays = useMemo(() => {
+    const dutySet = new Set<number>();
+    if (schedules) {
+      for (const s of schedules) {
+        if ((s.day_of_week === 0 || s.day_of_week === 6) && s.is_duty_day) {
+          dutySet.add(s.day_of_week);
+        }
+      }
+    }
+    return dutySet;
+  }, [schedules]);
+
   // Create a map of attendance by date
   const attendanceMap = useMemo(() => {
     if (!attendance) return new Map();

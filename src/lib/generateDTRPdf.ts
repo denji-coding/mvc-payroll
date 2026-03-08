@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { format, isWeekend, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { format, isWeekend, getDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 
 interface AttendanceRecord {
   date: string;

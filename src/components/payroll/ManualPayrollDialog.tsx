@@ -27,6 +27,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const activeEmployees = employees?.filter((e) => e.employment_status === "active") || [];
   const selectedEmployee = activeEmployees.find((e) => e.id === employeeId);
   const monthlySalary = selectedEmployee?.basic_salary || 0;
+  const { data: schedules } = useEmployeeScheduleByEmployee(employeeId || null);
 
   // Reset form when dialog opens/closes
   useEffect(() => {

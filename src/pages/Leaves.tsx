@@ -129,9 +129,10 @@ export default function Leaves() {
         <h1 className="page-title">My Leaves</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Request Leave</Button></DialogTrigger>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>New Leave Request</DialogTitle></DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <DialogContent className="max-w-md max-h-[95vh] overflow-visible">
+             <DialogHeader><DialogTitle>New Leave Request</DialogTitle></DialogHeader>
+             <div className="max-h-[75vh] overflow-y-auto overflow-x-visible pr-1">
+             <form onSubmit={handleSubmit} className="space-y-4">
               <div><Label>Leave Type</Label><Select value={form.leave_type} onValueChange={(v) => setForm({ ...form, leave_type: v })}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{activeLeaveTypes.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}</SelectContent></Select></div>
 
               {selectedLeaveType && !hasCredits && (
@@ -163,8 +164,9 @@ export default function Leaves() {
               <Button type="submit" className="w-full" disabled={createLeave.isPending || uploading || !form.leave_type || calculatedDays < 1 || !hasCredits || !!exceedsLimit || (showUploadField && !attachmentFile)}>
                 {uploading ? 'Uploading...' : createLeave.isPending ? 'Submitting...' : 'Submit Request'}
               </Button>
-            </form>
-          </DialogContent>
+             </form>
+             </div>
+           </DialogContent>
         </Dialog>
       </div>
 

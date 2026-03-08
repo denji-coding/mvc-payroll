@@ -9,6 +9,7 @@ import { useCreateManualPayroll, useUpdatePayrollRecord, usePayrollPeriods } fro
 import { calculateSalary } from "@/lib/salaryCalculations";
 import { useEmployeeAttendance } from "@/hooks/useAttendance";
 import { useBenefitRates } from "@/hooks/useBenefitRates";
+import { formatFullName } from "@/lib/formatName";
 
 interface ManualPayrollDialogProps {
   periodId: string;

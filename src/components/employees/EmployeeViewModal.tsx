@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { EmployeeAvatar } from '@/components/employees/EmployeeAvatar';
 import { format } from 'date-fns';
 import { User, Briefcase, Building2, CreditCard, Phone, Mail, MapPin, Calendar, Shield } from 'lucide-react';
+import { capitalizeWords } from '@/lib/formatName';
 
 interface EmployeeViewModalProps {
   employee: any;

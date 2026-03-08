@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor, FileText } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatFullName, capitalizeWords } from '@/lib/formatName';
 import { DateInput } from '@/components/ui/date-picker';
 import { useAuth } from '@/hooks/useAuth';
 import { useBranches } from '@/hooks/useBranches';

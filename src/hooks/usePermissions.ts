@@ -32,6 +32,7 @@ export const AVAILABLE_PERMISSIONS = [
   { key: 'page_positions', label: 'Positions', description: 'Access to positions management' },
   { key: 'page_time_schedule', label: 'Time Schedule', description: 'Access to time schedule management' },
   { key: 'page_leave_credits', label: 'Leave Credits', description: 'Access to leave credits management' },
+  { key: 'page_my_schedule', label: 'My Schedule', description: 'View personal work schedule' },
 ] as const;
 
 export type PermissionKey = typeof AVAILABLE_PERMISSIONS[number]['key'];

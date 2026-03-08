@@ -111,7 +111,7 @@ export default function Profile() {
       return;
     }
 
-    toast({ title: 'Password Updated', description: 'Your password has been changed successfully' });
+    toast.success('Password updated successfully');
     setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
   };
 

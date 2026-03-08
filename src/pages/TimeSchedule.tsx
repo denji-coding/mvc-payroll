@@ -133,18 +133,6 @@ export default function TimeSchedule() {
       </div>
 
       <Card className="mb-6">
-        <CardHeader><CardTitle>Assigned Schedules</CardTitle><CardDescription>Employees with configured work schedules</CardDescription></CardHeader>
-        <CardContent>
-          {allSchedulesLoading ? (
-            <div className="space-y-2">{[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
-          ) : (
-            <DataTable columns={scheduleColumns} data={groupedSchedules} searchPlaceholder="Search schedules..." emptyMessage="No employees have assigned schedules yet" />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Add/Edit Schedule Card - keep as-is since it's a form, not a data table */}
-      <Card>
         <CardHeader>
           <CardTitle>{isEditing ? 'Edit Schedule' : 'Add Employee Schedule'}</CardTitle>
           <CardDescription>{isEditing ? 'Modify the work schedule' : 'Select an employee to configure their weekly work schedule'}</CardDescription>

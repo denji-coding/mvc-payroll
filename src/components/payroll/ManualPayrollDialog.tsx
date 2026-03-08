@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEmployees } from "@/hooks/useEmployees";
 import { useCreateManualPayroll } from "@/hooks/usePayroll";
 import { calculateSalary } from "@/lib/salaryCalculations";
+import { useEmployeeScheduleByEmployee } from "@/hooks/useEmployeeSchedule";
 
 interface ManualPayrollDialogProps {
   periodId: string;
@@ -26,6 +27,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const activeEmployees = employees?.filter((e) => e.employment_status === "active") || [];
   const selectedEmployee = activeEmployees.find((e) => e.id === employeeId);
   const monthlySalary = selectedEmployee?.basic_salary || 0;
+  const { data: schedules } = useEmployeeScheduleByEmployee(employeeId || null);
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -36,6 +38,14 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
       setLwpDays(0);
     }
   }, [open]);
+
+  // Auto-populate days worked from employee schedule
+  useEffect(() => {
+    if (schedules && schedules.length > 0) {
+      const dutyDays = schedules.filter(s => s.is_duty_day).length;
+      setDaysWorked(Math.round(dutyDays / 2 * 10) / 10); // semi-monthly
+    }
+  }, [schedules]);
 
   const calc = useMemo(() => {
     if (!monthlySalary) return null;
@@ -150,8 +160,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Monthly Salary</Label>
-                    <div className="h-8 flex items-center text-sm font-medium">{fmt(monthlySalary)}</div>
+                    <Label className="text-xs text-muted-foreground">Daily Rate</Label>
+                    <div className="h-8 flex items-center text-sm font-medium">{fmt(dailyRate)}</div>
                   </div>
                 </div>
               </div>

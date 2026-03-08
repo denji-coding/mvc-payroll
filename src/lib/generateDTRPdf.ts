@@ -347,7 +347,8 @@ export function getDaysInMonth(month: number, year: number): Date[] {
 export function calculateSummary(
   attendance: AttendanceRecord[] | undefined,
   daysInMonth: Date[],
-  employeeCreatedAt?: string
+  employeeCreatedAt?: string,
+  weekendDutyDays: Set<number> = new Set()
 ): { daysWorked: number; totalHours: number; lateDays: number; absentDays: number } {
   if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, absentDays: 0 };
   
@@ -359,7 +360,10 @@ export function calculateSummary(
   const absentDays = daysInMonth.filter(day => {
     const dateStr = format(day, 'yyyy-MM-dd');
     if (employeeStart && day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate())) return false;
-    return !isWeekend(day) && !attendedDates.has(dateStr) && day <= new Date();
+    const isWeekendDay = isWeekend(day);
+    const isRestDay = isWeekendDay && !weekendDutyDays.has(getDay(day));
+    if (isRestDay) return false;
+    return !attendedDates.has(dateStr) && day <= new Date();
   }).length;
 
   return { daysWorked, totalHours, lateDays, absentDays };

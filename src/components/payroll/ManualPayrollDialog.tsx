@@ -86,7 +86,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const lateDeduction = Math.round((dailyRate / 8 / 60) * lateMinutes * 100) / 100;
 
   const grossPay = calc ? calc.grossPay : 0;
-  const totalDeductions = calc ? calc.sssContribution + calc.philhealthContribution + calc.pagibigContribution + calc.withholdingTax + lateDeduction : 0;
+  const totalDeductions = calc ? calc.sssContribution + calc.philhealthContribution + calc.pagibigContribution + lateDeduction : 0;
   const netPay = grossPay - totalDeductions;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,7 +105,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
       sss_contribution: calc.sssContribution,
       philhealth_contribution: calc.philhealthContribution,
       pagibig_contribution: calc.pagibigContribution,
-      withholding_tax: calc.withholdingTax,
+      withholding_tax: 0,
       other_deductions: lateDeduction,
     });
 
@@ -222,10 +222,6 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Pag-IBIG</span>
                       <span>{fmt(calc?.pagibigContribution || 0)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Withholding Tax</span>
-                      <span>{fmt(calc?.withholdingTax || 0)}</span>
                     </div>
                     {lateMinutes > 0 && (
                       <div className="flex justify-between text-sm">

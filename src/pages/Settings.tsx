@@ -922,7 +922,7 @@ function UserRoleManagement() {
                       <SelectContent>
                         {users?.filter(u => u.role === 'branch_manager').map((user) => (
                           <SelectItem key={user.id} value={user.id}>
-                            {user.first_name} {user.last_name}
+                            {formatFullName(user.first_name, user.last_name)}
                           </SelectItem>
                         ))}
                       </SelectContent>

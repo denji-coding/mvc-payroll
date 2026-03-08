@@ -164,8 +164,9 @@ export default function Leaves() {
               <Button type="submit" className="w-full" disabled={createLeave.isPending || uploading || !form.leave_type || calculatedDays < 1 || !hasCredits || !!exceedsLimit || (showUploadField && !attachmentFile)}>
                 {uploading ? 'Uploading...' : createLeave.isPending ? 'Submitting...' : 'Submit Request'}
               </Button>
-            </form>
-          </DialogContent>
+             </form>
+             </div>
+           </DialogContent>
         </Dialog>
       </div>
 

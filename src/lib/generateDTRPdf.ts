@@ -47,12 +47,14 @@ interface GenerateDTRPdfParams {
   month: string;
   year: number;
   employeeCreatedAt?: string;
+  weekendDutyDays?: Set<number>;
 }
 
 interface GenerateMultiMonthDTRPdfParams {
   employee: Employee;
   monthsData: MonthData[];
   employeeCreatedAt?: string;
+  weekendDutyDays?: Set<number>;
 }
 
 const months = [

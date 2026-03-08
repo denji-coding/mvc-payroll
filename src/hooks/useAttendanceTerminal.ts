@@ -93,9 +93,31 @@ export function useAttendanceTerminal() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AttendanceResult | null>(null);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
   
   // Fetch terminal settings
   const { data: settings, isLoading: settingsLoading } = useTerminalSettings();
+
+  // Cooldown countdown timer
+  useEffect(() => {
+    if (!cooldownUntil) {
+      setCooldownRemaining(0);
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setCooldownUntil(null);
+        setCooldownRemaining(0);
+      } else {
+        setCooldownRemaining(remaining);
+      }
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [cooldownUntil]);
 
   // Update clock every second
   useEffect(() => {

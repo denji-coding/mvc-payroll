@@ -194,6 +194,17 @@ export default function TimeSchedule() {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Assigned Schedules</CardTitle><CardDescription>Employees with configured work schedules</CardDescription></CardHeader>
+        <CardContent>
+          {allSchedulesLoading ? (
+            <div className="space-y-2">{[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
+          ) : (
+            <DataTable columns={scheduleColumns} data={groupedSchedules} searchPlaceholder="Search schedules..." emptyMessage="No employees have assigned schedules yet" />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

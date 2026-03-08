@@ -158,6 +158,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       max="22"
                       value={daysWorkedStr}
                       onChange={(e) => setDaysWorkedStr(e.target.value)}
+                      onBlur={() => { if (daysWorkedStr.trim() === "") setDaysWorkedStr("0"); }}
                       className="h-8 text-sm"
                     />
                   </div>

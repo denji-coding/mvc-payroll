@@ -3,11 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export interface BenefitRates {
+  sss_contribution: number;
   philhealth_rate: number;
   pagibig_employee_rate: number;
 }
 
 const DEFAULT_RATES: BenefitRates = {
+  sss_contribution: 1350,
   philhealth_rate: 500,
   pagibig_employee_rate: 200,
 };

@@ -252,8 +252,23 @@ function BenefitsSettingsTab() {
       <CardContent className="space-y-6">
         <div className="p-4 bg-muted/50 rounded-lg">
           <p className="text-sm text-muted-foreground">
-            <strong>Note:</strong> SSS contributions use a standardized bracket table mandated by law and cannot be modified. 
-            Only PhilHealth and Pag-IBIG rates are configurable.
+            <strong>Note:</strong> All benefit contributions are configured as fixed monthly amounts (₱). 
+            These are divided by 2 for semi-monthly payroll computation.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>SSS Contribution (₱)</Label>
+          <Input
+            type="number"
+            step="1"
+            min="0"
+            value={form.sss_contribution}
+            onChange={(e) => setForm({ ...form, sss_contribution: parseFloat(e.target.value) || 0 })}
+            className="max-w-40"
+          />
+          <p className="text-xs text-muted-foreground">
+            Fixed monthly employee SSS contribution. Current: ₱{form.sss_contribution.toLocaleString()}
           </p>
         </div>
 

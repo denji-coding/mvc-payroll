@@ -21,9 +21,13 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const createManualPayroll = useCreateManualPayroll();
 
   const [employeeId, setEmployeeId] = useState("");
-  const [daysWorked, setDaysWorked] = useState(11);
-  const [lateMinutes, setLateMinutes] = useState(0);
-  const [lwpDays, setLwpDays] = useState(0);
+  const [daysWorkedStr, setDaysWorkedStr] = useState("11");
+  const [lateMinutesStr, setLateMinutesStr] = useState("0");
+  const [lwpDaysStr, setLwpDaysStr] = useState("0");
+
+  const daysWorked = parseFloat(daysWorkedStr) || 0;
+  const lateMinutes = parseInt(lateMinutesStr) || 0;
+  const lwpDays = parseFloat(lwpDaysStr) || 0;
 
   const activeEmployees = employees?.filter((e) => e.employment_status === "active") || [];
   const selectedEmployee = activeEmployees.find((e) => e.id === employeeId);

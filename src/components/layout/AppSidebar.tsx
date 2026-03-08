@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import { capitalizeWords } from "@/lib/formatName";
 import {
   LayoutDashboard,
   Users,
@@ -361,7 +362,7 @@ export function AppSidebar() {
                 <>
                   <div className="flex-1 text-left min-w-0">
                     <p className="text-sm font-medium text-sidebar-foreground truncate">
-                      {profile?.firstName} {profile?.lastName}
+                      {capitalizeWords(profile?.firstName)} {capitalizeWords(profile?.lastName)}
                     </p>
                     <p className="text-xs text-sidebar-foreground/60 truncate capitalize">{role?.replace("_", " ")}</p>
                   </div>

@@ -76,7 +76,7 @@ export default function Profile() {
     if (!user) return;
 
     if (passwordForm.new_password !== passwordForm.confirm_password) {
-      toast({ variant: 'destructive', title: 'Error', description: 'New passwords do not match' });
+      toast.error('New passwords do not match');
       return;
     }
 

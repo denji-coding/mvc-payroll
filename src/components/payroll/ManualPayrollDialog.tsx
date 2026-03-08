@@ -227,6 +227,12 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       <span className="text-muted-foreground">Withholding Tax</span>
                       <span>{fmt(calc?.withholdingTax || 0)}</span>
                     </div>
+                    {lateMinutes > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Late Deduction ({lateMinutes} mins)</span>
+                        <span>{fmt(lateDeduction)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between pt-2 border-t font-semibold text-sm">
                       <span>Total Deductions</span>
                       <span className="text-destructive">{fmt(totalDeductions)}</span>

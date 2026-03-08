@@ -136,8 +136,8 @@ export function useAttendanceTerminal() {
       }
 
       if (data.error) {
-        const errorMessage = getTerminalErrorMessage(data.error, data.message, 'rfid');
-        setResult({ success: false, error: errorMessage, employee_name: data.employee_name });
+        const terminalError = getTerminalError(data.error, data.message, 'rfid');
+        setResult({ success: false, error: terminalError.message, error_title: terminalError.title, employee_name: data.employee_name });
         return;
       }
 

@@ -245,7 +245,7 @@ export default function DailyTimeRecord() {
             year,
             daysInMonth: days,
             attendanceMap: attMap,
-            summary: calculateSummary(monthAttendance || [], days, employee.created_at || undefined)
+            summary: calculateSummary(monthAttendance || [], days, employee.created_at || undefined, weekendDutyDays)
           };
         })
       );

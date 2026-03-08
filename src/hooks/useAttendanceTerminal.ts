@@ -93,31 +93,30 @@ export function useAttendanceTerminal() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AttendanceResult | null>(null);
-  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [cooldownMap, setCooldownMap] = useState<Record<string, number>>({});
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   
   // Fetch terminal settings
   const { data: settings, isLoading: settingsLoading } = useTerminalSettings();
 
-  // Cooldown countdown timer
+  // Cleanup expired cooldowns periodically
   useEffect(() => {
-    if (!cooldownUntil) {
-      setCooldownRemaining(0);
-      return;
-    }
-    const tick = () => {
-      const remaining = Math.ceil((cooldownUntil - Date.now()) / 1000);
-      if (remaining <= 0) {
-        setCooldownUntil(null);
-        setCooldownRemaining(0);
-      } else {
-        setCooldownRemaining(remaining);
-      }
-    };
-    tick();
-    const timer = setInterval(tick, 1000);
+    const timer = setInterval(() => {
+      setCooldownMap(prev => {
+        const now = Date.now();
+        const updated = { ...prev };
+        let changed = false;
+        for (const key in updated) {
+          if (updated[key] <= now) {
+            delete updated[key];
+            changed = true;
+          }
+        }
+        return changed ? updated : prev;
+      });
+    }, 1000);
     return () => clearInterval(timer);
-  }, [cooldownUntil]);
+  }, []);
 
   // Update clock every second
   useEffect(() => {
@@ -137,16 +136,26 @@ export function useAttendanceTerminal() {
     }
   }, [result]);
 
+  const checkCooldown = useCallback((identifier: string): boolean => {
+    const until = cooldownMap[identifier];
+    if (until && Date.now() < until) {
+      const secs = Math.ceil((until - Date.now()) / 1000);
+      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
+      return true;
+    }
+    return false;
+  }, [cooldownMap]);
+
+  const setCooldown = useCallback((identifier: string) => {
+    setCooldownMap(prev => ({ ...prev, [identifier]: Date.now() + 60000 }));
+  }, []);
+
   const submitRfidAttendance = useCallback(async (rfidCardNumber: string) => {
     const trimmedInput = rfidCardNumber.trim();
     if (!trimmedInput || isLoading) return;
 
-    // Cooldown check
-    if (cooldownUntil && Date.now() < cooldownUntil) {
-      const secs = Math.ceil((cooldownUntil - Date.now()) / 1000);
-      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
-      return;
-    }
+    // Cooldown is checked after we know the employee, but we also block by RFID
+    if (checkCooldown(trimmedInput.toLowerCase())) return;
     
     // Basic validation
     if (trimmedInput.length > 50) {
@@ -191,7 +200,10 @@ export function useAttendanceTerminal() {
         return;
       }
 
-      setCooldownUntil(Date.now() + 60000);
+      // Set cooldown by RFID and employee_id
+      setCooldown(trimmedInput.toLowerCase());
+      if (data.employee_id) setCooldown(data.employee_id.toLowerCase());
+      
       setResult({
         success: true,
         action: data.action,
@@ -207,18 +219,14 @@ export function useAttendanceTerminal() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, cooldownUntil]);
+  }, [isLoading, checkCooldown, setCooldown]);
 
   const submitManualAttendance = useCallback(async (employeeId: string) => {
     const trimmedInput = employeeId.trim();
     if (!trimmedInput || isLoading) return;
 
-    // Cooldown check
-    if (cooldownUntil && Date.now() < cooldownUntil) {
-      const secs = Math.ceil((cooldownUntil - Date.now()) / 1000);
-      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
-      return;
-    }
+    // Cooldown check per employee ID
+    if (checkCooldown(trimmedInput.toLowerCase())) return;
     
     // Basic validation
     if (trimmedInput.length > 50) {
@@ -262,7 +270,9 @@ export function useAttendanceTerminal() {
         return;
       }
 
-      setCooldownUntil(Date.now() + 60000);
+      // Set cooldown per employee ID
+      setCooldown(trimmedInput.toLowerCase());
+      
       setResult({
         success: true,
         action: data.action,
@@ -278,7 +288,7 @@ export function useAttendanceTerminal() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, cooldownUntil]);
+  }, [isLoading, checkCooldown, setCooldown]);
 
   const clearResult = useCallback(() => {
     setResult(null);

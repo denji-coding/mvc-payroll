@@ -233,27 +233,6 @@ export default function Leaves() {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label>Pay Type</Label>
-                  <RadioGroup
-                    value={form.pay_type}
-                    onValueChange={(v) => setForm({ ...form, pay_type: v as "with_pay" | "without_pay" })}
-                    className="flex gap-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="with_pay" id="with_pay" />
-                      <Label htmlFor="with_pay" className="cursor-pointer">
-                        With Pay
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="without_pay" id="without_pay" />
-                      <Label htmlFor="without_pay" className="cursor-pointer">
-                        Without Pay
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Start Date</Label>
@@ -279,6 +258,27 @@ export default function Leaves() {
                       }}
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Pay Type</Label>
+                  <RadioGroup
+                    value={form.pay_type}
+                    onValueChange={(v) => setForm({ ...form, pay_type: v as "with_pay" | "without_pay" })}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="with_pay" id="with_pay" />
+                      <Label htmlFor="with_pay" className="cursor-pointer">
+                        With Pay
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="without_pay" id="without_pay" />
+                      <Label htmlFor="without_pay" className="cursor-pointer">
+                        Without Pay
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
                 {calculatedDays > 0 && (
                   <div className="space-y-1">

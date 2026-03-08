@@ -52,6 +52,7 @@ interface GenerateDTRPdfParams {
 interface GenerateMultiMonthDTRPdfParams {
   employee: Employee;
   monthsData: MonthData[];
+  employeeCreatedAt?: string;
 }
 
 const months = [

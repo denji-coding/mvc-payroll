@@ -400,8 +400,9 @@ export default function DailyTimeRecord() {
         </CardContent>
       </Card>
 
-      {/* Summary Cards */}
+      {/* Summary Cards with count-up animation */}
       <DTRSummaryCards summary={summary} />
+
 
       {/* DTR Table */}
       <Card className="print-hide">

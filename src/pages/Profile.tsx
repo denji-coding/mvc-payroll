@@ -13,7 +13,6 @@ import { Save, User, Lock, Phone, Mail, Loader2 } from 'lucide-react';
 
 export default function Profile() {
   const { profile, user, refreshProfile } = useAuth();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [form, setForm] = useState({

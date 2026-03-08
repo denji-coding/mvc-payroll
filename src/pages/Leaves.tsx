@@ -205,7 +205,7 @@ export default function Leaves() {
               <Plus className="mr-2 h-4 w-4" /> Request Leave
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[95vh] overflow-visible">
+          <DialogContent className="max-w-lg max-h-[100vh] overflow-visible">
             <DialogHeader>
               <DialogTitle>New Leave Request</DialogTitle>
             </DialogHeader>

@@ -142,7 +142,7 @@ export function DatePicker({
             caption: "hidden",
             nav: "hidden",
           }}
-          className="p-3 pointer-events-auto"
+          className="p-2 pt-1 pointer-events-auto"
         />
       </PopoverContent>
     </Popover>

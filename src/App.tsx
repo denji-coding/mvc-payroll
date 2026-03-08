@@ -32,6 +32,7 @@ import ChangePassword from "./pages/ChangePassword";
 import DailyTimeRecord from "./pages/DailyTimeRecord";
 import MyPayslips from "./pages/MyPayslips";
 import LeaveCredits from "./pages/LeaveCredits";
+import MySchedule from "./pages/MySchedule";
 
 // Layout
 import AppLayout from "./components/layout/AppLayout";

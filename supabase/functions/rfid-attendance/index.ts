@@ -57,6 +57,24 @@ serve(async (req) => {
       );
     }
 
+    // Check if current time is within the allowed shift window
+    const phTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: false
+    });
+    const currentPHTime = phTimeFormatter.format(new Date()); // "HH:MM"
+    const shiftStart = settings.work_start_time || '06:00';
+    const shiftEnd = settings.work_end_time || '22:00';
+    
+    if (currentPHTime < shiftStart || currentPHTime > shiftEnd) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Outside shift hours',
+          message: `Attendance can only be recorded between ${shiftStart} and ${shiftEnd}. Current time: ${currentPHTime}.`
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { rfid_card_number, employee_id }: AttendanceRequest = await req.json();
 
     if (employee_id && !rfid_card_number && settings.allow_manual_entry === false) {

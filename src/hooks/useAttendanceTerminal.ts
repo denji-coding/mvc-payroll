@@ -70,6 +70,12 @@ function getTerminalError(error: string, message?: string, mode?: 'rfid' | 'manu
       message: 'The attendance terminal is currently disabled. Please contact the HR Admin.',
     };
   }
+  if (lowerError.includes('outside shift hours')) {
+    return {
+      title: 'Outside Shift Hours',
+      message: message || 'Attendance recording is not allowed outside of shift hours.',
+    };
+  }
   if (lowerError.includes('rfid card number or employee id is required') || lowerError.includes('invalid input')) {
     return {
       title: 'Invalid Input',

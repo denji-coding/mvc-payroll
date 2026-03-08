@@ -195,8 +195,27 @@ export function useAttendanceTerminal() {
         body: { employee_id: trimmedInput },
       });
 
+      let errorData = null;
       if (error) {
-        setResult({ success: false, error: 'Failed to process attendance. Please try again.', error_title: 'Connection Error' });
+        try {
+          if (error.context?.body instanceof ReadableStream) {
+            const reader = error.context.body.getReader();
+            const { value } = await reader.read();
+            const text = new TextDecoder().decode(value);
+            errorData = JSON.parse(text);
+          } else if (typeof error.message === 'string') {
+            errorData = JSON.parse(error.message);
+          }
+        } catch {
+          // Could not parse error body
+        }
+        
+        if (errorData?.error) {
+          const terminalError = getTerminalError(errorData.error, errorData.message, 'manual');
+          setResult({ success: false, error: terminalError.message, error_title: terminalError.title, employee_name: errorData.employee_name });
+        } else {
+          setResult({ success: false, error: 'Failed to process attendance. Please try again.', error_title: 'Connection Error' });
+        }
         return;
       }
 

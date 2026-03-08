@@ -136,16 +136,26 @@ export function useAttendanceTerminal() {
     }
   }, [result]);
 
+  const checkCooldown = useCallback((identifier: string): boolean => {
+    const until = cooldownMap[identifier];
+    if (until && Date.now() < until) {
+      const secs = Math.ceil((until - Date.now()) / 1000);
+      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
+      return true;
+    }
+    return false;
+  }, [cooldownMap]);
+
+  const setCooldown = useCallback((identifier: string) => {
+    setCooldownMap(prev => ({ ...prev, [identifier]: Date.now() + 60000 }));
+  }, []);
+
   const submitRfidAttendance = useCallback(async (rfidCardNumber: string) => {
     const trimmedInput = rfidCardNumber.trim();
     if (!trimmedInput || isLoading) return;
 
-    // Cooldown check
-    if (cooldownUntil && Date.now() < cooldownUntil) {
-      const secs = Math.ceil((cooldownUntil - Date.now()) / 1000);
-      setResult({ success: false, error: `Please wait ${secs} seconds before logging attendance again.`, error_title: 'Please Wait' });
-      return;
-    }
+    // Cooldown is checked after we know the employee, but we also block by RFID
+    if (checkCooldown(trimmedInput.toLowerCase())) return;
     
     // Basic validation
     if (trimmedInput.length > 50) {
@@ -190,7 +200,10 @@ export function useAttendanceTerminal() {
         return;
       }
 
-      setCooldownUntil(Date.now() + 60000);
+      // Set cooldown by RFID and employee_id
+      setCooldown(trimmedInput.toLowerCase());
+      if (data.employee_id) setCooldown(data.employee_id.toLowerCase());
+      
       setResult({
         success: true,
         action: data.action,
@@ -206,7 +219,7 @@ export function useAttendanceTerminal() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, cooldownUntil]);
+  }, [isLoading, checkCooldown, setCooldown]);
 
   const submitManualAttendance = useCallback(async (employeeId: string) => {
     const trimmedInput = employeeId.trim();

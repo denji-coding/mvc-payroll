@@ -231,7 +231,11 @@ function BenefitsSettingsTab() {
 
   useEffect(() => {
     if (rates) {
-      setForm(rates);
+      setForm({
+        sss_contribution: rates.sss_contribution ?? 1350,
+        philhealth_rate: rates.philhealth_rate ?? 500,
+        pagibig_employee_rate: rates.pagibig_employee_rate ?? 200,
+      });
     }
   }, [rates]);
 

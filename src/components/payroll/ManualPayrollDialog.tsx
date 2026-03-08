@@ -105,7 +105,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
       sss_contribution: calc.sssContribution,
       philhealth_contribution: calc.philhealthContribution,
       pagibig_contribution: calc.pagibigContribution,
-      withholding_tax: calc.withholdingTax,
+      withholding_tax: 0,
       other_deductions: lateDeduction,
     });
 

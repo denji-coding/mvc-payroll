@@ -67,7 +67,7 @@ export default function Branches() {
   const handleDelete = async (id: string) => {
     const branch = branchesWithCounts.find(b => b.id === id);
     if (branch && branch.employee_count > 0) { toast({ variant: 'destructive', title: 'Cannot Delete', description: 'Reassign employees first.' }); return; }
-    if (confirm('Delete this branch?')) await deleteMutation.mutateAsync(id);
+    await deleteMutation.mutateAsync(id);
   };
 
   const columns: ColumnDef<BranchWithCounts, any>[] = [

@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Users } from 'lucide-react';
 import { useBranches, useCreateBranch, useUpdateBranch, useDeleteBranch } from '@/hooks/useBranches';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { formatFullName } from '@/lib/formatName';
 
 interface BranchWithCounts {
   id: string; name: string; code: string; address: string | null;
@@ -43,7 +44,7 @@ export default function Branches() {
         let managerName = null;
         if (managerData?.user_id) {
           const { data: profile } = await supabase.from('profiles').select('first_name, last_name').eq('id', managerData.user_id).single();
-          if (profile) managerName = `${profile.first_name} ${profile.last_name}`;
+          if (profile) managerName = formatFullName(profile.first_name, profile.last_name);
         }
         return { ...branch, employee_count: count || 0, manager_name: managerName };
       })

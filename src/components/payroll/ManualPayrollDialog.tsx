@@ -9,6 +9,7 @@ import { useCreateManualPayroll, useUpdatePayrollRecord, usePayrollPeriods } fro
 import { calculateSalary } from "@/lib/salaryCalculations";
 import { useEmployeeAttendance } from "@/hooks/useAttendance";
 import { useBenefitRates } from "@/hooks/useBenefitRates";
+import { formatFullName } from "@/lib/formatName";
 
 interface ManualPayrollDialogProps {
   periodId: string;
@@ -161,7 +162,7 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
             <Label>Employee</Label>
             {isEditMode ? (
               <Input
-                value={`${selectedEmployee?.employee_id || ""} - ${selectedEmployee?.first_name || ""} ${selectedEmployee?.last_name || ""}`}
+                value={`${selectedEmployee?.employee_id || ""} - ${formatFullName(selectedEmployee?.first_name, selectedEmployee?.last_name)}`}
                 disabled
                 className="bg-muted"
               />
@@ -173,7 +174,7 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
                 <SelectContent>
                   {activeEmployees.map((emp) => (
                     <SelectItem key={emp.id} value={emp.id}>
-                      {emp.employee_id} - {emp.first_name} {emp.last_name}
+                      {emp.employee_id} - {formatFullName(emp.first_name, emp.last_name)}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Building2, Clock, DollarSign, CalendarDays, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { formatFullName } from '@/lib/formatName';
 import { useCountUp } from '@/hooks/useCountUp';
 import {
   ChartContainer,
@@ -292,7 +293,7 @@ function AdminDashboard() {
                   <div key={leave.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                     <div>
                       <p className="text-sm font-medium">
-                        {leave.employees?.first_name} {leave.employees?.last_name}
+                        {formatFullName(leave.employees?.first_name, leave.employees?.last_name)}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize">
                         {leave.leave_type} leave - {leave.status.replace('_', ' ')}

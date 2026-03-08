@@ -140,8 +140,8 @@ export default function Employees() {
                     <Button variant="ghost" size="icon" className="text-success hover:text-success"><RotateCcw className="h-4 w-4" /></Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
-                    <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {emp.first_name} {emp.last_name} to active status.</AlertDialogDescription></AlertDialogHeader>
-                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleRestore(emp.id, `${emp.first_name} ${emp.last_name}`)}>Restore</AlertDialogAction></AlertDialogFooter>
+                    <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {formatFullName(emp.first_name, emp.last_name)} to active status.</AlertDialogDescription></AlertDialogHeader>
+                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleRestore(emp.id, formatFullName(emp.first_name, emp.last_name))}>Restore</AlertDialogAction></AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
                 <AlertDialog>
@@ -154,12 +154,12 @@ export default function Employees() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Permanently Delete Employee?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete {emp.first_name} {emp.last_name} and all associated records (attendance, payroll, leaves, etc.). This action cannot be undone.
+                        This will permanently delete {formatFullName(emp.first_name, emp.last_name)} and all associated records (attendance, payroll, leaves, etc.). This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, `${emp.first_name} ${emp.last_name}`)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, formatFullName(emp.first_name, emp.last_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                         Delete Permanently
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -173,8 +173,8 @@ export default function Employees() {
                   <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
-                  <AlertDialogHeader><AlertDialogTitle>Delete Employee?</AlertDialogTitle><AlertDialogDescription>This will set {emp.first_name} {emp.last_name}'s status to terminated.</AlertDialogDescription></AlertDialogHeader>
-                  <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleSoftDelete(emp.id, `${emp.first_name} ${emp.last_name}`)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter>
+                  <AlertDialogHeader><AlertDialogTitle>Delete Employee?</AlertDialogTitle><AlertDialogDescription>This will set {formatFullName(emp.first_name, emp.last_name)}'s status to terminated.</AlertDialogDescription></AlertDialogHeader>
+                  <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleSoftDelete(emp.id, formatFullName(emp.first_name, emp.last_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             )}

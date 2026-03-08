@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { EmployeeAvatar } from '@/components/employees/EmployeeAvatar';
 import { format } from 'date-fns';
 import { User, Briefcase, Building2, CreditCard, Phone, Mail, MapPin, Calendar, Shield } from 'lucide-react';
+import { capitalizeWords } from '@/lib/formatName';
 
 interface EmployeeViewModalProps {
   employee: any;
@@ -65,7 +66,7 @@ export function EmployeeViewModal({ employee, open, onClose }: EmployeeViewModal
             />
             <div>
               <DialogTitle className="text-xl">
-                {employee.first_name} {employee.middle_name ? `${employee.middle_name} ` : ''}{employee.last_name}
+                {capitalizeWords(employee.first_name)} {employee.middle_name ? `${capitalizeWords(employee.middle_name)} ` : ''}{capitalizeWords(employee.last_name)}
               </DialogTitle>
               <p className="text-muted-foreground">{employee.position}</p>
               <div className="mt-1">{getStatusBadge(employee.employment_status)}</div>

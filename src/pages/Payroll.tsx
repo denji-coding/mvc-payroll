@@ -115,7 +115,7 @@ export default function Payroll() {
             {isHR && isPeriodNotApproved && (
               <AlertDialog>
                 <AlertDialogTrigger asChild><Button size="sm" variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {r.employees?.first_name} {r.employees?.last_name}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {formatFullName(r.employees?.first_name, r.employees?.last_name)}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
               </AlertDialog>
             )}
           </div>
@@ -221,7 +221,7 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { r
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Payslip - {r.employees?.first_name} {r.employees?.last_name}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name)}</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-4">
           <div><h4 className="font-semibold text-success mb-2">Earnings</h4><div className="space-y-1 text-sm"><div className="flex justify-between"><span>Basic Pay</span><span>{formatCurrency(r.basic_pay)}</span></div><div className="flex justify-between"><span>Overtime</span><span>{formatCurrency(r.overtime_pay)}</span></div><div className="flex justify-between"><span>Holiday</span><span>{formatCurrency(r.holiday_pay)}</span></div><div className="flex justify-between"><span>Allowances</span><span>{formatCurrency(r.total_allowances)}</span></div><div className="flex justify-between font-bold border-t pt-1"><span>Gross</span><span>{formatCurrency(r.gross_pay)}</span></div></div></div>
           <div><h4 className="font-semibold text-destructive mb-2">Deductions</h4><div className="space-y-1 text-sm"><div className="flex justify-between"><span>SSS</span><span>{formatCurrency(r.sss_contribution)}</span></div><div className="flex justify-between"><span>PhilHealth</span><span>{formatCurrency(r.philhealth_contribution)}</span></div><div className="flex justify-between"><span>Pag-IBIG</span><span>{formatCurrency(r.pagibig_contribution)}</span></div><div className="flex justify-between"><span>Tax</span><span>{formatCurrency(r.withholding_tax)}</span></div><div className="flex justify-between font-bold border-t pt-1"><span>Total</span><span>{formatCurrency(r.total_deductions)}</span></div></div></div>

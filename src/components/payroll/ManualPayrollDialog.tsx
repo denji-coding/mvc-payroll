@@ -8,6 +8,7 @@ import { useEmployees } from "@/hooks/useEmployees";
 import { useCreateManualPayroll, usePayrollPeriods } from "@/hooks/usePayroll";
 import { calculateSalary } from "@/lib/salaryCalculations";
 import { useEmployeeAttendance } from "@/hooks/useAttendance";
+import { useBenefitRates } from "@/hooks/useBenefitRates";
 
 interface ManualPayrollDialogProps {
   periodId: string;
@@ -18,6 +19,7 @@ interface ManualPayrollDialogProps {
 export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDialogProps) {
   const { data: employees } = useEmployees();
   const { data: periods } = usePayrollPeriods();
+  const { data: benefitRates } = useBenefitRates();
   const createManualPayroll = useCreateManualPayroll();
 
   const [employeeId, setEmployeeId] = useState("");
@@ -74,7 +76,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const calc = useMemo(() => {
     if (!dailyRate) return null;
     return calculateSalary({
-      basicMonthlySalary: dailyRate * 22, // convert daily to monthly for calculation
+      basicMonthlySalary: dailyRate * 22,
       daysWorked,
       overtimeHours: 0,
       allowances: 0,
@@ -83,8 +85,11 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
       workingDaysPerMonth: 22,
       leaveWithPayDays: lwpDays,
       leaveWithoutPayDays: 0,
+      fixedSSS: benefitRates?.sss_contribution,
+      fixedPhilHealth: benefitRates?.philhealth_rate,
+      fixedPagIBIG: benefitRates?.pagibig_employee_rate,
     });
-  }, [dailyRate, daysWorked, lwpDays]);
+  }, [dailyRate, daysWorked, lwpDays, benefitRates]);
 
   // Late deduction: daily rate / 8 hours / 60 mins * late minutes
   const lateDeduction = Math.round((dailyRate / 8 / 60) * lateMinutes * 100) / 100;

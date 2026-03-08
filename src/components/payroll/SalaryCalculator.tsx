@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Calculator } from 'lucide-react';
 import { calculateSalary, SalaryCalculationInput } from '@/lib/salaryCalculations';
+import { useBenefitRates } from '@/hooks/useBenefitRates';
 
 export function SalaryCalculator() {
+  const { data: benefitRates } = useBenefitRates();
   const [inputs, setInputs] = useState<SalaryCalculationInput>({
     basicMonthlySalary: 25000,
     daysWorked: 11,
@@ -19,7 +21,12 @@ export function SalaryCalculator() {
     leaveWithoutPayDays: 0,
   });
 
-  const result = useMemo(() => calculateSalary(inputs), [inputs]);
+  const result = useMemo(() => calculateSalary({
+    ...inputs,
+    fixedSSS: benefitRates?.sss_contribution,
+    fixedPhilHealth: benefitRates?.philhealth_rate,
+    fixedPagIBIG: benefitRates?.pagibig_employee_rate,
+  }), [inputs, benefitRates]);
 
   const formatCurrency = (amount: number) => 
     `₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;

@@ -268,7 +268,7 @@ export function generateDTRPdf(params: GenerateDTRPdfParams): void {
 }
 
 export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams): void {
-  const { employee, monthsData, employeeCreatedAt } = params;
+  const { employee, monthsData, employeeCreatedAt, weekendDutyDays } = params;
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -290,7 +290,8 @@ export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams)
       monthData.summary, 
       monthName, 
       monthData.year,
-      employeeCreatedAt
+      employeeCreatedAt,
+      weekendDutyDays
     );
   });
 

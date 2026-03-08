@@ -68,28 +68,15 @@ function computeSSS(monthlySalary: number): { employee: number; employer: number
   return { employee: bracket.ee, employer: bracket.er };
 }
 
-// PhilHealth - configurable rate (default 5% split equally)
-function computePhilHealth(monthlySalary: number, rate: number = 5.0): { employee: number; employer: number } {
-  const rateDecimal = rate / 100;
-  const minContribution = 500; // Minimum monthly premium
-  const maxContribution = 5000; // Maximum monthly premium (based on 100k ceiling)
-  
-  let totalContribution = monthlySalary * rateDecimal;
-  totalContribution = Math.max(minContribution, Math.min(maxContribution, totalContribution));
-  
-  const share = totalContribution / 2;
+// PhilHealth - fixed monthly amount (split equally)
+function computePhilHealth(fixedAmount: number): { employee: number; employer: number } {
+  const share = fixedAmount / 2;
   return { employee: share, employer: share };
 }
 
-// Pag-IBIG - configurable rate and ceiling
-function computePagIBIG(monthlySalary: number, employeeRate: number = 2.0, ceiling: number = 5000): { employee: number; employer: number } {
-  const rateDecimal = employeeRate / 100;
-  const maxContribution = ceiling * rateDecimal;
-  
-  const base = Math.min(monthlySalary, ceiling);
-  const contribution = Math.min(base * rateDecimal, maxContribution);
-  
-  return { employee: contribution, employer: contribution };
+// Pag-IBIG - fixed monthly amount
+function computePagIBIG(fixedAmount: number): { employee: number; employer: number } {
+  return { employee: fixedAmount, employer: fixedAmount };
 }
 
 // BIR Withholding Tax 2024 (Monthly)

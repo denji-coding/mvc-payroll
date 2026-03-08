@@ -154,41 +154,39 @@ export default function MySchedule() {
               No schedule has been set up for you yet. Please contact HR.
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
               {sortedSchedules.map((schedule) => (
                 <div
                   key={schedule.id}
-                  className={`p-4 rounded-lg border ${
+                  className={`p-3 rounded-lg border min-w-0 ${
                     schedule.is_duty_day
                       ? 'bg-primary/5 border-primary/20'
                       : 'bg-muted/50 border-muted'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-semibold">{DAYS[schedule.day_of_week]}</span>
-                    <Badge variant={schedule.is_duty_day ? 'default' : 'secondary'}>
+                  <div className="flex items-center justify-between gap-1 mb-3">
+                    <span className="font-semibold text-sm truncate">{DAYS[schedule.day_of_week]}</span>
+                    <Badge variant={schedule.is_duty_day ? 'default' : 'secondary'} className="text-xs shrink-0">
                       {schedule.is_duty_day ? 'Duty' : 'Rest'}
                     </Badge>
                   </div>
                   {schedule.is_duty_day ? (
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Sun className="h-4 w-4" />
-                        <span>AM:</span>
-                        <span className="text-foreground font-medium">
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">AM:</span>
+                        <p className="text-foreground font-medium">
                           {formatTime(schedule.morning_start)} - {formatTime(schedule.morning_end)}
-                        </span>
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Moon className="h-4 w-4" />
-                        <span>PM:</span>
-                        <span className="text-foreground font-medium">
+                      <div>
+                        <span className="text-muted-foreground">PM:</span>
+                        <p className="text-foreground font-medium">
                           {formatTime(schedule.afternoon_start)} - {formatTime(schedule.afternoon_end)}
-                        </span>
+                        </p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Day off</p>
+                    <p className="text-xs text-muted-foreground">Day off</p>
                   )}
                 </div>
               ))}

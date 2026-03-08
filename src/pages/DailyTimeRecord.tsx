@@ -47,7 +47,7 @@ export default function DailyTimeRecord() {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('employees')
-        .select('id, first_name, last_name, employee_id, position, department')
+        .select('id, first_name, last_name, employee_id, position, department, created_at')
         .eq('user_id', user.id)
         .single();
       if (error) throw error;
@@ -102,12 +102,14 @@ export default function DailyTimeRecord() {
   const summary = useMemo(() => {
     if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, absentDays: 0 };
     
+    const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
     const daysWorked = attendance.filter(a => a.status === 'present' || a.status === 'late').length;
     const totalHours = attendance.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
     const lateDays = attendance.filter(a => (a.late_minutes || 0) > 0).length;
     const attendedDates = new Set(attendance.map(a => a.date));
     const absentDays = daysInMonth.filter(day => {
       const dateStr = format(day, 'yyyy-MM-dd');
+      if (employeeStart && day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate())) return false;
       return !isWeekend(day) && !attendedDates.has(dateStr) && day <= new Date();
     }).length;
 
@@ -177,7 +179,8 @@ export default function DailyTimeRecord() {
         attendanceMap,
         summary,
         month: months[selectedMonth],
-        year: selectedYear
+        year: selectedYear,
+        employeeCreatedAt: employee.created_at || undefined
       });
     } else {
       // Multi-month export
@@ -219,14 +222,15 @@ export default function DailyTimeRecord() {
             year,
             daysInMonth: days,
             attendanceMap: attMap,
-            summary: calculateSummary(monthAttendance || [], days)
+            summary: calculateSummary(monthAttendance || [], days, employee.created_at || undefined)
           };
         })
       );
 
       generateMultiMonthDTRPdf({
         employee,
-        monthsData
+        monthsData,
+        employeeCreatedAt: employee.created_at || undefined
       });
 
       toast.success('PDF exported successfully!');
@@ -242,6 +246,7 @@ export default function DailyTimeRecord() {
         summary={summary}
         month={months[selectedMonth]}
         year={selectedYear}
+        employeeCreatedAt={employee.created_at || undefined}
       />
 
       <div className="page-header print-hide">
@@ -444,6 +449,8 @@ export default function DailyTimeRecord() {
                     const record = attendanceMap.get(dateStr);
                     const isWeekendDay = isWeekend(day);
                     const isFuture = day > new Date();
+                    const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
+                    const isBeforeCreation = employeeStart ? day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate()) : false;
 
                     return (
                       <TableRow 
@@ -456,15 +463,17 @@ export default function DailyTimeRecord() {
                         <TableCell className={isWeekendDay ? 'text-muted-foreground' : ''}>
                           {format(day, 'EEE')}
                         </TableCell>
-                        <TableCell>{formatTime(record?.morning_in ?? null)}</TableCell>
-                        <TableCell>{formatTime(record?.morning_out ?? null)}</TableCell>
-                        <TableCell>{formatTime(record?.afternoon_in ?? null)}</TableCell>
-                        <TableCell>{formatTime(record?.afternoon_out ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.morning_in ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.morning_out ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.afternoon_in ?? null)}</TableCell>
+                        <TableCell>{isBeforeCreation ? '' : formatTime(record?.afternoon_out ?? null)}</TableCell>
                         <TableCell className="text-right">
-                          {record?.hours_worked ? record.hours_worked.toFixed(2) : '-'}
+                          {isBeforeCreation ? '' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-')}
                         </TableCell>
                         <TableCell className="text-center">
-                          {isWeekendDay ? (
+                          {isBeforeCreation ? (
+                            <span className="text-muted-foreground">-</span>
+                          ) : isWeekendDay ? (
                             <Badge variant="outline">Weekend</Badge>
                           ) : isFuture ? (
                             <Badge variant="outline">-</Badge>

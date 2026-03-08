@@ -46,11 +46,13 @@ interface GenerateDTRPdfParams {
   };
   month: string;
   year: number;
+  employeeCreatedAt?: string;
 }
 
 interface GenerateMultiMonthDTRPdfParams {
   employee: Employee;
   monthsData: MonthData[];
+  employeeCreatedAt?: string;
 }
 
 const months = [
@@ -80,8 +82,14 @@ function addMonthPage(
   attendanceMap: Map<string, AttendanceRecord>,
   summary: { daysWorked: number; totalHours: number; lateDays: number; absentDays: number },
   month: string,
-  year: number
+  year: number,
+  employeeCreatedAt?: string
 ): void {
+  const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
+  const isBeforeCreation = (day: Date) => {
+    if (!employeeStart) return false;
+    return day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate());
+  };
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
   let yPos = 15;
@@ -136,6 +144,11 @@ function addMonthPage(
     const record = attendanceMap.get(dateStr);
     const isWeekendDay = isWeekend(day);
     const isFuture = day > new Date();
+    const beforeCreation = isBeforeCreation(day);
+
+    if (beforeCreation) {
+      return [format(day, 'dd'), format(day, 'EEE'), '', '', '', '', '', ''];
+    }
 
     return [
       format(day, 'dd'),
@@ -236,7 +249,7 @@ function addMonthPage(
 }
 
 export function generateDTRPdf(params: GenerateDTRPdfParams): void {
-  const { employee, daysInMonth, attendanceMap, summary, month, year } = params;
+  const { employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt } = params;
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -244,14 +257,14 @@ export function generateDTRPdf(params: GenerateDTRPdfParams): void {
     format: 'a4'
   });
 
-  addMonthPage(doc, employee, daysInMonth, attendanceMap, summary, month, year);
+  addMonthPage(doc, employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt);
 
   const fileName = `DTR_${employee.last_name}_${employee.first_name}_${month}_${year}.pdf`;
   doc.save(fileName);
 }
 
 export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams): void {
-  const { employee, monthsData } = params;
+  const { employee, monthsData, employeeCreatedAt } = params;
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -272,7 +285,8 @@ export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams)
       monthData.attendanceMap, 
       monthData.summary, 
       monthName, 
-      monthData.year
+      monthData.year,
+      employeeCreatedAt
     );
   });
 
@@ -327,16 +341,19 @@ export function getDaysInMonth(month: number, year: number): Date[] {
 
 export function calculateSummary(
   attendance: AttendanceRecord[] | undefined,
-  daysInMonth: Date[]
+  daysInMonth: Date[],
+  employeeCreatedAt?: string
 ): { daysWorked: number; totalHours: number; lateDays: number; absentDays: number } {
   if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, absentDays: 0 };
   
+  const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const daysWorked = attendance.filter(a => a.status === 'present' || a.status === 'late').length;
   const totalHours = attendance.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
   const lateDays = attendance.filter(a => (a.late_minutes || 0) > 0).length;
   const attendedDates = new Set(attendance.map(a => a.date));
   const absentDays = daysInMonth.filter(day => {
     const dateStr = format(day, 'yyyy-MM-dd');
+    if (employeeStart && day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate())) return false;
     return !isWeekend(day) && !attendedDates.has(dateStr) && day <= new Date();
   }).length;
 

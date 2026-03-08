@@ -33,6 +33,7 @@ interface PrintableDTRProps {
   summary: Summary;
   month: string;
   year: number;
+  employeeCreatedAt?: string;
 }
 
 export function PrintableDTR({ 
@@ -41,8 +42,14 @@ export function PrintableDTR({
   attendanceMap, 
   summary, 
   month, 
-  year 
+  year,
+  employeeCreatedAt 
 }: PrintableDTRProps) {
+  const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
+  const isBeforeCreation = (day: Date) => {
+    if (!employeeStart) return false;
+    return day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate());
+  };
   const formatTime = (timestamp: string | null) => {
     if (!timestamp) return '';
     return format(new Date(timestamp), 'hh:mm a');
@@ -119,20 +126,21 @@ export function PrintableDTR({
             const record = attendanceMap.get(dateStr);
             const isWeekendDay = isWeekend(day);
             const isFuture = day > new Date();
+            const beforeCreation = isBeforeCreation(day);
 
             return (
               <tr key={dateStr} style={{ backgroundColor: isWeekendDay ? '#f9fafb' : 'white' }}>
                 <td className="border border-black px-1 py-0 text-center">{format(day, 'dd')}</td>
                 <td className="border border-black px-1 py-0 text-center">{format(day, 'EEE')}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{formatTime(record?.morning_in || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{formatTime(record?.morning_out || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{formatTime(record?.afternoon_in || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{formatTime(record?.afternoon_out || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation ? '' : formatTime(record?.morning_in || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation ? '' : formatTime(record?.morning_out || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation ? '' : formatTime(record?.afternoon_in || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation ? '' : formatTime(record?.afternoon_out || null)}</td>
                 <td className="border border-black px-1 py-0 text-center">
-                  {record?.hours_worked ? record.hours_worked.toFixed(1) : ''}
+                  {beforeCreation ? '' : (record?.hours_worked ? record.hours_worked.toFixed(1) : '')}
                 </td>
                 <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>
-                  {getRemarks(record, isWeekendDay, isFuture)}
+                  {beforeCreation ? '' : getRemarks(record, isWeekendDay, isFuture)}
                 </td>
               </tr>
             );

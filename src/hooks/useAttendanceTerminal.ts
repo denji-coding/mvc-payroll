@@ -262,6 +262,7 @@ export function useAttendanceTerminal() {
         return;
       }
 
+      setCooldownUntil(Date.now() + 60000);
       setResult({
         success: true,
         action: data.action,

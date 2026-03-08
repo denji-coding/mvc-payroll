@@ -17,6 +17,7 @@ interface AuthContextType {
     mustChangePassword?: boolean;
   } | null;
   loading: boolean;
+  refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -154,8 +155,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const refreshProfile = async () => {
+    if (user?.id) await fetchUserData(user.id);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, role, profile, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, profile, loading, refreshProfile, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

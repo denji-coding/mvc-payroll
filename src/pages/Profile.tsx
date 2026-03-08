@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Save, User, Lock, Phone, Mail, Loader2 } from 'lucide-react';
 
 export default function Profile() {
-  const { profile, user } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -68,6 +68,7 @@ export default function Profile() {
     const { error } = await supabase.from('profiles').update(form).eq('id', user.id);
     setLoading(false);
     if (error) { toast({ variant: 'destructive', title: 'Error', description: error.message }); return; }
+    await refreshProfile();
     toast({ title: 'Profile Updated' });
   };
 

@@ -400,8 +400,13 @@ export default function DailyTimeRecord() {
         </CardContent>
       </Card>
 
-      {/* Summary Cards with count-up animation */}
-      <SummaryCards summary={summary} />
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 print-hide">
+        <SummaryCard icon={<Clock className="h-4 w-4 text-primary" />} label="Days Worked" value={summary.daysWorked} />
+        <SummaryCard icon={<Clock className="h-4 w-4 text-primary" />} label="Total Hours" value={summary.totalHours} decimal />
+        <SummaryCard icon={<AlertCircle className="h-4 w-4 text-accent-foreground" />} label="Late Days" value={summary.lateDays} />
+        <SummaryCard icon={<AlertCircle className="h-4 w-4 text-destructive" />} label="Absent Days" value={summary.absentDays} />
+      </div>
 
 
       {/* DTR Table */}

@@ -30,7 +30,7 @@ export default function Employees() {
     let query = supabase
       .from('employees')
       .select('*, branches(name)')
-      .order('last_name');
+      .order('created_at', { ascending: false });
     
     if (viewMode === 'active') {
       query = query.eq('employment_status', 'active');

@@ -160,11 +160,11 @@ export function calculateSalary(input: SalaryCalculationInput): SalaryCalculatio
   // Monthly equivalent for contribution calculations (semi-monthly payroll)
   const monthlyGross = grossPay * 2;
   
-  // Government contributions (employee share only, divided by 2 for semi-monthly)
-  // Use fixed amounts if provided, otherwise fall back to bracket/rate calculations
-  const sssContribution = input.fixedSSS != null ? input.fixedSSS / 2 : computeSSS(monthlyGross).employee / 2;
-  const philhealthContribution = input.fixedPhilHealth != null ? input.fixedPhilHealth / 2 : computePhilHealth(monthlyGross).employee / 2;
-  const pagibigContribution = input.fixedPagIBIG != null ? input.fixedPagIBIG / 2 : computePagIBIG(monthlyGross).employee / 2;
+  // Government contributions (employee share only)
+  // Fixed amounts are used directly as the per-period deduction; bracket calculations are halved for semi-monthly
+  const sssContribution = input.fixedSSS != null ? input.fixedSSS : computeSSS(monthlyGross).employee / 2;
+  const philhealthContribution = input.fixedPhilHealth != null ? input.fixedPhilHealth : computePhilHealth(monthlyGross).employee / 2;
+  const pagibigContribution = input.fixedPagIBIG != null ? input.fixedPagIBIG : computePagIBIG(monthlyGross).employee / 2;
   
   // Taxable income (gross - mandatory deductions)
   const taxableIncome = grossPay - sssContribution - philhealthContribution - pagibigContribution;

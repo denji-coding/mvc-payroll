@@ -397,22 +397,22 @@ function TerminalSettingsTab() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>Work Start Time</Label>
+            <Label>Shift Start Time</Label>
             <Input
               type="time"
               value={form.work_start_time}
               onChange={(e) => setForm({ ...form, work_start_time: e.target.value })}
             />
-            <p className="text-xs text-muted-foreground">When the work day begins</p>
+            <p className="text-xs text-muted-foreground">Earliest time employees can record attendance</p>
           </div>
           <div className="space-y-2">
-            <Label>Work End Time</Label>
+            <Label>Shift End Time</Label>
             <Input
               type="time"
               value={form.work_end_time}
               onChange={(e) => setForm({ ...form, work_end_time: e.target.value })}
             />
-            <p className="text-xs text-muted-foreground">When the work day ends</p>
+            <p className="text-xs text-muted-foreground">Latest time employees can record attendance</p>
           </div>
         </div>
         

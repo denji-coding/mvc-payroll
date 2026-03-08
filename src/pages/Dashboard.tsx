@@ -47,22 +47,13 @@ function AdminDashboard() {
   const { data: payrollSummary } = usePayrollSummary();
 
   const statCards = [
-    { title: 'Total Employees', value: stats?.employeeCount ?? 0, icon: Users, change: '' },
-    { title: 'Active Branches', value: stats?.branchCount ?? 0, icon: Building2, change: '' },
-    { title: 'Present Today', value: stats?.presentToday ?? 0, icon: Clock, change: stats?.attendanceRate ? `${stats.attendanceRate}%` : '' },
-    { title: 'Pending Leaves', value: stats?.pendingLeaves ?? 0, icon: CalendarDays, change: '' },
-    { title: 'Payroll This Month', value: stats?.payrollTotal ? `₱${(stats.payrollTotal / 1000000).toFixed(1)}M` : '₱0', icon: DollarSign, change: '' },
-    { title: 'Avg. Attendance', value: stats?.attendanceRate ? `${stats.attendanceRate}%` : '-', icon: TrendingUp, change: '' },
+    { title: 'Total Employees', numValue: stats?.employeeCount ?? 0, prefix: '', suffix: '', icon: Users, change: '' },
+    { title: 'Active Branches', numValue: stats?.branchCount ?? 0, prefix: '', suffix: '', icon: Building2, change: '' },
+    { title: 'Present Today', numValue: stats?.presentToday ?? 0, prefix: '', suffix: '', icon: Clock, change: stats?.attendanceRate ? `${stats.attendanceRate}%` : '' },
+    { title: 'Pending Leaves', numValue: stats?.pendingLeaves ?? 0, prefix: '', suffix: '', icon: CalendarDays, change: '' },
+    { title: 'Payroll This Month', numValue: stats?.payrollTotal ? Math.round(stats.payrollTotal / 1000) : 0, prefix: '₱', suffix: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 'M' : stats?.payrollTotal ? 'K' : '', icon: DollarSign, change: '', decimals: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 1 : 0, rawDivisor: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 1000 : 1 },
+    { title: 'Avg. Attendance', numValue: stats?.attendanceRate ?? 0, prefix: '', suffix: '%', icon: TrendingUp, change: '' },
   ];
-
-  const chartConfig = {
-    present: { label: 'Present', color: 'hsl(var(--chart-1))' },
-    absent: { label: 'Absent', color: 'hsl(var(--chart-2))' },
-    employees: { label: 'Employees', color: 'hsl(var(--chart-3))' },
-    total: { label: 'Total', color: 'hsl(var(--chart-4))' },
-  };
-
-  const pieColors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
   return (
     <div className="page-container">
@@ -89,7 +80,11 @@ function AdminDashboard() {
                 <Skeleton className="h-8 w-20" />
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <AnimatedValue
+                    value={stat.numValue}
+                    prefix={stat.prefix}
+                    suffix={stat.suffix}
+                  />
                   {stat.change && (
                     <p className="text-xs text-success mt-1">{stat.change}</p>
                   )}

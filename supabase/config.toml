@@ -2,3 +2,6 @@ project_id = "nqzzjpbotaawiatwyedb"
 
 [functions.rfid-attendance]
 verify_jwt = false
+
+[functions.terminal-attendance-log]
+verify_jwt = false

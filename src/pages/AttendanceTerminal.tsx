@@ -32,19 +32,14 @@ export default function AttendanceTerminal() {
     clearResult,
   } = useAttendanceTerminal();
 
-  // Fetch today's attendance records
+  // Fetch today's attendance records via edge function (bypasses RLS for kiosk mode)
   const { data: attendanceRecords, refetch: refetchAttendance } = useQuery({
     queryKey: ['terminal-attendance', format(new Date(), 'yyyy-MM-dd')],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('attendance')
-        .select('*, employees(first_name, last_name, employee_id, position, avatar_url)')
-        .eq('date', format(new Date(), 'yyyy-MM-dd'))
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const { data, error } = await supabase.functions.invoke('terminal-attendance-log');
       
       if (error) throw error;
-      return data || [];
+      return data?.records || [];
     },
     refetchInterval: 10000,
   });

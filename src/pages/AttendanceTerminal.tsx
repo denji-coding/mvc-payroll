@@ -348,7 +348,7 @@ export default function AttendanceTerminal() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gradient-to-r from-[#1a3d2b] to-[#2d5a40] border-0">
-                  <TableHead className="w-14 text-white font-semibold text-xs uppercase tracking-wider py-4">No.</TableHead>
+                  
                   <TableHead className="w-20 text-white font-semibold text-xs uppercase tracking-wider py-4">Photo</TableHead>
                   <TableHead className="text-white font-semibold text-xs uppercase tracking-wider py-4">Employee ID</TableHead>
                   <TableHead className="text-white font-semibold text-xs uppercase tracking-wider py-4">Full Name</TableHead>

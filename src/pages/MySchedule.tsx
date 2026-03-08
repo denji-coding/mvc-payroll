@@ -67,6 +67,10 @@ export default function MySchedule() {
 
   const totalHoursFormatted = (totalHours / 60).toFixed(1);
 
+  const animatedDutyDays = useCountUp(dutyDaysCount);
+  const animatedWeeklyHours = useCountUp(parseFloat(totalHoursFormatted));
+  const animatedRestDays = useCountUp(7 - dutyDaysCount);
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
@@ -108,7 +112,7 @@ export default function MySchedule() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Duty Days</p>
-                <p className="text-2xl font-bold">{useCountUp(dutyDaysCount)} days</p>
+                <p className="text-2xl font-bold">{animatedDutyDays} days</p>
               </div>
             </div>
           </CardContent>
@@ -121,7 +125,7 @@ export default function MySchedule() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Weekly Hours</p>
-                <p className="text-2xl font-bold">{useCountUp(parseFloat(totalHoursFormatted))} hrs</p>
+                <p className="text-2xl font-bold">{animatedWeeklyHours} hrs</p>
               </div>
             </div>
           </CardContent>
@@ -134,7 +138,7 @@ export default function MySchedule() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Rest Days</p>
-                <p className="text-2xl font-bold">{useCountUp(7 - dutyDaysCount)} days</p>
+                <p className="text-2xl font-bold">{animatedRestDays} days</p>
               </div>
             </div>
           </CardContent>

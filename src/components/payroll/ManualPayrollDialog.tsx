@@ -166,8 +166,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                     <Input
                       type="number"
                       min="0"
-                      value={lateMinutes}
-                      onChange={(e) => setLateMinutes(parseInt(e.target.value) || 0)}
+                      value={lateMinutesStr}
+                      onChange={(e) => setLateMinutesStr(e.target.value)}
                       className="h-8 text-sm"
                     />
                   </div>

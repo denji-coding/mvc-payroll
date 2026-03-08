@@ -81,7 +81,7 @@ export default function Profile() {
     }
 
     if (passwordForm.new_password.length < 6) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Password must be at least 6 characters' });
+      toast.error('Password must be at least 6 characters');
       return;
     }
 

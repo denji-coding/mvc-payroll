@@ -209,7 +209,7 @@ export default function Leaves() {
             <DialogHeader>
               <DialogTitle>New Leave Request</DialogTitle>
             </DialogHeader>
-            <div className="max-h-[75vh] overflow-y-auto overflow-x-visible pr-1">
+            <div className="max-h-[75vh] overflow-y-auto overflow-x-visible px-1 pb-1">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label>Leave Type</Label>

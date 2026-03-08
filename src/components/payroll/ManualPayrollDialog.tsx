@@ -200,12 +200,6 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                         <span>{fmt(calc?.leaveWithPayEarnings || 0)}</span>
                       </div>
                     )}
-                    {lateMinutes > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Late Deduction ({lateMinutes} mins)</span>
-                        <span className="text-destructive">-{fmt(lateDeduction)}</span>
-                      </div>
-                    )}
                     <div className="flex justify-between pt-2 border-t font-semibold text-sm">
                       <span>Gross Pay</span>
                       <span style={{ color: 'hsl(var(--success))' }}>{fmt(grossPay)}</span>

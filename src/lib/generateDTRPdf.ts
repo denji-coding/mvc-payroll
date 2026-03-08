@@ -143,6 +143,11 @@ function addMonthPage(
     const record = attendanceMap.get(dateStr);
     const isWeekendDay = isWeekend(day);
     const isFuture = day > new Date();
+    const beforeCreation = isBeforeCreation(day);
+
+    if (beforeCreation) {
+      return [format(day, 'dd'), format(day, 'EEE'), '', '', '', '', '', ''];
+    }
 
     return [
       format(day, 'dd'),

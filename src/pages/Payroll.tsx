@@ -107,6 +107,11 @@ export default function Payroll() {
         return (
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => setViewPayslip(r)} disabled={!isPeriodProcessed}><Eye className="h-4 w-4" /></Button>
+            {isHR && isPeriodNotApproved && (
+              <Button size="sm" variant="outline" onClick={() => { setEditingRecord(r); setManualPayrollOpen(true); }}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
             {isHR && (
               <AlertDialog>
                 <AlertDialogTrigger asChild><Button size="sm" variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>

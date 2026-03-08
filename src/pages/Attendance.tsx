@@ -88,7 +88,7 @@ export default function Attendance() {
         <AttendanceStatCard label="On Leave" value={stats?.onLeave || 0} colorClass="text-info" loading={statsLoading} />
       </div>
 
-      <Card>
+      <Card className="border-l-4 border-l-primary">
         <CardHeader>
           <CardTitle>Daily Attendance - {selectedDate.toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
         </CardHeader>

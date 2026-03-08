@@ -159,7 +159,7 @@ export default function Employees() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, `${emp.first_name} ${emp.last_name}`)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, formatFullName(emp.first_name, emp.last_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                         Delete Permanently
                       </AlertDialogAction>
                     </AlertDialogFooter>

@@ -39,6 +39,14 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
     }
   }, [open]);
 
+  // Auto-populate days worked from employee schedule
+  useEffect(() => {
+    if (schedules && schedules.length > 0) {
+      const dutyDays = schedules.filter(s => s.is_duty_day).length;
+      setDaysWorked(Math.round(dutyDays / 2 * 10) / 10); // semi-monthly
+    }
+  }, [schedules]);
+
   const calc = useMemo(() => {
     if (!monthlySalary) return null;
     return calculateSalary({

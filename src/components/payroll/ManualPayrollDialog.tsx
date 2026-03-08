@@ -21,9 +21,13 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   const createManualPayroll = useCreateManualPayroll();
 
   const [employeeId, setEmployeeId] = useState("");
-  const [daysWorked, setDaysWorked] = useState(11);
-  const [lateMinutes, setLateMinutes] = useState(0);
-  const [lwpDays, setLwpDays] = useState(0);
+  const [daysWorkedStr, setDaysWorkedStr] = useState("11");
+  const [lateMinutesStr, setLateMinutesStr] = useState("0");
+  const [lwpDaysStr, setLwpDaysStr] = useState("0");
+
+  const daysWorked = parseFloat(daysWorkedStr) || 0;
+  const lateMinutes = parseInt(lateMinutesStr) || 0;
+  const lwpDays = parseFloat(lwpDaysStr) || 0;
 
   const activeEmployees = employees?.filter((e) => e.employment_status === "active") || [];
   const selectedEmployee = activeEmployees.find((e) => e.id === employeeId);
@@ -45,9 +49,9 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
   useEffect(() => {
     if (!open) {
       setEmployeeId("");
-      setDaysWorked(11);
-      setLateMinutes(0);
-      setLwpDays(0);
+      setDaysWorkedStr("11");
+      setLateMinutesStr("0");
+      setLwpDaysStr("0");
     }
   }, [open]);
 
@@ -56,11 +60,11 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
     if (attendanceRecords && attendanceRecords.length > 0) {
       const totalHours = attendanceRecords.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
       const days = Math.round((totalHours / 8) * 100) / 100;
-      setDaysWorked(days);
+      setDaysWorkedStr(String(days));
 
       // Also sum late minutes from attendance
       const totalLate = attendanceRecords.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
-      setLateMinutes(totalLate);
+      setLateMinutesStr(String(totalLate));
     }
   }, [attendanceRecords]);
 
@@ -152,8 +156,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       step="0.5"
                       min="0"
                       max="22"
-                      value={daysWorked}
-                      onChange={(e) => setDaysWorked(parseFloat(e.target.value) || 0)}
+                      value={daysWorkedStr}
+                      onChange={(e) => setDaysWorkedStr(e.target.value)}
                       className="h-8 text-sm"
                     />
                   </div>
@@ -162,8 +166,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                     <Input
                       type="number"
                       min="0"
-                      value={lateMinutes}
-                      onChange={(e) => setLateMinutes(parseInt(e.target.value) || 0)}
+                      value={lateMinutesStr}
+                      onChange={(e) => setLateMinutesStr(e.target.value)}
                       className="h-8 text-sm"
                     />
                   </div>
@@ -173,8 +177,8 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       type="number"
                       step="0.5"
                       min="0"
-                      value={lwpDays}
-                      onChange={(e) => setLwpDays(parseFloat(e.target.value) || 0)}
+                      value={lwpDaysStr}
+                      onChange={(e) => setLwpDaysStr(e.target.value)}
                       className="h-8 text-sm"
                     />
                   </div>

@@ -8,6 +8,7 @@ import { useEmployees } from "@/hooks/useEmployees";
 import { useCreateManualPayroll, usePayrollPeriods } from "@/hooks/usePayroll";
 import { calculateSalary } from "@/lib/salaryCalculations";
 import { useEmployeeAttendance } from "@/hooks/useAttendance";
+import { useBenefitRates } from "@/hooks/useBenefitRates";
 
 interface ManualPayrollDialogProps {
   periodId: string;

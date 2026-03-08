@@ -133,7 +133,7 @@ export default function Leaves() {
              <DialogHeader><DialogTitle>New Leave Request</DialogTitle></DialogHeader>
              <div className="max-h-[75vh] overflow-y-auto overflow-x-visible pr-1">
              <form onSubmit={handleSubmit} className="space-y-4">
-              <div><Label>Leave Type</Label><Select value={form.leave_type} onValueChange={(v) => setForm({ ...form, leave_type: v })}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{activeLeaveTypes.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Leave Type</Label><Select value={form.leave_type} onValueChange={(v) => setForm({ ...form, leave_type: v })}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent className="p-1">{activeLeaveTypes.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}</SelectContent></Select></div>
 
               {selectedLeaveType && !hasCredits && (
                 <div className="rounded-md border border-destructive/50 bg-destructive/5 p-3 text-sm text-destructive">

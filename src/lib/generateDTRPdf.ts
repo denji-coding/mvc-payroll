@@ -248,7 +248,7 @@ function addMonthPage(
 }
 
 export function generateDTRPdf(params: GenerateDTRPdfParams): void {
-  const { employee, daysInMonth, attendanceMap, summary, month, year } = params;
+  const { employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt } = params;
   
   const doc = new jsPDF({
     orientation: 'portrait',

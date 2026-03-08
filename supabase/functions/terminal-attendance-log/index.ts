@@ -26,7 +26,7 @@ serve(async (req) => {
       .from('attendance')
       .select('*, employees(first_name, last_name, employee_id, position, avatar_url)')
       .eq('date', today)
-      .order('created_at', { ascending: false })
+      .order('updated_at', { ascending: false })
       .limit(50);
 
     if (error) throw error;

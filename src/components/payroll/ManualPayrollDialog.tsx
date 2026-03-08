@@ -158,6 +158,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       max="22"
                       value={daysWorkedStr}
                       onChange={(e) => setDaysWorkedStr(e.target.value)}
+                      onBlur={() => { if (daysWorkedStr.trim() === "") setDaysWorkedStr("0"); }}
                       className="h-8 text-sm"
                     />
                   </div>
@@ -168,6 +169,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       min="0"
                       value={lateMinutesStr}
                       onChange={(e) => setLateMinutesStr(e.target.value)}
+                      onBlur={() => { if (lateMinutesStr.trim() === "") setLateMinutesStr("0"); }}
                       className="h-8 text-sm"
                     />
                   </div>
@@ -179,6 +181,7 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
                       min="0"
                       value={lwpDaysStr}
                       onChange={(e) => setLwpDaysStr(e.target.value)}
+                      onBlur={() => { if (lwpDaysStr.trim() === "") setLwpDaysStr("0"); }}
                       className="h-8 text-sm"
                     />
                   </div>

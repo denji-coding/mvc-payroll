@@ -60,11 +60,11 @@ export function ManualPayrollDialog({ periodId, open, onClose }: ManualPayrollDi
     if (attendanceRecords && attendanceRecords.length > 0) {
       const totalHours = attendanceRecords.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
       const days = Math.round((totalHours / 8) * 100) / 100;
-      setDaysWorked(days);
+      setDaysWorkedStr(String(days));
 
       // Also sum late minutes from attendance
       const totalLate = attendanceRecords.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
-      setLateMinutes(totalLate);
+      setLateMinutesStr(String(totalLate));
     }
   }, [attendanceRecords]);
 

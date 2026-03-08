@@ -146,7 +146,7 @@ function addMonthPage(
   const tableData = daysInMonth.map((day) => {
     const dateStr = format(day, 'yyyy-MM-dd');
     const record = attendanceMap.get(dateStr);
-    const isWeekendDay = isWeekend(day);
+    const rest = isRestDay(day);
     const isFuture = day > new Date();
     const beforeCreation = isBeforeCreation(day);
 
@@ -157,12 +157,12 @@ function addMonthPage(
     return [
       format(day, 'dd'),
       format(day, 'EEE'),
-      isWeekendDay ? '-' : formatTime(record?.morning_in ?? null),
-      isWeekendDay ? '-' : formatTime(record?.morning_out ?? null),
-      isWeekendDay ? '-' : formatTime(record?.afternoon_in ?? null),
-      isWeekendDay ? '-' : formatTime(record?.afternoon_out ?? null),
-      isWeekendDay ? '-' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-'),
-      getRemarks(record, isWeekendDay, isFuture)
+      rest ? '-' : formatTime(record?.morning_in ?? null),
+      rest ? '-' : formatTime(record?.morning_out ?? null),
+      rest ? '-' : formatTime(record?.afternoon_in ?? null),
+      rest ? '-' : formatTime(record?.afternoon_out ?? null),
+      rest ? '-' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-'),
+      getRemarks(record, rest, isFuture)
     ];
   });
 

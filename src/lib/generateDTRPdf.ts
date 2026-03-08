@@ -81,8 +81,14 @@ function addMonthPage(
   attendanceMap: Map<string, AttendanceRecord>,
   summary: { daysWorked: number; totalHours: number; lateDays: number; absentDays: number },
   month: string,
-  year: number
+  year: number,
+  employeeCreatedAt?: string
 ): void {
+  const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
+  const isBeforeCreation = (day: Date) => {
+    if (!employeeStart) return false;
+    return day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate());
+  };
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
   let yPos = 15;

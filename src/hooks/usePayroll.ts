@@ -300,3 +300,50 @@ export function useCreateManualPayroll() {
     },
   });
 }
+
+export function useUpdatePayrollRecord() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, ...data }: ManualPayrollData & { id: string }) => {
+      const grossPay = data.basic_pay + data.overtime_pay + data.holiday_pay + 
+                       data.night_differential + data.total_allowances;
+      const totalDeductions = data.sss_contribution + data.philhealth_contribution + 
+                              data.pagibig_contribution + data.withholding_tax + data.other_deductions;
+      const netPay = grossPay - totalDeductions;
+      
+      const { data: result, error } = await supabase
+        .from('payroll_records')
+        .update({
+          basic_pay: data.basic_pay,
+          days_worked: data.days_worked,
+          overtime_pay: data.overtime_pay,
+          holiday_pay: data.holiday_pay,
+          night_differential: data.night_differential,
+          total_allowances: data.total_allowances,
+          sss_contribution: data.sss_contribution,
+          philhealth_contribution: data.philhealth_contribution,
+          pagibig_contribution: data.pagibig_contribution,
+          withholding_tax: data.withholding_tax,
+          other_deductions: data.other_deductions,
+          gross_pay: grossPay,
+          total_deductions: totalDeductions,
+          net_pay: netPay,
+          is_manual: true,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payroll-records'] });
+      toast.success('Payroll record updated');
+    },
+    onError: (error) => {
+      toast.error(getSafeErrorMessage(error, 'Failed to update payroll record'));
+    },
+  });
+}

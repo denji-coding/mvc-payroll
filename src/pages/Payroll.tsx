@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Calculator, Plus, Eye, CheckCircle, Edit, Trash2, Download, FileEdit, Loader2 } from 'lucide-react';
+import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2 } from 'lucide-react';
 import { SalaryCalculator } from '@/components/payroll/SalaryCalculator';
 import { ManualPayrollDialog } from '@/components/payroll/ManualPayrollDialog';
 import { usePayrollPeriods, usePayrollRecords, useCreatePayrollPeriod, useRunPayroll, useApprovePayroll, useDeletePayrollPeriod, useDeletePayrollRecord } from '@/hooks/usePayroll';
@@ -39,9 +39,11 @@ export default function Payroll() {
 
   const selectedPeriodData = periods?.find((p: any) => p.id === selectedPeriod);
   const isPeriodProcessed = selectedPeriodData?.status !== 'draft';
+  const isPeriodNotApproved = selectedPeriodData?.status === 'draft' || selectedPeriodData?.status === 'processing';
 
   const [createOpen, setCreateOpen] = useState(false);
   const [manualPayrollOpen, setManualPayrollOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<any>(null);
   const [periodForm, setPeriodForm] = useState({ period_start: '', period_end: '', pay_date: '' });
   const [viewPayslip, setViewPayslip] = useState<any>(null);
 
@@ -105,6 +107,11 @@ export default function Payroll() {
         return (
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => setViewPayslip(r)} disabled={!isPeriodProcessed}><Eye className="h-4 w-4" /></Button>
+            {isHR && isPeriodNotApproved && (
+              <Button size="sm" variant="outline" onClick={() => { setEditingRecord(r); setManualPayrollOpen(true); }}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
             {isHR && (
               <AlertDialog>
                 <AlertDialogTrigger asChild><Button size="sm" variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
@@ -180,7 +187,7 @@ export default function Payroll() {
                     <div className="bg-warning/10 text-warning p-4 rounded-lg mb-4 text-center"><p className="text-sm font-medium">Payroll is not yet processed. View and download will be available after processing.</p></div>
                   )}
                   {isHR && selectedPeriodData?.status === 'draft' && (
-                    <div className="mb-4"><Button onClick={() => setManualPayrollOpen(true)}><FileEdit className="mr-2 h-4 w-4" /> Add Manual Payroll</Button></div>
+                    <div className="mb-4"><Button onClick={() => { setEditingRecord(null); setManualPayrollOpen(true); }}><FileEdit className="mr-2 h-4 w-4" /> Add Manual Payroll</Button></div>
                   )}
                   {recordsLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
                     <DataTable columns={recordColumns} data={records || []} searchPlaceholder="Search records..." emptyMessage="No records" />
@@ -190,7 +197,7 @@ export default function Payroll() {
             </CardContent>
           </Card>
           {viewPayslip && <PayslipDialog record={viewPayslip} onClose={() => setViewPayslip(null)} formatCurrency={formatCurrency} periodStatus={selectedPeriodData?.status} />}
-          {selectedPeriod && <ManualPayrollDialog periodId={selectedPeriod} open={manualPayrollOpen} onClose={() => setManualPayrollOpen(false)} />}
+          {selectedPeriod && <ManualPayrollDialog periodId={selectedPeriod} open={manualPayrollOpen} onClose={() => { setManualPayrollOpen(false); setEditingRecord(null); }} editRecord={editingRecord} />}
         </TabsContent>
 
         <TabsContent value="components" className="mt-4">

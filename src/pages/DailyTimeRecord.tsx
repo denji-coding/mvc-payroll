@@ -22,6 +22,7 @@ import {
   calculateSummary 
 } from '@/lib/generateDTRPdf';
 import { toast } from 'sonner';
+import { useCountUp } from '@/hooks/useCountUp';
 
 const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -30,6 +31,21 @@ const months = [
 
 const currentYear = new Date().getFullYear();
 const years = [currentYear, currentYear - 1, currentYear - 2];
+
+function SummaryCard({ icon, label, value, decimal }: { icon: React.ReactNode; label: string; value: number; decimal?: boolean }) {
+  const animated = useCountUp(decimal ? Math.round(value * 10) : value);
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-2">
+          {icon}
+          <span className="text-sm text-muted-foreground">{label}</span>
+        </div>
+        <p className="text-2xl font-bold mt-1">{decimal ? (animated / 10).toFixed(1) : animated}</p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function DailyTimeRecord() {
   const { user } = useAuth();
@@ -401,43 +417,12 @@ export default function DailyTimeRecord() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 print-hide">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Days Worked</span>
-            </div>
-            <p className="text-2xl font-bold mt-1">{summary.daysWorked}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Total Hours</span>
-            </div>
-            <p className="text-2xl font-bold mt-1">{summary.totalHours.toFixed(1)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-accent-foreground" />
-              <span className="text-sm text-muted-foreground">Late Days</span>
-            </div>
-            <p className="text-2xl font-bold mt-1">{summary.lateDays}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <span className="text-sm text-muted-foreground">Absent Days</span>
-            </div>
-            <p className="text-2xl font-bold mt-1">{summary.absentDays}</p>
-          </CardContent>
-        </Card>
+        <SummaryCard icon={<Clock className="h-4 w-4 text-primary" />} label="Days Worked" value={summary.daysWorked} />
+        <SummaryCard icon={<Clock className="h-4 w-4 text-primary" />} label="Total Hours" value={summary.totalHours} decimal />
+        <SummaryCard icon={<AlertCircle className="h-4 w-4 text-accent-foreground" />} label="Late Days" value={summary.lateDays} />
+        <SummaryCard icon={<AlertCircle className="h-4 w-4 text-destructive" />} label="Absent Days" value={summary.absentDays} />
       </div>
+
 
       {/* DTR Table */}
       <Card className="print-hide">

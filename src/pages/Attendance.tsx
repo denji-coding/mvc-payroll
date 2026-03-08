@@ -89,10 +89,10 @@ export default function Attendance() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <AttendanceStatCard label="Present" value={stats?.present || 0} colorClass="text-success" loading={statsLoading} />
-        <AttendanceStatCard label="Late" value={stats?.late || 0} colorClass="text-warning" loading={statsLoading} />
-        <AttendanceStatCard label="Absent" value={stats?.absent || 0} colorClass="text-destructive" loading={statsLoading} />
-        <AttendanceStatCard label="On Leave" value={stats?.onLeave || 0} colorClass="text-info" loading={statsLoading} />
+        <AttendanceStatCard label="Present" value={stats?.present || 0} colorClass="text-success" loading={statsLoading} showBorderL />
+        <AttendanceStatCard label="Late" value={stats?.late || 0} colorClass="text-warning" loading={statsLoading} showBorderL />
+        <AttendanceStatCard label="Absent" value={stats?.absent || 0} colorClass="text-destructive" loading={statsLoading} showBorderL />
+        <AttendanceStatCard label="On Leave" value={stats?.onLeave || 0} colorClass="text-info" loading={statsLoading} showBorderL />
       </div>
 
       <Card>

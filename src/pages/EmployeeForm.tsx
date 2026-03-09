@@ -141,6 +141,7 @@ export default function EmployeeForm() {
       { field: "basic_salary", label: "Basic Salary" },
       { field: "emergency_contact_name", label: "Emergency Contact Name" },
       { field: "emergency_contact_phone", label: "Emergency Contact Phone" },
+      { field: "rfid_card_number", label: "RFID Card Number" },
     ];
 
     if (!id) {

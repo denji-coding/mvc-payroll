@@ -12,8 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor, FileText } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor, FileText, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { useQuery } from '@tanstack/react-query';
 import { formatFullName, capitalizeWords } from '@/lib/formatName';
 import { DateInput } from '@/components/ui/date-picker';
 import { useAuth } from '@/hooks/useAuth';

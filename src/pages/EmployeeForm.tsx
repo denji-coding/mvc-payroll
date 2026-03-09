@@ -245,10 +245,16 @@ export default function EmployeeForm() {
 
   const updateField = (field: string, value: string) => setForm({ ...form, [field]: value });
 
+  const [passwordManuallyEdited, setPasswordManuallyEdited] = useState(false);
+
   const generateEmployeeId = () => {
     const randomId = Math.floor(100000 + Math.random() * 900000);
     const newEmployeeId = `EMP-${randomId}`;
-    setForm({ ...form, employee_id: newEmployeeId, password: form.password || newEmployeeId });
+    setForm((prev) => ({
+      ...prev,
+      employee_id: newEmployeeId,
+      password: passwordManuallyEdited ? prev.password : newEmployeeId,
+    }));
   };
 
   return (

@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useCountUp } from '@/hooks/useCountUp';
 import { useEmployeeDashboard } from '@/hooks/useEmployeeDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -84,7 +85,7 @@ export default function EmployeeDashboard() {
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{attendanceSummary?.monthlyPresent || 0} days</div>
+            <div className="text-2xl font-bold"><AnimatedDays value={attendanceSummary?.monthlyPresent || 0} /> days</div>
             <p className="text-xs text-muted-foreground mt-1">
               {attendanceSummary?.monthlyLate || 0} late, {attendanceSummary?.monthlyAbsent || 0} absent
             </p>
@@ -100,7 +101,7 @@ export default function EmployeeDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(leaveCredits?.['Vacation Leave']?.total || 0) - (leaveCredits?.['Vacation Leave']?.used || 0)} days
+              <AnimatedDays value={(leaveCredits?.['Vacation Leave']?.total || 0) - (leaveCredits?.['Vacation Leave']?.used || 0)} /> days
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {leaveCredits?.['Vacation Leave']?.used || 0} used of {leaveCredits?.['Vacation Leave']?.total || 0}
@@ -117,7 +118,7 @@ export default function EmployeeDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(leaveCredits?.['Sick Leave']?.total || 0) - (leaveCredits?.['Sick Leave']?.used || 0)} days
+              <AnimatedDays value={(leaveCredits?.['Sick Leave']?.total || 0) - (leaveCredits?.['Sick Leave']?.used || 0)} /> days
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {leaveCredits?.['Sick Leave']?.used || 0} used of {leaveCredits?.['Sick Leave']?.total || 0}
@@ -234,4 +235,9 @@ export default function EmployeeDashboard() {
       </Card>
     </div>
   );
+}
+
+function AnimatedDays({ value }: { value: number }) {
+  const animated = useCountUp(value);
+  return <>{animated}</>;
 }

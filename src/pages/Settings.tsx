@@ -486,13 +486,27 @@ function HolidayManagement() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this holiday?')) {
-      await deleteHoliday.mutateAsync(id);
+  const handleDelete = async () => {
+    if (deleteId) {
+      await deleteHoliday.mutateAsync(deleteId);
+      setDeleteId(null);
     }
   };
 
   return (
+    <>
+    <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Holiday</AlertDialogTitle>
+          <AlertDialogDescription>Are you sure you want to delete this holiday? This action cannot be undone.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

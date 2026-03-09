@@ -114,3 +114,28 @@ export default function LeaveApprovals() {
     </div>
   );
 }
+
+function MedicalCertificatePreview({ filePath }: { filePath: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUrl = async () => {
+      const { data } = await supabase.storage.from('medical-certificates').createSignedUrl(filePath, 300);
+      if (data?.signedUrl) setUrl(data.signedUrl);
+    };
+    getUrl();
+  }, [filePath]);
+
+  return (
+    <div className="space-y-2">
+      <span className="text-sm text-muted-foreground font-medium">Medical Certificate:</span>
+      {url ? (
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          <img src={url} alt="Medical Certificate" className="rounded-lg border max-h-64 w-full object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+        </a>
+      ) : (
+        <div className="h-32 flex items-center justify-center bg-muted rounded-lg text-sm text-muted-foreground">Loading...</div>
+      )}
+    </div>
+  );
+}

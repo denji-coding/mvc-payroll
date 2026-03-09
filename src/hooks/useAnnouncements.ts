@@ -48,7 +48,6 @@ export function usePublishedAnnouncements() {
 
 export function useCreateAnnouncement() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (announcement: { title: string; content: string; branch_id?: string | null }) => {
@@ -68,13 +67,11 @@ export function useCreateAnnouncement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast({ title: 'Announcement created successfully' });
+      toast.success('Announcement created successfully');
     },
     onError: (error: Error) => {
-      toast({ 
-        title: 'Error creating announcement', 
-        description: getSafeErrorMessage(error, 'Failed to create announcement'), 
-        variant: 'destructive' 
+      toast.error('Error creating announcement', {
+        description: getSafeErrorMessage(error, 'Failed to create announcement'),
       });
     },
   });
@@ -82,7 +79,6 @@ export function useCreateAnnouncement() {
 
 export function useUpdateAnnouncement() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Announcement> & { id: string }) => {
@@ -98,13 +94,11 @@ export function useUpdateAnnouncement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast({ title: 'Announcement updated successfully' });
+      toast.success('Announcement updated successfully');
     },
     onError: (error: Error) => {
-      toast({ 
-        title: 'Error updating announcement', 
-        description: getSafeErrorMessage(error, 'Failed to update announcement'), 
-        variant: 'destructive' 
+      toast.error('Error updating announcement', {
+        description: getSafeErrorMessage(error, 'Failed to update announcement'),
       });
     },
   });
@@ -112,7 +106,6 @@ export function useUpdateAnnouncement() {
 
 export function useToggleAnnouncementPublish() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ id, is_published }: { id: string; is_published: boolean }) => {
@@ -131,13 +124,11 @@ export function useToggleAnnouncementPublish() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast({ title: variables.is_published ? 'Announcement published' : 'Announcement unpublished' });
+      toast.success(variables.is_published ? 'Announcement published' : 'Announcement unpublished');
     },
     onError: (error: Error) => {
-      toast({ 
-        title: 'Error updating announcement', 
-        description: getSafeErrorMessage(error, 'Failed to update announcement'), 
-        variant: 'destructive' 
+      toast.error('Error updating announcement', {
+        description: getSafeErrorMessage(error, 'Failed to update announcement'),
       });
     },
   });
@@ -145,7 +136,6 @@ export function useToggleAnnouncementPublish() {
 
 export function useDeleteAnnouncement() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -158,13 +148,11 @@ export function useDeleteAnnouncement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast({ title: 'Announcement deleted successfully' });
+      toast.success('Announcement deleted successfully');
     },
     onError: (error: Error) => {
-      toast({ 
-        title: 'Error deleting announcement', 
-        description: getSafeErrorMessage(error, 'Failed to delete announcement'), 
-        variant: 'destructive' 
+      toast.error('Error deleting announcement', {
+        description: getSafeErrorMessage(error, 'Failed to delete announcement'),
       });
     },
   });

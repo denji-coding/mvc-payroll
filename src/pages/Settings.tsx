@@ -630,6 +630,7 @@ function HolidayManagement() {
 function AnnouncementManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<any>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', content: '', branch_id: '' });
 
   const { data: announcements, isLoading } = useAnnouncements();

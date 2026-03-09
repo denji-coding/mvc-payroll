@@ -97,7 +97,11 @@ export default function LeaveApprovals() {
                 <div><span className="text-muted-foreground">Days:</span> <span className="font-medium">{reviewLeave.total_days}</span></div>
                 <div><span className="text-muted-foreground">Pay Type:</span> <span className="font-medium capitalize">{(reviewLeave.pay_type || 'with_pay').replace('_', ' ')}</span></div>
               </div>
-              {reviewLeave.reason && <div className="text-sm"><span className="text-muted-foreground">Reason:</span> {reviewLeave.reason}</div>}
+              {reviewLeave.medical_certificate_url ? (
+                <MedicalCertificatePreview filePath={reviewLeave.medical_certificate_url} />
+              ) : reviewLeave.reason ? (
+                <div className="text-sm"><span className="text-muted-foreground">Reason:</span> {reviewLeave.reason}</div>
+              ) : null}
               <div><Label>Remarks</Label><Textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} placeholder="Add remarks..." /></div>
               <div className="flex gap-2">
                 <Button onClick={() => handleApprove('approve')} disabled={approveLeave.isPending} className="flex-1"><CheckCircle className="mr-2 h-4 w-4" /> Approve</Button>

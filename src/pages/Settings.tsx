@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -453,6 +454,7 @@ function HolidayManagement() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<any>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', date: '', type: 'regular' });
 
   const { data: holidays, isLoading } = useHolidays(year);
@@ -485,13 +487,27 @@ function HolidayManagement() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this holiday?')) {
-      await deleteHoliday.mutateAsync(id);
+  const handleDelete = async () => {
+    if (deleteId) {
+      await deleteHoliday.mutateAsync(deleteId);
+      setDeleteId(null);
     }
   };
 
   return (
+    <>
+    <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Holiday</AlertDialogTitle>
+          <AlertDialogDescription>Are you sure you want to delete this holiday? This action cannot be undone.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -596,7 +612,7 @@ function HolidayManagement() {
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(holiday)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(holiday.id)}>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(holiday.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -608,12 +624,14 @@ function HolidayManagement() {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
 
 function AnnouncementManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<any>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', content: '', branch_id: '' });
 
   const { data: announcements, isLoading } = useAnnouncements();
@@ -655,13 +673,27 @@ function AnnouncementManagement() {
     await togglePublish.mutateAsync({ id, is_published: !currentStatus });
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this announcement?')) {
-      await deleteAnnouncement.mutateAsync(id);
+  const handleDelete = async () => {
+    if (deleteId) {
+      await deleteAnnouncement.mutateAsync(deleteId);
+      setDeleteId(null);
     }
   };
 
   return (
+    <>
+    <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Announcement</AlertDialogTitle>
+          <AlertDialogDescription>Are you sure you want to delete this announcement? This action cannot be undone.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -765,7 +797,7 @@ function AnnouncementManagement() {
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(announcement)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(announcement.id)}>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(announcement.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -777,6 +809,7 @@ function AnnouncementManagement() {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
 

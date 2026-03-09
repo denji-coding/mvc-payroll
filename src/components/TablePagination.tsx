@@ -54,8 +54,9 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
   };
 
   return (
-    <Pagination className="mt-4">
-      <PaginationContent className="flex-wrap gap-1">
+    <div className="mt-4 overflow-x-auto">
+      <Pagination>
+        <PaginationContent className="gap-1">
         <PaginationItem>
           <PaginationPrevious
             onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
@@ -87,5 +88,6 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
         </PaginationItem>
       </PaginationContent>
     </Pagination>
+    </div>
   );
 }

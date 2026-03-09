@@ -485,7 +485,7 @@ export default function EmployeeForm() {
                 <RequiredLabel>Password</RequiredLabel>
                 <PasswordInput
                   value={form.password}
-                  onChange={(e) => updateField("password", e.target.value)}
+                  onChange={(e) => { setPasswordManuallyEdited(true); updateField("password", e.target.value); }}
                   placeholder="Min 6 characters"
                 />
                 <p className="text-xs text-muted-foreground mt-1">

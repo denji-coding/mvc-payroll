@@ -796,7 +796,7 @@ function AnnouncementManagement() {
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(announcement)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(announcement.id)}>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(announcement.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

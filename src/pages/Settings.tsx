@@ -453,6 +453,7 @@ function HolidayManagement() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<any>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', date: '', type: 'regular' });
 
   const { data: holidays, isLoading } = useHolidays(year);

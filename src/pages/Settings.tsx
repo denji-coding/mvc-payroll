@@ -672,13 +672,27 @@ function AnnouncementManagement() {
     await togglePublish.mutateAsync({ id, is_published: !currentStatus });
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this announcement?')) {
-      await deleteAnnouncement.mutateAsync(id);
+  const handleDelete = async () => {
+    if (deleteId) {
+      await deleteAnnouncement.mutateAsync(deleteId);
+      setDeleteId(null);
     }
   };
 
   return (
+    <>
+    <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Announcement</AlertDialogTitle>
+          <AlertDialogDescription>Are you sure you want to delete this announcement? This action cannot be undone.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

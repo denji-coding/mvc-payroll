@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { getSafeErrorMessage } from '@/lib/errorHandler';
 
 export interface Holiday {
@@ -32,7 +32,6 @@ export function useHolidays(year?: number) {
 
 export function useCreateHoliday() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (holiday: Omit<Holiday, 'id' | 'created_at'>) => {
@@ -47,13 +46,11 @@ export function useCreateHoliday() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['holidays'] });
-      toast({ title: 'Holiday created successfully' });
+      toast.success('Holiday created successfully');
     },
     onError: (error: Error) => {
-      toast({ 
-        title: 'Error creating holiday', 
-        description: getSafeErrorMessage(error, 'Failed to create holiday'), 
-        variant: 'destructive' 
+      toast.error('Error creating holiday', {
+        description: getSafeErrorMessage(error, 'Failed to create holiday'),
       });
     },
   });
@@ -61,7 +58,6 @@ export function useCreateHoliday() {
 
 export function useUpdateHoliday() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Holiday> & { id: string }) => {
@@ -77,13 +73,11 @@ export function useUpdateHoliday() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['holidays'] });
-      toast({ title: 'Holiday updated successfully' });
+      toast.success('Holiday updated successfully');
     },
     onError: (error: Error) => {
-      toast({ 
-        title: 'Error updating holiday', 
-        description: getSafeErrorMessage(error, 'Failed to update holiday'), 
-        variant: 'destructive' 
+      toast.error('Error updating holiday', {
+        description: getSafeErrorMessage(error, 'Failed to update holiday'),
       });
     },
   });
@@ -91,7 +85,6 @@ export function useUpdateHoliday() {
 
 export function useDeleteHoliday() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -104,13 +97,11 @@ export function useDeleteHoliday() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['holidays'] });
-      toast({ title: 'Holiday deleted successfully' });
+      toast.success('Holiday deleted successfully');
     },
     onError: (error: Error) => {
-      toast({ 
-        title: 'Error deleting holiday', 
-        description: getSafeErrorMessage(error, 'Failed to delete holiday'), 
-        variant: 'destructive' 
+      toast.error('Error deleting holiday', {
+        description: getSafeErrorMessage(error, 'Failed to delete holiday'),
       });
     },
   });

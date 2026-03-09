@@ -25,9 +25,11 @@ interface Relationship {
 }
 
 const relationships: Relationship[] = [
+  // Branch relationships
   { parent: 'branches', child: 'employees', fkColumn: 'branch_id', parentColumn: 'id' },
   { parent: 'branches', child: 'branch_managers', fkColumn: 'branch_id', parentColumn: 'id' },
   { parent: 'branches', child: 'announcements', fkColumn: 'branch_id', parentColumn: 'id' },
+  // Employee relationships
   { parent: 'employees', child: 'attendance', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'employee_schedules', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'employee_salary_adjustments', fkColumn: 'employee_id', parentColumn: 'id' },
@@ -35,8 +37,30 @@ const relationships: Relationship[] = [
   { parent: 'employees', child: 'leave_requests', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'payroll_records', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'loans', fkColumn: 'employee_id', parentColumn: 'id' },
+  // Salary & Payroll
   { parent: 'salary_components', child: 'employee_salary_adjustments', fkColumn: 'component_id', parentColumn: 'id' },
   { parent: 'payroll_periods', child: 'payroll_records', fkColumn: 'payroll_period_id', parentColumn: 'id' },
+  // Auth / User relationships
+  { parent: 'profiles', child: 'user_roles', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'employees', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'branch_managers', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'notifications', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'password_reset_tokens', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'announcements', fkColumn: 'created_by', parentColumn: 'id' },
+  { parent: 'profiles', child: 'payroll_periods', fkColumn: 'created_by', parentColumn: 'id' },
+  { parent: 'profiles', child: 'leave_requests', fkColumn: 'manager_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'leave_requests', fkColumn: 'hr_id', parentColumn: 'id' },
+  // Leave type references
+  { parent: 'leave_types', child: 'leave_credits', fkColumn: 'leave_type', parentColumn: 'name' },
+  { parent: 'leave_types', child: 'leave_requests', fkColumn: 'leave_type', parentColumn: 'name' },
+  // Role permissions
+  { parent: 'user_roles', child: 'role_permissions', fkColumn: 'role', parentColumn: 'role' },
+  // Positions referenced by employees
+  { parent: 'positions', child: 'employees', fkColumn: 'position', parentColumn: 'name' },
+  // Holidays used in payroll computation
+  { parent: 'holidays', child: 'payroll_records', fkColumn: 'holiday_pay (computed)', parentColumn: 'date' },
+  // Settings used by attendance terminal
+  { parent: 'settings', child: 'attendance', fkColumn: 'terminal config (logical)', parentColumn: 'key' },
 ];
 
 const tables: TableSchema[] = [

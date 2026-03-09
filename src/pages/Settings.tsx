@@ -106,6 +106,12 @@ export default function Settings() {
             <PermissionsManagement />
           </TabsContent>
         )}
+
+        {isHR && (
+          <TabsContent value="medical-certs" className="mt-4 space-y-4">
+            <MedicalCertificatesTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

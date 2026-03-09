@@ -55,7 +55,7 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
 
   return (
     <Pagination className="mt-4">
-      <PaginationContent>
+      <PaginationContent className="flex-wrap gap-1">
         <PaginationItem>
           <PaginationPrevious
             onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}

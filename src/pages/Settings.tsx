@@ -623,6 +623,7 @@ function HolidayManagement() {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
 

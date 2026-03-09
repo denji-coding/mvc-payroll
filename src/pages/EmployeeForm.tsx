@@ -253,7 +253,7 @@ export default function EmployeeForm() {
     setForm((prev) => ({
       ...prev,
       employee_id: newEmployeeId,
-      password: passwordManuallyEdited ? prev.password : newEmployeeId,
+      password: newEmployeeId,
     }));
   };
 

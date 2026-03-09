@@ -438,7 +438,7 @@ export default function EmployeeForm() {
               />
             </div>
             <div>
-              <Label>RFID Card Number</Label>
+              <RequiredLabel>RFID Card Number</RequiredLabel>
               <Input
                 value={form.rfid_card_number}
                 onChange={(e) => updateField("rfid_card_number", e.target.value)}

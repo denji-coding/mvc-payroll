@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useLeaveRequests, useApproveLeaveRequest } from '@/hooks/useLeaves';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,7 +97,11 @@ export default function LeaveApprovals() {
                 <div><span className="text-muted-foreground">Days:</span> <span className="font-medium">{reviewLeave.total_days}</span></div>
                 <div><span className="text-muted-foreground">Pay Type:</span> <span className="font-medium capitalize">{(reviewLeave.pay_type || 'with_pay').replace('_', ' ')}</span></div>
               </div>
-              {reviewLeave.reason && <div className="text-sm"><span className="text-muted-foreground">Reason:</span> {reviewLeave.reason}</div>}
+              {reviewLeave.medical_certificate_url ? (
+                <MedicalCertificatePreview filePath={reviewLeave.medical_certificate_url} />
+              ) : reviewLeave.reason ? (
+                <div className="text-sm"><span className="text-muted-foreground">Reason:</span> {reviewLeave.reason}</div>
+              ) : null}
               <div><Label>Remarks</Label><Textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} placeholder="Add remarks..." /></div>
               <div className="flex gap-2">
                 <Button onClick={() => handleApprove('approve')} disabled={approveLeave.isPending} className="flex-1"><CheckCircle className="mr-2 h-4 w-4" /> Approve</Button>
@@ -105,6 +110,31 @@ export default function LeaveApprovals() {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+    </div>
+  );
+}
+
+function MedicalCertificatePreview({ filePath }: { filePath: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUrl = async () => {
+      const { data } = await supabase.storage.from('medical-certificates').createSignedUrl(filePath, 300);
+      if (data?.signedUrl) setUrl(data.signedUrl);
+    };
+    getUrl();
+  }, [filePath]);
+
+  return (
+    <div className="space-y-2">
+      <span className="text-sm text-muted-foreground font-medium">Medical Certificate:</span>
+      {url ? (
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          <img src={url} alt="Medical Certificate" className="rounded-lg border max-h-64 w-full object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+        </a>
+      ) : (
+        <div className="h-32 flex items-center justify-center bg-muted rounded-lg text-sm text-muted-foreground">Loading...</div>
       )}
     </div>
   );

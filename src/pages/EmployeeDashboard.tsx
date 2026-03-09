@@ -101,7 +101,7 @@ export default function EmployeeDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(leaveCredits?.['Vacation Leave']?.total || 0) - (leaveCredits?.['Vacation Leave']?.used || 0)} days
+              <AnimatedDays value={(leaveCredits?.['Vacation Leave']?.total || 0) - (leaveCredits?.['Vacation Leave']?.used || 0)} /> days
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {leaveCredits?.['Vacation Leave']?.used || 0} used of {leaveCredits?.['Vacation Leave']?.total || 0}

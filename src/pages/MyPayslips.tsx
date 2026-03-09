@@ -197,3 +197,27 @@ export default function MyPayslips() {
     </div>
   );
 }
+
+function AnimatedValue({ value, fmt }: { value: number; fmt: (n: number) => string }) {
+  const animated = useCountUp(Math.round(value * 100));
+  return <>{fmt(animated / 100)}</>;
+}
+
+function SummaryCards({ totalEarnings, totalDeductions, totalNetPay, selectedYear, fmt }: { totalEarnings: number; totalDeductions: number; totalNetPay: number; selectedYear: number; fmt: (n: number) => string }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Earnings</CardTitle><TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></CardHeader>
+        <CardContent><div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400"><AnimatedValue value={totalEarnings} fmt={fmt} /></div><p className="text-xs text-muted-foreground">Gross pay for {selectedYear}</p></CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Deductions</CardTitle><TrendingDown className="h-4 w-4 text-destructive" /></CardHeader>
+        <CardContent><div className="text-2xl font-bold text-destructive"><AnimatedValue value={totalDeductions} fmt={fmt} /></div><p className="text-xs text-muted-foreground">Deductions for {selectedYear}</p></CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Net Pay</CardTitle><DollarSign className="h-4 w-4 text-primary" /></CardHeader>
+        <CardContent><div className="text-2xl font-bold"><AnimatedValue value={totalNetPay} fmt={fmt} /></div><p className="text-xs text-muted-foreground">Take-home pay for {selectedYear}</p></CardContent>
+      </Card>
+    </div>
+  );
+}

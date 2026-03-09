@@ -55,6 +55,7 @@ export default function Settings() {
             {isHR && <TabsTrigger value="announcements">Announcements</TabsTrigger>}
             {isHR && <TabsTrigger value="users">Users</TabsTrigger>}
             {isHR && <TabsTrigger value="permissions">Permissions</TabsTrigger>}
+            {isHR && <TabsTrigger value="medical-certs">Medical Certs</TabsTrigger>}
           </TabsList>
         </div>
 

@@ -482,6 +482,9 @@ export default function EmployeeForm() {
                   onChange={(e) => updateField("password", e.target.value)}
                   placeholder="Min 6 characters"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Default: Employee ID. You can customize it.
+                </p>
               </div>
               <div className="flex items-end">
                 <p className="text-sm text-muted-foreground">Employee will login using their email and this password</p>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useCountUp } from '@/hooks/useCountUp';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -126,11 +127,7 @@ export default function MyPayslips() {
         <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}><SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger><SelectContent>{years.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}</SelectContent></Select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Earnings</CardTitle><TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{fmt(totalEarnings)}</div><p className="text-xs text-muted-foreground">Gross pay for {selectedYear}</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Deductions</CardTitle><TrendingDown className="h-4 w-4 text-destructive" /></CardHeader><CardContent><div className="text-2xl font-bold text-destructive">{fmt(totalDeductions)}</div><p className="text-xs text-muted-foreground">Deductions for {selectedYear}</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Net Pay</CardTitle><DollarSign className="h-4 w-4 text-primary" /></CardHeader><CardContent><div className="text-2xl font-bold">{fmt(totalNetPay)}</div><p className="text-xs text-muted-foreground">Take-home pay for {selectedYear}</p></CardContent></Card>
-      </div>
+      <SummaryCards totalEarnings={totalEarnings} totalDeductions={totalDeductions} totalNetPay={totalNetPay} selectedYear={selectedYear} fmt={fmt} />
 
       <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Payroll History</CardTitle><CardDescription>{approvedRecords.length} payslip(s) available for {selectedYear}</CardDescription></CardHeader>
@@ -197,6 +194,30 @@ export default function MyPayslips() {
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function AnimatedValue({ value, fmt }: { value: number; fmt: (n: number) => string }) {
+  const animated = useCountUp(Math.round(value * 100));
+  return <>{fmt(animated / 100)}</>;
+}
+
+function SummaryCards({ totalEarnings, totalDeductions, totalNetPay, selectedYear, fmt }: { totalEarnings: number; totalDeductions: number; totalNetPay: number; selectedYear: number; fmt: (n: number) => string }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Earnings</CardTitle><TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></CardHeader>
+        <CardContent><div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400"><AnimatedValue value={totalEarnings} fmt={fmt} /></div><p className="text-xs text-muted-foreground">Gross pay for {selectedYear}</p></CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Deductions</CardTitle><TrendingDown className="h-4 w-4 text-destructive" /></CardHeader>
+        <CardContent><div className="text-2xl font-bold text-destructive"><AnimatedValue value={totalDeductions} fmt={fmt} /></div><p className="text-xs text-muted-foreground">Deductions for {selectedYear}</p></CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Net Pay</CardTitle><DollarSign className="h-4 w-4 text-primary" /></CardHeader>
+        <CardContent><div className="text-2xl font-bold"><AnimatedValue value={totalNetPay} fmt={fmt} /></div><p className="text-xs text-muted-foreground">Take-home pay for {selectedYear}</p></CardContent>
+      </Card>
     </div>
   );
 }

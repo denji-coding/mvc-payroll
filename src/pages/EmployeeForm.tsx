@@ -247,7 +247,8 @@ export default function EmployeeForm() {
 
   const generateEmployeeId = () => {
     const randomId = Math.floor(100000 + Math.random() * 900000);
-    setForm({ ...form, employee_id: `EMP-${randomId}` });
+    const newEmployeeId = `EMP-${randomId}`;
+    setForm({ ...form, employee_id: newEmployeeId, password: form.password || newEmployeeId });
   };
 
   return (

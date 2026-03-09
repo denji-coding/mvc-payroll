@@ -86,7 +86,7 @@ export default function LeaveApprovals() {
       {/* Review Dialog */}
       {reviewLeave && (
         <Dialog open={!!reviewLeave} onOpenChange={(open) => !open && setReviewLeave(null)}>
-          <DialogContent>
+          <DialogContent className="max-h-[85vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Review Leave Request</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">

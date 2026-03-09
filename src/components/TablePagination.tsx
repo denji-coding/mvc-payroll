@@ -87,6 +87,5 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
         </PaginationItem>
       </PaginationContent>
     </Pagination>
-    </div>
   );
 }

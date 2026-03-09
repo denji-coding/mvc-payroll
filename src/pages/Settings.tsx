@@ -12,8 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor, FileText } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor, FileText, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { useQuery } from '@tanstack/react-query';
 import { formatFullName, capitalizeWords } from '@/lib/formatName';
 import { DateInput } from '@/components/ui/date-picker';
 import { useAuth } from '@/hooks/useAuth';
@@ -52,6 +55,7 @@ export default function Settings() {
             {isHR && <TabsTrigger value="announcements">Announcements</TabsTrigger>}
             {isHR && <TabsTrigger value="users">Users</TabsTrigger>}
             {isHR && <TabsTrigger value="permissions">Permissions</TabsTrigger>}
+            {isHR && <TabsTrigger value="medical-certs">Medical Certs</TabsTrigger>}
           </TabsList>
         </div>
 
@@ -100,6 +104,12 @@ export default function Settings() {
         {isHR && (
           <TabsContent value="permissions" className="mt-4 space-y-4">
             <PermissionsManagement />
+          </TabsContent>
+        )}
+
+        {isHR && (
+          <TabsContent value="medical-certs" className="mt-4 space-y-4">
+            <MedicalCertificatesTab />
           </TabsContent>
         )}
       </Tabs>
@@ -1105,5 +1115,113 @@ function PermissionsManagement() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function MedicalCertificatesTab() {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const { data: leaves, isLoading } = useQuery({
+    queryKey: ['medical-certificates'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select('*, employees(first_name, last_name, employee_id)')
+        .not('medical_certificate_url', 'is', null)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleView = async (filePath: string) => {
+    const { data } = await supabase.storage
+      .from('medical-certificates')
+      .createSignedUrl(filePath, 300);
+    if (data?.signedUrl) {
+      setPreviewUrl(data.signedUrl);
+      setPreviewOpen(true);
+    }
+  };
+
+  const columns: ColumnDef<any, any>[] = [
+    {
+      id: 'employee',
+      header: 'Employee',
+      accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name),
+    },
+    {
+      accessorKey: 'leave_type',
+      header: 'Leave Type',
+      cell: ({ getValue }) => <span className="capitalize">{getValue() as string}</span>,
+    },
+    {
+      id: 'date_range',
+      header: 'Date Range',
+      accessorFn: (row) => row.start_date,
+      cell: ({ row }) => (
+        <span>{format(new Date(row.original.start_date), 'MMM d, yyyy')} – {format(new Date(row.original.end_date), 'MMM d, yyyy')}</span>
+      ),
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ getValue }) => {
+        const status = getValue() as string;
+        const styles: Record<string, string> = {
+          pending: 'bg-warning/20 text-warning',
+          manager_approved: 'bg-info/20 text-info',
+          hr_approved: 'bg-success/20 text-success',
+          rejected: 'bg-destructive/20 text-destructive',
+          cancelled: 'bg-muted text-muted-foreground',
+        };
+        return <span className={`px-2 py-1 rounded text-xs font-medium ${styles[status] || styles.pending}`}>{status.replace('_', ' ')}</span>;
+      },
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <Button size="sm" variant="outline" onClick={() => handleView(row.original.medical_certificate_url)}>
+          <Eye className="mr-1 h-3.5 w-3.5" /> View
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Medical Certificates
+          </CardTitle>
+          <CardDescription>All uploaded medical certificates from leave requests</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : (
+            <DataTable columns={columns} data={leaves || []} searchPlaceholder="Search by employee or leave type..." emptyMessage="No medical certificates found." />
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Medical Certificate</DialogTitle>
+          </DialogHeader>
+          {previewUrl && (
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+              <img src={previewUrl} alt="Medical Certificate" className="rounded-lg border w-full object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+            </a>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

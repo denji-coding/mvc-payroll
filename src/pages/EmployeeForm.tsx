@@ -141,6 +141,7 @@ export default function EmployeeForm() {
       { field: "basic_salary", label: "Basic Salary" },
       { field: "emergency_contact_name", label: "Emergency Contact Name" },
       { field: "emergency_contact_phone", label: "Emergency Contact Phone" },
+      { field: "rfid_card_number", label: "RFID Card Number" },
     ];
 
     if (!id) {
@@ -246,7 +247,8 @@ export default function EmployeeForm() {
 
   const generateEmployeeId = () => {
     const randomId = Math.floor(100000 + Math.random() * 900000);
-    setForm({ ...form, employee_id: `EMP-${randomId}` });
+    const newEmployeeId = `EMP-${randomId}`;
+    setForm({ ...form, employee_id: newEmployeeId, password: form.password || newEmployeeId });
   };
 
   return (
@@ -436,7 +438,7 @@ export default function EmployeeForm() {
               />
             </div>
             <div>
-              <Label>RFID Card Number</Label>
+              <RequiredLabel>RFID Card Number</RequiredLabel>
               <Input
                 value={form.rfid_card_number}
                 onChange={(e) => updateField("rfid_card_number", e.target.value)}
@@ -480,6 +482,9 @@ export default function EmployeeForm() {
                   onChange={(e) => updateField("password", e.target.value)}
                   placeholder="Min 6 characters"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Default: Employee ID. You can customize it.
+                </p>
               </div>
               <div className="flex items-end">
                 <p className="text-sm text-muted-foreground">Employee will login using their email and this password</p>

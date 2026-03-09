@@ -19,7 +19,8 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
 
   const getVisiblePages = () => {
     const pages: (number | 'ellipsis')[] = [];
-    const maxVisible = 5;
+    // Show fewer pages on mobile
+    const maxVisible = typeof window !== 'undefined' && window.innerWidth < 640 ? 3 : 5;
 
     if (totalPages <= maxVisible) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -54,7 +55,7 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
 
   return (
     <Pagination className="mt-4">
-      <PaginationContent>
+      <PaginationContent className="flex-wrap gap-1">
         <PaginationItem>
           <PaginationPrevious
             onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}

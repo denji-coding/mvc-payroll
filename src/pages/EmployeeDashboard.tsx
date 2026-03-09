@@ -85,7 +85,7 @@ export default function EmployeeDashboard() {
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{attendanceSummary?.monthlyPresent || 0} days</div>
+            <div className="text-2xl font-bold"><AnimatedDays value={attendanceSummary?.monthlyPresent || 0} /> days</div>
             <p className="text-xs text-muted-foreground mt-1">
               {attendanceSummary?.monthlyLate || 0} late, {attendanceSummary?.monthlyAbsent || 0} absent
             </p>

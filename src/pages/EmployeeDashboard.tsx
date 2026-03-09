@@ -236,3 +236,8 @@ export default function EmployeeDashboard() {
     </div>
   );
 }
+
+function AnimatedDays({ value }: { value: number }) {
+  const animated = useCountUp(value);
+  return <>{animated}</>;
+}

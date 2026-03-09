@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useCountUp } from '@/hooks/useCountUp';
 import { useEmployeeDashboard } from '@/hooks/useEmployeeDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

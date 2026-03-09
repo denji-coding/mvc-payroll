@@ -808,6 +808,7 @@ function AnnouncementManagement() {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
 

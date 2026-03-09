@@ -611,7 +611,7 @@ function HolidayManagement() {
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(holiday)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(holiday.id)}>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(holiday.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

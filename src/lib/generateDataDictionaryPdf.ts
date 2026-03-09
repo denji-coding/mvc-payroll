@@ -25,9 +25,11 @@ interface Relationship {
 }
 
 const relationships: Relationship[] = [
+  // Branch relationships
   { parent: 'branches', child: 'employees', fkColumn: 'branch_id', parentColumn: 'id' },
   { parent: 'branches', child: 'branch_managers', fkColumn: 'branch_id', parentColumn: 'id' },
   { parent: 'branches', child: 'announcements', fkColumn: 'branch_id', parentColumn: 'id' },
+  // Employee relationships
   { parent: 'employees', child: 'attendance', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'employee_schedules', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'employee_salary_adjustments', fkColumn: 'employee_id', parentColumn: 'id' },
@@ -35,8 +37,30 @@ const relationships: Relationship[] = [
   { parent: 'employees', child: 'leave_requests', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'payroll_records', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'loans', fkColumn: 'employee_id', parentColumn: 'id' },
+  // Salary & Payroll
   { parent: 'salary_components', child: 'employee_salary_adjustments', fkColumn: 'component_id', parentColumn: 'id' },
   { parent: 'payroll_periods', child: 'payroll_records', fkColumn: 'payroll_period_id', parentColumn: 'id' },
+  // Auth / User relationships
+  { parent: 'profiles', child: 'user_roles', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'employees', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'branch_managers', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'notifications', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'password_reset_tokens', fkColumn: 'user_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'announcements', fkColumn: 'created_by', parentColumn: 'id' },
+  { parent: 'profiles', child: 'payroll_periods', fkColumn: 'created_by', parentColumn: 'id' },
+  { parent: 'profiles', child: 'leave_requests', fkColumn: 'manager_id', parentColumn: 'id' },
+  { parent: 'profiles', child: 'leave_requests', fkColumn: 'hr_id', parentColumn: 'id' },
+  // Leave type references
+  { parent: 'leave_types', child: 'leave_credits', fkColumn: 'leave_type', parentColumn: 'name' },
+  { parent: 'leave_types', child: 'leave_requests', fkColumn: 'leave_type', parentColumn: 'name' },
+  // Role permissions
+  { parent: 'user_roles', child: 'role_permissions', fkColumn: 'role', parentColumn: 'role' },
+  // Positions referenced by employees
+  { parent: 'positions', child: 'employees', fkColumn: 'position', parentColumn: 'name' },
+  // Holidays used in payroll computation
+  { parent: 'holidays', child: 'payroll_records', fkColumn: 'holiday_pay (computed)', parentColumn: 'date' },
+  // Settings used by attendance terminal
+  { parent: 'settings', child: 'attendance', fkColumn: 'terminal config (logical)', parentColumn: 'key' },
 ];
 
 const tables: TableSchema[] = [
@@ -536,30 +560,153 @@ export function generateDataDictionaryPdf(): void {
     theme: 'grid',
   });
 
-  // ─── ERD / RELATIONSHIPS ───
-  doc.addPage();
+  // ─── VISUAL ERD ───
+  doc.addPage('landscape');
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('Entity Relationship Diagram', margin, 18);
+  doc.text('Entity Relationship Diagram (ERD)', margin, 15);
+
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80);
+  doc.text('All database tables and their connections are shown below. Lines indicate foreign key or logical relationships.', margin, 21);
+  doc.setTextColor(0);
+
+  const lPageW = doc.internal.pageSize.getWidth();
+  const lPageH = doc.internal.pageSize.getHeight();
+
+  // ERD node positions (landscape A4: ~297 x 210)
+  interface ErdNode { x: number; y: number; w: number; h: number; label: string; color: [number, number, number] }
+  const nodes: ErdNode[] = [
+    // Row 1 - Core auth
+    { x: 20,  y: 30, w: 32, h: 14, label: 'profiles',           color: [59, 130, 246] },
+    { x: 60,  y: 30, w: 32, h: 14, label: 'user_roles',         color: [59, 130, 246] },
+    { x: 100, y: 30, w: 38, h: 14, label: 'role_permissions',    color: [59, 130, 246] },
+    { x: 150, y: 30, w: 42, h: 14, label: 'password_reset_tokens', color: [59, 130, 246] },
+    // Row 2 - Organization
+    { x: 20,  y: 55, w: 32, h: 14, label: 'branches',           color: [16, 185, 129] },
+    { x: 60,  y: 55, w: 40, h: 14, label: 'branch_managers',    color: [16, 185, 129] },
+    { x: 110, y: 55, w: 32, h: 14, label: 'positions',          color: [16, 185, 129] },
+    { x: 150, y: 55, w: 36, h: 14, label: 'announcements',      color: [16, 185, 129] },
+    // Row 3 - Central entity
+    { x: 85,  y: 82, w: 40, h: 16, label: 'employees',          color: [234, 88, 12] },
+    // Row 4 - Employee children (left)
+    { x: 10,  y: 110, w: 32, h: 14, label: 'attendance',        color: [139, 92, 246] },
+    { x: 48,  y: 110, w: 42, h: 14, label: 'employee_schedules', color: [139, 92, 246] },
+    { x: 96,  y: 110, w: 34, h: 14, label: 'leave_requests',    color: [139, 92, 246] },
+    { x: 136, y: 110, w: 32, h: 14, label: 'leave_credits',     color: [139, 92, 246] },
+    // Row 5 - More children
+    { x: 10,  y: 138, w: 32, h: 14, label: 'loans',             color: [236, 72, 153] },
+    { x: 48,  y: 138, w: 50, h: 14, label: 'employee_salary_adj', color: [236, 72, 153] },
+    { x: 105, y: 138, w: 38, h: 14, label: 'payroll_records',   color: [236, 72, 153] },
+    // Row 6 - Reference tables
+    { x: 48,  y: 166, w: 40, h: 14, label: 'salary_components', color: [245, 158, 11] },
+    { x: 105, y: 166, w: 38, h: 14, label: 'payroll_periods',   color: [245, 158, 11] },
+    { x: 155, y: 110, w: 32, h: 14, label: 'leave_types',       color: [245, 158, 11] },
+    // Standalone-ish
+    { x: 200, y: 55, w: 36, h: 14, label: 'notifications',      color: [107, 114, 128] },
+    { x: 200, y: 82, w: 28, h: 14, label: 'settings',           color: [107, 114, 128] },
+    { x: 200, y: 110, w: 28, h: 14, label: 'holidays',          color: [107, 114, 128] },
+  ];
+
+  // Draw nodes
+  nodes.forEach((n) => {
+    doc.setFillColor(n.color[0], n.color[1], n.color[2]);
+    doc.roundedRect(n.x, n.y, n.w, n.h, 2, 2, 'F');
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text(n.label, n.x + n.w / 2, n.y + n.h / 2 + 1.5, { align: 'center' });
+  });
+
+  // Draw connections
+  doc.setDrawColor(150);
+  doc.setLineWidth(0.3);
+  doc.setTextColor(0);
+
+  const findNode = (label: string) => {
+    const mapped: Record<string, string> = {
+      'employee_salary_adjustments': 'employee_salary_adj',
+    };
+    return nodes.find(n => n.label === (mapped[label] || label));
+  };
+
+  const drawnLines = new Set<string>();
+  relationships.forEach((r) => {
+    const pn = findNode(r.parent);
+    const cn = findNode(r.child);
+    if (!pn || !cn) return;
+    
+    const key = `${pn.label}-${cn.label}`;
+    if (drawnLines.has(key)) return;
+    drawnLines.add(key);
+
+    const px = pn.x + pn.w / 2;
+    const py = pn.y + pn.h;
+    const cx = cn.x + cn.w / 2;
+    const cy = cn.y;
+
+    // Draw line from bottom of parent to top of child
+    const fromY = py < cy ? py : pn.y;
+    const toY = py < cy ? cy : cn.y + cn.h;
+    
+    doc.setDrawColor(150);
+    doc.line(px, fromY, cx, toY);
+  });
+
+  // Legend
+  const legendX = lPageW - 80;
+  const legendY = 148;
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0);
+  doc.text('Legend', legendX, legendY);
+  
+  const legendItems: { color: [number, number, number]; label: string }[] = [
+    { color: [59, 130, 246], label: 'Authentication & Roles' },
+    { color: [16, 185, 129], label: 'Organization' },
+    { color: [234, 88, 12], label: 'Core Entity' },
+    { color: [139, 92, 246], label: 'Employee Activity' },
+    { color: [236, 72, 153], label: 'Compensation' },
+    { color: [245, 158, 11], label: 'Reference Tables' },
+    { color: [107, 114, 128], label: 'System' },
+  ];
+  
+  legendItems.forEach((item, i) => {
+    const ly = legendY + 5 + i * 6;
+    doc.setFillColor(item.color[0], item.color[1], item.color[2]);
+    doc.roundedRect(legendX, ly - 3, 8, 4, 1, 1, 'F');
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60);
+    doc.text(item.label, legendX + 10, ly);
+  });
+
+  // ─── RELATIONSHIPS TABLE ───
+  doc.addPage('portrait');
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0);
+  doc.text('Relationships Reference', margin, 18);
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80);
-  doc.text('Foreign key relationships between tables.', margin, 24);
+  doc.text('All foreign key and logical relationships between tables.', margin, 24);
   doc.setTextColor(0);
 
   autoTable(doc, {
     startY: 28,
     head: [['Parent Table', 'Parent Column', '→', 'Child Table', 'FK Column']],
     body: relationships.map((r) => [r.parent, r.parentColumn, '→', r.child, r.fkColumn]),
-    styles: { fontSize: 8, cellPadding: 2 },
+    styles: { fontSize: 7, cellPadding: 1.5 },
     headStyles: { fillColor: [234, 88, 12], textColor: [255, 255, 255] },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 35 },
-      1: { cellWidth: 25 },
-      2: { cellWidth: 10, halign: 'center' },
-      3: { fontStyle: 'bold', cellWidth: 40 },
-      4: { cellWidth: 35 },
+      0: { fontStyle: 'bold', cellWidth: 32 },
+      1: { cellWidth: 22 },
+      2: { cellWidth: 8, halign: 'center' },
+      3: { fontStyle: 'bold', cellWidth: 38 },
+      4: { cellWidth: 'auto' },
     },
     margin: { left: margin, right: margin },
     theme: 'grid',
@@ -567,28 +714,37 @@ export function generateDataDictionaryPdf(): void {
 
   // Cardinality summary
   let cardY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
+  if (cardY > 240) {
+    doc.addPage();
+    cardY = 20;
+  }
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.text('Cardinality Summary', margin, cardY);
   
   cardY += 6;
   const cardinalityData = [
+    ['profiles', '1 : N', 'user_roles, employees, branch_managers, notifications, password_reset_tokens, announcements, payroll_periods, leave_requests'],
     ['branches', '1 : N', 'employees, branch_managers, announcements'],
     ['employees', '1 : N', 'attendance, schedules, leave_credits, leave_requests, payroll_records, loans, salary_adjustments'],
     ['salary_components', '1 : N', 'employee_salary_adjustments'],
     ['payroll_periods', '1 : N', 'payroll_records'],
-    ['profiles', '1 : 1', 'user_roles (via user_id)'],
+    ['leave_types', '1 : N', 'leave_credits, leave_requests'],
+    ['user_roles', '1 : N', 'role_permissions (via role enum)'],
+    ['positions', '1 : N', 'employees (via position name)'],
+    ['holidays', '1 : N', 'payroll_records (computed holiday_pay)'],
+    ['settings', '1 : N', 'attendance (terminal config)'],
   ];
 
   autoTable(doc, {
     startY: cardY,
     head: [['Entity', 'Cardinality', 'Related Entities']],
     body: cardinalityData,
-    styles: { fontSize: 8, cellPadding: 2 },
+    styles: { fontSize: 7, cellPadding: 1.5 },
     headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255] },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 35 },
-      1: { cellWidth: 20, halign: 'center' },
+      0: { fontStyle: 'bold', cellWidth: 32 },
+      1: { cellWidth: 18, halign: 'center' },
       2: { cellWidth: 'auto' },
     },
     margin: { left: margin, right: margin },
@@ -599,11 +755,12 @@ export function generateDataDictionaryPdf(): void {
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
+    const pw = doc.internal.pageSize.getWidth();
     doc.setFontSize(7);
     doc.setTextColor(150);
     doc.text(
       `Migrants Venture Corporation — Data Dictionary  |  Page ${i} of ${totalPages}`,
-      pageWidth / 2,
+      pw / 2,
       doc.internal.pageSize.getHeight() - 8,
       { align: 'center' }
     );

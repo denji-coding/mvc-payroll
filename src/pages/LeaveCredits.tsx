@@ -92,7 +92,7 @@ function LeaveTypeFormFields({ form, setForm, isEdit = false }: {
           </SelectContent>
         </Select>
       </div>
-      {hasUploadField && (
+      {(hasUploadField || form.required_fields.includes('both')) && (
         <div className="space-y-2 rounded-md border border-border p-3 bg-muted/30">
           <Label className="text-sm font-semibold text-warning">Upload Condition: Minimum days to require upload</Label>
           <p className="text-xs text-muted-foreground">If the applied leave date range is equal to or exceeds this number of days, the upload field will replace the reason field.</p>

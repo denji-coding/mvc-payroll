@@ -16,7 +16,7 @@ import { usePayrollPeriods, usePayrollRecords, useCreatePayrollPeriod, useRunPay
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useSalaryComponents, useCreateSalaryComponent, useUpdateSalaryComponent, useDeleteSalaryComponent } from '@/hooks/useSalaryComponents';
 import { useAuth } from '@/hooks/useAuth';
-import { format } from 'date-fns';
+import { format, isSameMonth } from 'date-fns';
 import { DateInput } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { formatFullName } from '@/lib/formatName';
@@ -35,6 +35,7 @@ export default function Payroll() {
 
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('periods');
+  const [periodStatusFilter, setPeriodStatusFilter] = useState<string>('all');
   const { data: records, isLoading: recordsLoading } = usePayrollRecords(selectedPeriod || undefined);
 
   const selectedPeriodData = periods?.find((p: any) => p.id === selectedPeriod);
@@ -48,17 +49,47 @@ export default function Payroll() {
   const [viewPayslip, setViewPayslip] = useState<any>(null);
 
   const handleViewPeriod = (periodId: string) => { setSelectedPeriod(periodId); setActiveTab('records'); };
-  const handleCreatePeriod = (e: React.FormEvent) => { e.preventDefault(); createPeriod.mutate(periodForm, { onSuccess: () => { setPeriodForm({ period_start: '', period_end: '', pay_date: '' }); setCreateOpen(false); } }); };
+  
+  // Check if month already has a processed/processing payroll
+  const isMonthAlreadyProcessed = (periodStart: string) => {
+    if (!periodStart || !periods) return false;
+    const selectedDate = new Date(periodStart);
+    return periods.some((p: any) => {
+      const pDate = new Date(p.period_start);
+      return isSameMonth(selectedDate, pDate) && (p.status === 'processing' || p.status === 'approved' || p.status === 'paid');
+    });
+  };
+
+  const handleCreatePeriod = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isMonthAlreadyProcessed(periodForm.period_start)) {
+      return;
+    }
+    createPeriod.mutate(periodForm, { onSuccess: () => { setPeriodForm({ period_start: '', period_end: '', pay_date: '' }); setCreateOpen(false); } });
+  };
+
+  const createDisabledReason = periodForm.period_start && isMonthAlreadyProcessed(periodForm.period_start)
+    ? 'A payroll for this month has already been processed'
+    : '';
+
   const formatCurrency = (amount: number | null) => `₱${(amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
   const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'outline'> = { draft: 'outline', processing: 'secondary', approved: 'default', paid: 'default' };
-    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
+    const displayLabels: Record<string, string> = { approved: 'processed', paid: 'paid' };
+    return <Badge variant={variants[status] || 'outline'}>{displayLabels[status] || status}</Badge>;
   };
 
   const earnings = components?.filter(c => c.type === 'earning') || [];
   const deductions = components?.filter(c => c.type === 'deduction') || [];
 
   const isProcessing = runPayroll.isPending || approvePayroll.isPending;
+
+  // Filter periods by status
+  const filteredPeriods = periods?.filter((p: any) => {
+    if (periodStatusFilter === 'all') return true;
+    if (periodStatusFilter === 'processed') return p.status === 'approved' || p.status === 'paid';
+    return p.status === periodStatusFilter;
+  }) || [];
 
   const periodColumns: ColumnDef<any, any>[] = [
     { id: 'period', header: 'Period', accessorFn: (row) => row.period_start, cell: ({ row }) => `${format(new Date(row.original.period_start), 'MMM d')} - ${format(new Date(row.original.period_end), 'MMM d, yyyy')}` },
@@ -78,7 +109,7 @@ export default function Payroll() {
             )}
             {isHR && p.status === 'processing' && (
               <Button size="sm" variant="outline" onClick={() => approvePayroll.mutate(p.id)} disabled={approvePayroll.isPending}>
-                {approvePayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Approving...</> : <><CheckCircle className="mr-1 h-4 w-4" />Approve</>}
+                {approvePayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><CheckCircle className="mr-1 h-4 w-4" />Process</>}
               </Button>
             )}
             {isHR && (p.status === 'draft' || p.status === 'processing') && (
@@ -139,7 +170,10 @@ export default function Payroll() {
                   <div><Label>Period End</Label><DateInput value={periodForm.period_end} onChange={(v) => setPeriodForm({ ...periodForm, period_end: v })} /></div>
                 </div>
                 <div><Label>Pay Date</Label><DateInput value={periodForm.pay_date} onChange={(v) => setPeriodForm({ ...periodForm, pay_date: v })} /></div>
-                <Button type="submit" className="w-full" disabled={createPeriod.isPending}>{createPeriod.isPending ? 'Creating...' : 'Create Period'}</Button>
+                {createDisabledReason && (
+                  <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">{createDisabledReason}</div>
+                )}
+                <Button type="submit" className="w-full" disabled={createPeriod.isPending || !!createDisabledReason}>{createPeriod.isPending ? 'Creating...' : 'Create Period'}</Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -151,7 +185,7 @@ export default function Payroll() {
         <Card className="mb-4 border-primary/50 bg-primary/5">
           <CardContent className="flex items-center justify-center gap-3 py-4">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <p className="text-sm font-medium text-primary">{runPayroll.isPending ? 'Computing payroll... This may take a moment.' : 'Approving payroll...'}</p>
+            <p className="text-sm font-medium text-primary">{runPayroll.isPending ? 'Computing payroll... This may take a moment.' : 'Processing payroll...'}</p>
           </CardContent>
         </Card>
       )}
@@ -168,10 +202,25 @@ export default function Payroll() {
 
         <TabsContent value="periods" className="mt-4">
           <Card>
-            <CardHeader><CardTitle>Payroll Periods</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Payroll Periods</CardTitle>
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {['all', 'draft', 'processing', 'processed'].map((status) => (
+                  <Button
+                    key={status}
+                    variant={periodStatusFilter === status ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPeriodStatusFilter(status)}
+                    className="capitalize"
+                  >
+                    {status === 'all' ? 'All' : status}
+                  </Button>
+                ))}
+              </div>
+            </CardHeader>
             <CardContent>
               {periodsLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
-                <DataTable columns={periodColumns} data={periods || []} searchable={false} emptyMessage="No payroll periods" />
+                <DataTable columns={periodColumns} data={filteredPeriods} searchable={false} emptyMessage="No payroll periods" />
               )}
             </CardContent>
           </Card>
@@ -186,7 +235,7 @@ export default function Payroll() {
                   {!isPeriodProcessed && (
                     <div className="bg-warning/10 text-warning p-4 rounded-lg mb-4 text-center"><p className="text-sm font-medium">Payroll is not yet processed. View and download will be available after processing.</p></div>
                   )}
-                  {isHR && selectedPeriodData?.status === 'draft' && (
+                  {isHR && selectedPeriodData?.status === 'processing' && (
                     <div className="mb-4"><Button onClick={() => { setEditingRecord(null); setManualPayrollOpen(true); }}><FileEdit className="mr-2 h-4 w-4" /> Add Manual Payroll</Button></div>
                   )}
                   {recordsLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
@@ -213,7 +262,7 @@ export default function Payroll() {
 function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { record: any; onClose: () => void; formatCurrency: (n: number | null) => string; periodStatus?: string }) {
   const canDownload = periodStatus === 'approved' || periodStatus === 'paid';
   const handleDownload = () => {
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip - ${r.employees?.first_name} ${r.employees?.last_name}</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto}.header{text-align:center;margin-bottom:30px;border-bottom:2px solid #333;padding-bottom:20px}.header h1{margin:0;color:#333}.section{margin-bottom:20px}.section h3{margin:0 0 10px;padding:5px;background:#f5f5f5}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee}.row.total{font-weight:bold;border-top:2px solid #333;margin-top:10px;padding-top:10px}.net-pay{text-align:center;background:#f0f7ff;padding:20px;border-radius:8px;margin-top:20px}.net-pay .amount{font-size:28px;font-weight:bold;color:#0066cc}</style></head><body><div class="header"><h1>MVC Corporation</h1><p>PAYSLIP</p></div><div><strong>Employee:</strong> ${r.employees?.first_name} ${r.employees?.last_name}<br><strong>Employee ID:</strong> ${r.employees?.employee_id || 'N/A'}</div><div class="section"><h3 style="color:#22c55e">Earnings</h3><div class="row"><span>Basic Pay</span><span>${formatCurrency(r.basic_pay)}</span></div><div class="row"><span>Overtime</span><span>${formatCurrency(r.overtime_pay)}</span></div><div class="row"><span>Holiday</span><span>${formatCurrency(r.holiday_pay)}</span></div><div class="row"><span>Allowances</span><span>${formatCurrency(r.total_allowances)}</span></div><div class="row total"><span>Gross</span><span>${formatCurrency(r.gross_pay)}</span></div></div><div class="section"><h3 style="color:#ef4444">Deductions</h3><div class="row"><span>SSS</span><span>${formatCurrency(r.sss_contribution)}</span></div><div class="row"><span>PhilHealth</span><span>${formatCurrency(r.philhealth_contribution)}</span></div><div class="row"><span>Pag-IBIG</span><span>${formatCurrency(r.pagibig_contribution)}</span></div><div class="row"><span>Tax</span><span>${formatCurrency(r.withholding_tax)}</span></div><div class="row total"><span>Total</span><span>${formatCurrency(r.total_deductions)}</span></div></div><div class="net-pay"><p style="margin:0 0 5px;color:#666">Net Pay</p><p class="amount" style="margin:0">${formatCurrency(r.net_pay)}</p></div></body></html>`;
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip - ${r.employees?.first_name} ${r.employees?.last_name}</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto}.header{text-align:center;margin-bottom:30px;border-bottom:2px solid #333;padding-bottom:20px}.header h1{margin:0;color:#333}.section{margin-bottom:20px}.section h3{margin:0 0 10px;padding:5px;background:#f5f5f5}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee}.row.total{font-weight:bold;border-top:2px solid #333;margin-top:10px;padding-top:10px}.net-pay{text-align:center;background:#f0f7ff;padding:20px;border-radius:8px;margin-top:20px}.net-pay .amount{font-size:28px;font-weight:bold;color:#0066cc}</style></head><body><div class="header"><h1>MVC Corporation</h1><p>PAYSLIP</p></div><div><strong>Employee:</strong> ${r.employees?.first_name} ${r.employees?.last_name}<br><strong>Employee ID:</strong> ${r.employees?.employee_id || 'N/A'}</div><div class="section"><h3 style="color:#22c55e">Earnings</h3><div class="row"><span>Basic Pay</span><span>${formatCurrency(r.basic_pay)}</span></div><div class="row total"><span>Gross</span><span>${formatCurrency(r.gross_pay)}</span></div></div><div class="section"><h3 style="color:#ef4444">Deductions</h3><div class="row"><span>SSS</span><span>${formatCurrency(r.sss_contribution)}</span></div><div class="row"><span>PhilHealth</span><span>${formatCurrency(r.philhealth_contribution)}</span></div><div class="row"><span>Pag-IBIG</span><span>${formatCurrency(r.pagibig_contribution)}</span></div>${(r.other_deductions || 0) > 0 ? `<div class="row"><span>Late Deduction</span><span>${formatCurrency(r.other_deductions)}</span></div>` : ''}${(r.total_allowances || 0) > 0 ? `<div class="row"><span>LWP Deduction</span><span>${formatCurrency(r.total_allowances)}</span></div>` : ''}<div class="row total"><span>Total</span><span>${formatCurrency(r.total_deductions)}</span></div></div><div class="net-pay"><p style="margin:0 0 5px;color:#666">Net Pay</p><p class="amount" style="margin:0">${formatCurrency(r.net_pay)}</p></div></body></html>`;
     const blob = new Blob([html], { type: 'text/html' }); const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `payslip-${r.employees?.last_name || 'employee'}.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   };
@@ -223,8 +272,28 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { r
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name)}</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-4">
-          <div><h4 className="font-semibold text-success mb-2">Earnings</h4><div className="space-y-1 text-sm"><div className="flex justify-between"><span>Basic Pay</span><span>{formatCurrency(r.basic_pay)}</span></div><div className="flex justify-between"><span>Overtime</span><span>{formatCurrency(r.overtime_pay)}</span></div><div className="flex justify-between"><span>Holiday</span><span>{formatCurrency(r.holiday_pay)}</span></div><div className="flex justify-between"><span>Allowances</span><span>{formatCurrency(r.total_allowances)}</span></div><div className="flex justify-between font-bold border-t pt-1"><span>Gross</span><span>{formatCurrency(r.gross_pay)}</span></div></div></div>
-          <div><h4 className="font-semibold text-destructive mb-2">Deductions</h4><div className="space-y-1 text-sm"><div className="flex justify-between"><span>SSS</span><span>{formatCurrency(r.sss_contribution)}</span></div><div className="flex justify-between"><span>PhilHealth</span><span>{formatCurrency(r.philhealth_contribution)}</span></div><div className="flex justify-between"><span>Pag-IBIG</span><span>{formatCurrency(r.pagibig_contribution)}</span></div><div className="flex justify-between"><span>Tax</span><span>{formatCurrency(r.withholding_tax)}</span></div><div className="flex justify-between font-bold border-t pt-1"><span>Total</span><span>{formatCurrency(r.total_deductions)}</span></div></div></div>
+          <div>
+            <h4 className="font-semibold text-success mb-2">Earnings</h4>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span>Basic Pay</span><span>{formatCurrency(r.basic_pay)}</span></div>
+              <div className="flex justify-between font-bold border-t pt-1"><span>Gross</span><span>{formatCurrency(r.gross_pay)}</span></div>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-semibold text-destructive mb-2">Deductions</h4>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span>SSS</span><span>{formatCurrency(r.sss_contribution)}</span></div>
+              <div className="flex justify-between"><span>PhilHealth</span><span>{formatCurrency(r.philhealth_contribution)}</span></div>
+              <div className="flex justify-between"><span>Pag-IBIG</span><span>{formatCurrency(r.pagibig_contribution)}</span></div>
+              {(r.other_deductions || 0) > 0 && (
+                <div className="flex justify-between"><span>Late Deduction</span><span>{formatCurrency(r.other_deductions)}</span></div>
+              )}
+              {(r.total_allowances || 0) > 0 && (
+                <div className="flex justify-between"><span>LWP Deduction</span><span>{formatCurrency(r.total_allowances)}</span></div>
+              )}
+              <div className="flex justify-between font-bold border-t pt-1"><span>Total</span><span>{formatCurrency(r.total_deductions)}</span></div>
+            </div>
+          </div>
         </div>
         <div className="bg-primary/10 p-4 rounded-lg text-center"><p className="text-sm text-muted-foreground">Net Pay</p><p className="text-2xl font-bold text-primary">{formatCurrency(r.net_pay)}</p></div>
         <DialogFooter className="flex-col sm:flex-row gap-2">

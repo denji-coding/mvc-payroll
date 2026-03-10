@@ -113,7 +113,7 @@ export function AppHeader() {
                 notifications.map((notification) => (
                   <DropdownMenuItem
                     key={notification.id}
-                    onClick={() => markAsRead(notification.id)}
+                    onClick={() => handleNotificationClick(notification)}
                     className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${
                       !notification.is_read ? 'bg-primary/5' : ''
                     }`}

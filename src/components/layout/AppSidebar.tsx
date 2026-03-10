@@ -229,7 +229,14 @@ export function AppSidebar() {
     });
 
   const filteredAdminItems = filterItems(adminNavigationItems);
-  const filteredEmployeePortalItems = filterItems(employeePortalItems);
+  // Only show employee portal items when HR admin has switched to employee view, or for non-HR roles
+  const filteredEmployeePortalItems = filterItems(employeePortalItems).filter((item) => {
+    // Hide "My Leaves" for HR admins even in employee portal mode
+    if (actualRole === 'hr_admin' && item.url === '/leaves') return false;
+    // Hide entire employee portal section for HR admins in admin view
+    if (actualRole === 'hr_admin' && !isViewingSwitched) return false;
+    return true;
+  });
 
   const getInitials = () => {
     if (profile?.firstName && profile?.lastName) {

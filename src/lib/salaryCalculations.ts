@@ -145,38 +145,39 @@ export function calculateSalary(input: SalaryCalculationInput): SalaryCalculatio
   const workingDays = input.workingDaysPerMonth || 22;
   const lwpDays = input.leaveWithPayDays || 0;
   const lwopDays = input.leaveWithoutPayDays || 0;
+  const lateMinutes = input.lateMinutes || 0;
   
   // Calculate rates
   const dailyRate = input.basicMonthlySalary / workingDays;
   const hourlyRate = dailyRate / 8;
+  const minuteRate = hourlyRate / 60;
   
   // Calculate earnings
   const basicPay = dailyRate * input.daysWorked;
   const overtimePay = hourlyRate * 1.25 * input.overtimeHours;
   const leaveWithPayEarnings = dailyRate * lwpDays;
-  // LWOP deduction is informational — those days simply aren't in daysWorked
-  // but we show it as a line item for transparency
   const leaveWithoutPayDeduction = dailyRate * lwopDays;
+  const lateDeduction = minuteRate * lateMinutes;
   const grossPay = basicPay + overtimePay + leaveWithPayEarnings + input.allowances;
   
   // Monthly equivalent for contribution calculations (semi-monthly payroll)
   const monthlyGross = grossPay * 2;
   
   // Government contributions (employee share only)
-  // Fixed amounts are used directly as the per-period deduction; bracket calculations are halved for semi-monthly
   const sssContribution = input.fixedSSS != null ? input.fixedSSS : computeSSS(monthlyGross).employee / 2;
   const philhealthContribution = input.fixedPhilHealth != null ? input.fixedPhilHealth : computePhilHealth(monthlyGross).employee / 2;
   const pagibigContribution = input.fixedPagIBIG != null ? input.fixedPagIBIG : computePagIBIG(monthlyGross).employee / 2;
   
-  // Withholding tax (informational only, not included in deductions)
+  // Withholding tax (informational only)
   const taxableIncome = grossPay - sssContribution - philhealthContribution - pagibigContribution;
   const withholdingTax = computeWithholdingTax(taxableIncome * 2) / 2;
   
-  // Total deductions (excludes withholding tax, matching manual payroll logic)
+  // Total deductions
   const totalDeductions = 
     sssContribution + 
     philhealthContribution + 
     pagibigContribution + 
+    lateDeduction +
     input.loanDeductions + 
     input.otherDeductions;
   
@@ -190,6 +191,7 @@ export function calculateSalary(input: SalaryCalculationInput): SalaryCalculatio
     overtimePay: Math.round(overtimePay * 100) / 100,
     leaveWithPayEarnings: Math.round(leaveWithPayEarnings * 100) / 100,
     leaveWithoutPayDeduction: Math.round(leaveWithoutPayDeduction * 100) / 100,
+    lateDeduction: Math.round(lateDeduction * 100) / 100,
     grossPay: Math.round(grossPay * 100) / 100,
     sssContribution: Math.round(sssContribution * 100) / 100,
     philhealthContribution: Math.round(philhealthContribution * 100) / 100,

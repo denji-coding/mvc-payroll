@@ -263,7 +263,7 @@ export default function LeaveCredits() {
       </Dialog>
 
       {/* Edit Leave Type Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) setEditingType(null); }}>
+      <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) { setEditingType(null); setEditForm({ ...defaultForm }); } }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Leave Type</DialogTitle>

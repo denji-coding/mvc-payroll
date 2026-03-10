@@ -503,7 +503,7 @@ export default function EmployeeForm() {
           <CardHeader>
             <CardTitle>Government IDs</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
             <div>
               <Label>SSS Number</Label>
               <Input

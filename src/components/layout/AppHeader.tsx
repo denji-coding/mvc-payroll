@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -19,8 +20,21 @@ import { formatDistanceToNow } from 'date-fns';
 
 export function AppHeader() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(user?.id);
   const { setTheme } = useTheme();
+
+  const handleNotificationClick = (notification: any) => {
+    markAsRead(notification.id);
+    const routeMap: Record<string, string> = {
+      leave_request: '/leave-approvals',
+      payroll: '/payroll',
+      attendance: '/attendance',
+      announcement: '/',
+    };
+    const route = routeMap[notification.reference_type || ''];
+    if (route) navigate(route);
+  };
 
   // Resolve the actual applied theme (handles 'system' properly)
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
@@ -99,7 +113,7 @@ export function AppHeader() {
                 notifications.map((notification) => (
                   <DropdownMenuItem
                     key={notification.id}
-                    onClick={() => markAsRead(notification.id)}
+                    onClick={() => handleNotificationClick(notification)}
                     className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${
                       !notification.is_read ? 'bg-primary/5' : ''
                     }`}

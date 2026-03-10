@@ -258,7 +258,7 @@ export default function EmployeeForm() {
   };
 
   return (
-    <div className="page-container max-w-6xl">
+    <div className="page-container max-w-full">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" size="icon" onClick={() => navigate("/employees")}>
           <ArrowLeft className="h-4 w-4" />
@@ -286,7 +286,7 @@ export default function EmployeeForm() {
               </div>
 
               {/* Personal Info Fields */}
-              <div className="flex-1 grid gap-4 md:grid-cols-3">
+              <div className="flex-1 grid gap-4 md:grid-cols-3 lg:grid-cols-4">
                 <div>
                   <RequiredLabel>Employee ID</RequiredLabel>
                   <div className="flex gap-2">
@@ -381,7 +381,7 @@ export default function EmployeeForm() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="md:col-span-3">
+                <div className="md:col-span-3 lg:col-span-4">
                   <RequiredLabel>Address</RequiredLabel>
                   <Input
                     value={form.address}
@@ -398,7 +398,7 @@ export default function EmployeeForm() {
           <CardHeader>
             <CardTitle>Employment Details</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
             <div>
               <RequiredLabel>Position</RequiredLabel>
               <Select value={form.position} onValueChange={(v) => updateField("position", v)}>
@@ -467,7 +467,7 @@ export default function EmployeeForm() {
             <CardHeader>
               <CardTitle>User Account & Role</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-3">
+            <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
               <div>
                 <RequiredLabel>Role</RequiredLabel>
                 <Select value={form.role} onValueChange={(v) => updateField("role", v)}>
@@ -503,7 +503,7 @@ export default function EmployeeForm() {
           <CardHeader>
             <CardTitle>Government IDs</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
             <div>
               <Label>SSS Number</Label>
               <Input

@@ -19,10 +19,15 @@ export function SalaryCalculator() {
     workingDaysPerMonth: 22,
     leaveWithPayDays: 0,
     leaveWithoutPayDays: 0,
+    lateMinutes: 0,
   });
 
   const result = useMemo(() => calculateSalary({
     ...inputs,
+    overtimeHours: 0,
+    allowances: 0,
+    loanDeductions: 0,
+    otherDeductions: 0,
     fixedSSS: benefitRates?.sss_contribution,
     fixedPhilHealth: benefitRates?.philhealth_rate,
     fixedPagIBIG: benefitRates?.pagibig_employee_rate,
@@ -89,13 +94,14 @@ export function SalaryCalculator() {
               />
             </div>
             <div>
-              <Label htmlFor="overtime">Overtime Hours</Label>
+              <Label htmlFor="lateMinutes">Late Minutes</Label>
               <Input
-                id="overtime"
+                id="lateMinutes"
                 type="number"
-                value={inputs.overtimeHours}
-                onChange={(e) => updateInput('overtimeHours', e.target.value)}
+                value={inputs.lateMinutes || 0}
+                onChange={(e) => updateInput('lateMinutes', e.target.value)}
                 className="mt-1"
+                min={0}
               />
             </div>
           </div>
@@ -127,42 +133,6 @@ export function SalaryCalculator() {
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="allowances">Additional Allowances</Label>
-            <Input
-              id="allowances"
-              type="number"
-              value={inputs.allowances}
-              onChange={(e) => updateInput('allowances', e.target.value)}
-              className="mt-1"
-            />
-          </div>
-
-          <Separator />
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="loanDeductions">Loan Deductions</Label>
-              <Input
-                id="loanDeductions"
-                type="number"
-                value={inputs.loanDeductions}
-                onChange={(e) => updateInput('loanDeductions', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="otherDeductions">Other Deductions</Label>
-              <Input
-                id="otherDeductions"
-                type="number"
-                value={inputs.otherDeductions}
-                onChange={(e) => updateInput('otherDeductions', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-
           <div className="bg-muted p-3 rounded-lg text-sm">
             <p><strong>Daily Rate:</strong> {formatCurrency(result.dailyRate)}</p>
             <p><strong>Hourly Rate:</strong> {formatCurrency(result.hourlyRate)}</p>
@@ -187,20 +157,12 @@ export function SalaryCalculator() {
                 <span>Basic Pay ({inputs.daysWorked} days × {formatCurrency(result.dailyRate)})</span>
                 <span>{formatCurrency(result.basicPay)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Overtime Pay ({inputs.overtimeHours} hrs × {formatCurrency(result.hourlyRate * 1.25)})</span>
-                <span>{formatCurrency(result.overtimePay)}</span>
-              </div>
               {(inputs.leaveWithPayDays || 0) > 0 && (
                 <div className="flex justify-between">
                   <span>Leave With Pay ({inputs.leaveWithPayDays} days × {formatCurrency(result.dailyRate)})</span>
                   <span>{formatCurrency(result.leaveWithPayEarnings)}</span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span>Allowances</span>
-                <span>{formatCurrency(inputs.allowances)}</span>
-              </div>
               <div className="flex justify-between font-bold border-t pt-1 mt-2">
                 <span>Gross Pay</span>
                 <span>{formatCurrency(result.grossPay)}</span>
@@ -226,18 +188,12 @@ export function SalaryCalculator() {
                 <span>Pag-IBIG</span>
                 <span>{formatCurrency(result.pagibigContribution)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Withholding Tax</span>
-                <span>{formatCurrency(result.withholdingTax)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Loan Deductions</span>
-                <span>{formatCurrency(inputs.loanDeductions)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Other Deductions</span>
-                <span>{formatCurrency(inputs.otherDeductions)}</span>
-              </div>
+              {(inputs.lateMinutes || 0) > 0 && (
+                <div className="flex justify-between">
+                  <span>Late Deduction ({inputs.lateMinutes} mins)</span>
+                  <span>{formatCurrency(result.lateDeduction || 0)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold border-t pt-1 mt-2">
                 <span>Total Deductions</span>
                 <span>{formatCurrency(result.totalDeductions)}</span>

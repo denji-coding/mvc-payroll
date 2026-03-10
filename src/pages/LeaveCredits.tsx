@@ -47,13 +47,15 @@ function LeaveTypeFormFields({ form, setForm, isEdit = false }: {
       newFields = ['reason'];
     } else if (value === 'upload') {
       newFields = ['upload'];
+    } else if (value === 'both') {
+      newFields = ['reason', 'upload'];
     } else {
       newFields = ['reason'];
     }
-    setForm({ ...form, required_fields: newFields, upload_condition_days: value !== 'upload' ? '' : form.upload_condition_days });
+    setForm({ ...form, required_fields: newFields, upload_condition_days: (value === 'upload' || value === 'both') ? form.upload_condition_days : '' });
   };
 
-  const currentFieldValue = form.required_fields.includes('upload') ? 'upload' : 'reason';
+  const currentFieldValue = form.required_fields.includes('reason') && form.required_fields.includes('upload') ? 'both' : form.required_fields.includes('upload') ? 'upload' : 'reason';
 
   return (
     <>
@@ -86,10 +88,11 @@ function LeaveTypeFormFields({ form, setForm, isEdit = false }: {
           <SelectContent>
             <SelectItem value="reason">Reason Field</SelectItem>
             <SelectItem value="upload">Upload Field</SelectItem>
+            <SelectItem value="both">Both (Reason & Upload)</SelectItem>
           </SelectContent>
         </Select>
       </div>
-      {hasUploadField && (
+      {(hasUploadField || form.required_fields.includes('both')) && (
         <div className="space-y-2 rounded-md border border-border p-3 bg-muted/30">
           <Label className="text-sm font-semibold text-warning">Upload Condition: Minimum days to require upload</Label>
           <p className="text-xs text-muted-foreground">If the applied leave date range is equal to or exceeds this number of days, the upload field will replace the reason field.</p>
@@ -242,7 +245,7 @@ export default function LeaveCredits() {
       </Card>
 
       {/* Add Leave Type Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setForm({ ...defaultForm }); }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Leave Type</DialogTitle>
@@ -260,7 +263,7 @@ export default function LeaveCredits() {
       </Dialog>
 
       {/* Edit Leave Type Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) setEditingType(null); }}>
+      <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) { setEditingType(null); setEditForm({ ...defaultForm }); } }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Leave Type</DialogTitle>

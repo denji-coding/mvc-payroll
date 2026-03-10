@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { capitalizeWords } from "@/lib/formatName";
 import {
   LayoutDashboard,
@@ -16,9 +16,11 @@ import {
   Briefcase,
   ClipboardList,
   CreditCard,
+  ArrowLeftRight,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
+import { useViewMode } from "@/hooks/useViewMode";
 import { useRolePermissionsByRole, PermissionKey } from "@/hooks/usePermissions";
 import {
   Sidebar,
@@ -183,32 +185,29 @@ const employeePortalItems: NavItem[] = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const { role, profile, signOut } = useAuth();
-  const { data: permissions, isLoading: permissionsLoading } = useRolePermissionsByRole(role);
+  const { effectiveRole, actualRole, isViewingSwitched, switchToEmployee, switchToAdmin } = useViewMode();
+  const { data: permissions, isLoading: permissionsLoading } = useRolePermissionsByRole(effectiveRole);
   const collapsed = state === "collapsed";
 
-  // Filter function for navigation items based on role and permissions
+  // Filter function for navigation items based on effectiveRole and permissions
   const filterItems = (items: NavItem[]) =>
     items.filter((item) => {
-      // Must have a role to see anything
-      if (!role) return false;
+      if (!effectiveRole) return false;
 
-      // HR Admin always has full access - no permission checks needed
-      if (role === "hr_admin") return item.roles.includes("hr_admin");
+      // When viewing as employee (switched), use employee filtering
+      if (effectiveRole === "hr_admin") return item.roles.includes("hr_admin");
 
-      // For external links (like attendance terminal), just check role
-      if (item.external) return item.roles.includes(role);
+      // For external links, just check role
+      if (item.external) return item.roles.includes(effectiveRole);
 
-      // If role is not in the allowed roles at all, deny access
-      if (!item.roles.includes(role)) return false;
+      if (!item.roles.includes(effectiveRole)) return false;
 
-      // If no permission key defined, fall back to role check
       if (!item.permissionKey) return true;
 
-      // While loading permissions, hide permission-gated items for non-admin roles
       if (permissionsLoading || !permissions) {
-        // For employee role, only show items that are employee-specific (like DTR, My Attendance)
-        if (role === "employee") {
+        if (effectiveRole === "employee") {
           const employeeOnlyPages = [
             "page_dashboard",
             "page_dtr",
@@ -223,16 +222,9 @@ export function AppSidebar() {
         return true;
       }
 
-      // Check if permission is enabled in the database
       const permission = permissions.find((p) => p.permission_key === item.permissionKey);
-
-      // If permission record exists, use its enabled status
       if (permission) return permission.enabled;
-
-      // If no permission record exists for employee, default to hiding (security-first)
-      if (role === "employee") return false;
-
-      // For other roles, default to showing (backwards compatibility)
+      if (effectiveRole === "employee") return false;
       return true;
     });
 
@@ -377,6 +369,25 @@ export function AppSidebar() {
                 My Profile
               </NavLink>
             </DropdownMenuItem>
+            {actualRole === "hr_admin" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (isViewingSwitched) {
+                      switchToAdmin();
+                    } else {
+                      switchToEmployee();
+                    }
+                    navigate("/");
+                  }}
+                  className="cursor-pointer"
+                >
+                  <ArrowLeftRight className="w-4 h-4 mr-2" />
+                  {isViewingSwitched ? "Back to Admin Portal" : "Switch to Employee Portal"}
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut} className="text-destructive">
               Sign Out

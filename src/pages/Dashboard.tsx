@@ -26,6 +26,7 @@ import {
   Legend,
 } from 'recharts';
 import EmployeeDashboard from './EmployeeDashboard';
+import { useViewMode } from '@/hooks/useViewMode';
 
 function AnimatedValue({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) {
   const animated = useCountUp(value);
@@ -33,10 +34,11 @@ function AnimatedValue({ value, prefix = '', suffix = '' }: { value: number; pre
 }
 
 export default function Dashboard() {
-  const { profile, role } = useAuth();
+  const { profile } = useAuth();
+  const { effectiveRole } = useViewMode();
 
-  // If employee role, show employee-specific dashboard
-  if (role === 'employee') {
+  // If employee role (or HR admin viewing as employee), show employee-specific dashboard
+  if (effectiveRole === 'employee') {
     return <EmployeeDashboard />;
   }
 

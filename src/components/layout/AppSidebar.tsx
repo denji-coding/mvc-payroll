@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { capitalizeWords } from "@/lib/formatName";
 import {
   LayoutDashboard,
@@ -16,9 +16,11 @@ import {
   Briefcase,
   ClipboardList,
   CreditCard,
+  ArrowLeftRight,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
+import { useViewMode } from "@/hooks/useViewMode";
 import { useRolePermissionsByRole, PermissionKey } from "@/hooks/usePermissions";
 import {
   Sidebar,

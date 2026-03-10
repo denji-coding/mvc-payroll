@@ -47,13 +47,15 @@ function LeaveTypeFormFields({ form, setForm, isEdit = false }: {
       newFields = ['reason'];
     } else if (value === 'upload') {
       newFields = ['upload'];
+    } else if (value === 'both') {
+      newFields = ['reason', 'upload'];
     } else {
       newFields = ['reason'];
     }
-    setForm({ ...form, required_fields: newFields, upload_condition_days: value !== 'upload' ? '' : form.upload_condition_days });
+    setForm({ ...form, required_fields: newFields, upload_condition_days: (value === 'upload' || value === 'both') ? form.upload_condition_days : '' });
   };
 
-  const currentFieldValue = form.required_fields.includes('upload') ? 'upload' : 'reason';
+  const currentFieldValue = form.required_fields.includes('reason') && form.required_fields.includes('upload') ? 'both' : form.required_fields.includes('upload') ? 'upload' : 'reason';
 
   return (
     <>

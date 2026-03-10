@@ -369,6 +369,25 @@ export function AppSidebar() {
                 My Profile
               </NavLink>
             </DropdownMenuItem>
+            {actualRole === "hr_admin" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (isViewingSwitched) {
+                      switchToAdmin();
+                    } else {
+                      switchToEmployee();
+                    }
+                    navigate("/");
+                  }}
+                  className="cursor-pointer"
+                >
+                  <ArrowLeftRight className="w-4 h-4 mr-2" />
+                  {isViewingSwitched ? "Back to Admin Portal" : "Switch to Employee Portal"}
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut} className="text-destructive">
               Sign Out

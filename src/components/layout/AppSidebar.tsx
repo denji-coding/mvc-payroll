@@ -185,8 +185,10 @@ const employeePortalItems: NavItem[] = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const { role, profile, signOut } = useAuth();
-  const { data: permissions, isLoading: permissionsLoading } = useRolePermissionsByRole(role);
+  const { effectiveRole, actualRole, isViewingSwitched, switchToEmployee, switchToAdmin } = useViewMode();
+  const { data: permissions, isLoading: permissionsLoading } = useRolePermissionsByRole(effectiveRole);
   const collapsed = state === "collapsed";
 
   // Filter function for navigation items based on role and permissions

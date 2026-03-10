@@ -129,6 +129,7 @@ export interface SalaryCalculationResult {
   overtimePay: number;
   leaveWithPayEarnings: number;
   leaveWithoutPayDeduction: number;
+  lateDeduction: number;
   grossPay: number;
   sssContribution: number;
   philhealthContribution: number;

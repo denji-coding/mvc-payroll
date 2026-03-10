@@ -20,8 +20,21 @@ import { formatDistanceToNow } from 'date-fns';
 
 export function AppHeader() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(user?.id);
   const { setTheme } = useTheme();
+
+  const handleNotificationClick = (notification: any) => {
+    markAsRead(notification.id);
+    const routeMap: Record<string, string> = {
+      leave_request: '/leave-approvals',
+      payroll: '/payroll',
+      attendance: '/attendance',
+      announcement: '/',
+    };
+    const route = routeMap[notification.reference_type || ''];
+    if (route) navigate(route);
+  };
 
   // Resolve the actual applied theme (handles 'system' properly)
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');

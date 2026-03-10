@@ -245,7 +245,7 @@ export default function LeaveCredits() {
       </Card>
 
       {/* Add Leave Type Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setForm({ ...defaultForm }); }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Leave Type</DialogTitle>

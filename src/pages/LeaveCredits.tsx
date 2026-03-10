@@ -88,6 +88,7 @@ function LeaveTypeFormFields({ form, setForm, isEdit = false }: {
           <SelectContent>
             <SelectItem value="reason">Reason Field</SelectItem>
             <SelectItem value="upload">Upload Field</SelectItem>
+            <SelectItem value="both">Both (Reason & Upload)</SelectItem>
           </SelectContent>
         </Select>
       </div>

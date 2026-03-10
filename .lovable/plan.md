@@ -1,88 +1,69 @@
 
 
-# Plan: Employee Fixes, Leave Credit Improvements, and Reports Cleanup
+## Plan: Multiple Fixes and Improvements
 
-## 1. Fix Employee Form Duplicate Error Messages
+### 1. Remove "Employee Portal" section from sidebar for HR admin view
+**File:** `src/components/layout/AppSidebar.tsx`
+- When `effectiveRole === 'hr_admin'` (admin view), hide the entire "Employee Portal" sidebar group. The employee portal items should only show when the HR admin has switched to employee view mode via the footer dropdown toggle.
+- The toggle button in the footer dropdown already exists and stays.
 
-### Edge Function (`supabase/functions/create-employee/index.ts`)
-- Before creating the auth user, check for duplicates in the `employees` table: email, phone, rfid_card_number, sss_number, philhealth_number, pagibig_number
-- Return specific error messages like "An employee with this email already exists", "An employee with this phone number already exists", etc.
-- Also catch the Supabase Auth duplicate email error and return a clearer message
+### 2. Remove "My Leaves" from HR admin's employee portal view
+**File:** `src/components/layout/AppSidebar.tsx`
+- In `employeePortalItems`, remove `hr_admin` from the `roles` array of the "My Leaves" item, OR filter it out when effectiveRole is employee but actualRole is hr_admin.
+- HR admins should not see "My Leaves" even in employee portal mode.
 
-### Employee Edit Form (`src/pages/EmployeeForm.tsx`)
-- On update, before saving, query for duplicates (excluding current employee ID) for email, phone, RFID, and government IDs
-- Show specific toast error messages for each duplicate field
+### 3. Payroll page changes
+**File:** `src/pages/Payroll.tsx`
 
-### Date Picker Auto-Close (`src/components/ui/date-picker.tsx`)
-- Add open/close state control to the `Popover` in `DatePicker`
-- When `onSelect` fires on the Calendar, close the popover automatically
+**a) Rename "Approve" → "Process" button:**
+- Change the button label from "Approve" to "Process" (line ~80-81)
+- Change the pending text from "Approving..." to "Processing..."
+- Rename the `approved` badge text to `processed` in `getStatusBadge`
 
-## 2. Permanent Delete on Deleted Tab + 6-Month Expiry
+**b) Hide "Add Manual Payroll" button when period is `draft` (not yet run):**
+- Currently shows when `status === 'draft'` (line 189). Change condition: only show when `status === 'processing'` (i.e., after "Run" has been executed).
 
-### Employees Page (`src/pages/Employees.tsx`)
-- Add a permanent delete button (Trash2 icon) in the "deleted" tab actions alongside the restore button
-- Add confirmation dialog warning this is irreversible
-- The handler calls the edge function or directly deletes (via a new edge function) the employee and their auth user
+**c) Payslip view modal — remove Overtime, Holiday, Allowance, Tax; show Late/LWP if present:**
+- In `PayslipDialog`, remove the Overtime, Holiday, Allowances rows from Earnings and Tax row from Deductions.
+- Add conditional Late deduction row (from `other_deductions`) and LWP row (from `total_allowances`) if > 0.
 
-### Edge Function (`supabase/functions/delete-employee/index.ts`) — New
-- Accepts employee ID, verifies HR admin role
-- Deletes the employee record and their auth user via `supabaseAdmin.auth.admin.deleteUser()`
-- Cleans up related records (attendance, leave_requests, leave_credits, payroll_records, etc.)
+**d) Salary Calculator — remove extra fields and breakdown items:**
+- **File:** `src/components/payroll/SalaryCalculator.tsx`
+  - Remove inputs: Overtime Hours, Additional Allowances, Loan Deductions, Other Deductions
+  - Remove from computation breakdown: Overtime Pay, Allowances, Withholding Tax, Loan Deductions, Other Deductions
+  - Update `SalaryCalculationInput` usage to pass 0 for removed fields
+  - Add Late Minutes and LWP fields to match manual calculation
 
-### 6-Month Auto-Purge — Database
-- Create a database function `purge_expired_deleted_employees()` that deletes employees where `employment_status = 'terminated'` and `updated_at < now() - interval '6 months'`
-- Set up a `pg_cron` job to run this monthly
-- The function will also need to call auth admin to delete users, so this is better handled as a cron-triggered edge function
+**e) Monthly payroll restriction — disable creating new period if month already has a processed payroll:**
+- When creating a new period, check existing periods for the same month. If any has status `processing` or `processed`/`approved`, disable creation for that month.
+- In the create period dialog, validate selected dates against existing periods.
 
-### Edge Function (`supabase/functions/purge-deleted-employees/index.ts`) — New
-- Queries terminated employees older than 6 months
-- Deletes their auth accounts and employee records
-- Scheduled via `pg_cron` + `pg_net`
+**f) Add filter tabs (All, Draft, Processing, Processed) to payroll periods table:**
+- Add a secondary tab-like filter bar above the periods DataTable with options: All, Draft, Processing, Processed
+- Filter the `periods` data based on selected filter
 
-## 3. Leave Credit Fixes
+**g) Change "approved" badge label to "processed":**
+- In `getStatusBadge`, map `approved` → display as "processed"
 
-### Leave Type Creation (`src/hooks/useLeaveTypes.ts`)
-- Fix `useCreateLeaveType`: when `applyToAll` is true, use the correct `default_credits` value from the newly created leave type
-- The current code already does this correctly, but the enum mapping may fail for custom leave types — fix the mapping to handle custom types properly
+### 4. Leave Credits — add "Both" option for required fields + reset form on close
+**File:** `src/pages/LeaveCredits.tsx`
+- In the `handleRequiredFieldChange` function, add a `'both'` option that sets `required_fields` to `['reason', 'upload']`
+- Add `<SelectItem value="both">Both (Reason & Upload)</SelectItem>` to the Select
+- Update `currentFieldValue` logic to detect when both are present
+- On dialog close (`onOpenChange`), reset form to `defaultForm`
 
-### Database Trigger for Auto-Assignment
-- The existing `assign_leave_credits_to_employee` trigger already assigns credits on employee creation
-- Need to ensure new leave types also get assigned — the `useCreateLeaveType` hook handles this with `applyToAll`
+### 5. Employee form responsiveness
+**File:** `src/pages/EmployeeForm.tsx`
+- Change `max-w-6xl` container to full width or `max-w-full` so it uses available screen space
+- Ensure grid columns expand on larger screens (e.g., `lg:grid-cols-4`)
 
-### Monthly Credit Refresh Logic
-- Create a new edge function `refresh-leave-credits/index.ts` that runs monthly via `pg_cron`
-- Logic: For each employee's leave credit record:
-  - If `used_credits > 0`: reset `used_credits` to 0 (refresh consumed credits)
-  - If `used_credits = 0`: do nothing (balance stays the same, doesn't increase)
-- Schedule via `pg_cron` on the 1st of each month
-
-## 4. Remove Branch Performance from Reports
-
-### Reports Page (`src/pages/Reports.tsx`)
-- Remove the `branch-performance` entry from the `reports` array
-- Remove the `case 'branch-performance'` block from `generateReport`
-- Remove the `Building2` import if no longer used
-
-## Files to Create/Edit
-
-| File | Action |
-|------|--------|
-| `supabase/functions/create-employee/index.ts` | Add duplicate checks before creating |
-| `src/pages/EmployeeForm.tsx` | Add duplicate validation on edit |
-| `src/components/ui/date-picker.tsx` | Auto-close popover on date selection |
-| `src/pages/Employees.tsx` | Add permanent delete button in deleted tab |
-| `supabase/functions/delete-employee/index.ts` | New — permanent delete with auth cleanup |
-| `supabase/functions/purge-deleted-employees/index.ts` | New — cron job for 6-month expiry |
-| `src/hooks/useLeaveTypes.ts` | Fix enum mapping for custom leave types |
-| `supabase/functions/refresh-leave-credits/index.ts` | New — monthly credit refresh |
-| `src/pages/Reports.tsx` | Remove branch performance section |
-| Database | Enable `pg_cron`/`pg_net`, schedule purge + refresh jobs |
-
-## Implementation Order
-1. Date picker auto-close (quick fix)
-2. Reports page cleanup (quick fix)
-3. Employee form duplicate validation (edge function + frontend)
-4. Permanent delete feature (new edge function + UI)
-5. Leave credit fixes (enum mapping + new refresh edge function)
-6. Cron jobs for auto-purge and credit refresh
+### 6. Notification click → navigate to relevant page + mark as read
+**File:** `src/components/layout/AppHeader.tsx`
+- Import `useNavigate` from react-router-dom
+- On notification click, call `markAsRead(id)` AND navigate based on `reference_type`:
+  - `leave_request` → `/leave-approvals`
+  - `payroll` → `/payroll`
+  - `attendance` → `/attendance`
+  - `announcement` → `/`
+  - Default → stay on current page
 

@@ -258,7 +258,7 @@ export default function EmployeeForm() {
   };
 
   return (
-    <div className="page-container max-w-6xl">
+    <div className="page-container max-w-full">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" size="icon" onClick={() => navigate("/employees")}>
           <ArrowLeft className="h-4 w-4" />

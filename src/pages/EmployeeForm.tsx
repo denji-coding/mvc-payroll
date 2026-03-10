@@ -286,7 +286,7 @@ export default function EmployeeForm() {
               </div>
 
               {/* Personal Info Fields */}
-              <div className="flex-1 grid gap-4 md:grid-cols-3">
+              <div className="flex-1 grid gap-4 md:grid-cols-3 lg:grid-cols-4">
                 <div>
                   <RequiredLabel>Employee ID</RequiredLabel>
                   <div className="flex gap-2">

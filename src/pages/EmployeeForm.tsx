@@ -381,7 +381,7 @@ export default function EmployeeForm() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="md:col-span-3">
+                <div className="md:col-span-3 lg:col-span-4">
                   <RequiredLabel>Address</RequiredLabel>
                   <Input
                     value={form.address}

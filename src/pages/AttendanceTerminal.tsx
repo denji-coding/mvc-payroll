@@ -17,7 +17,7 @@ export default function AttendanceTerminal() {
   const [employeeIdInput, setEmployeeIdInput] = useState('');
   const rfidInputRef = useRef<HTMLInputElement>(null);
   const manualInputRef = useRef<HTMLInputElement>(null);
-  const autoSubmitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSubmitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastKeystrokeTimeRef = useRef<number>(0);
   const rfidBufferRef = useRef<string>('');
 

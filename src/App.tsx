@@ -101,9 +101,11 @@ function AppRoutes() {
         path="/"
         element={
           <ProtectedRoute>
-            <SidebarProvider>
-              <AppLayout />
-            </SidebarProvider>
+            <ViewModeProvider>
+              <SidebarProvider>
+                <AppLayout />
+              </SidebarProvider>
+            </ViewModeProvider>
           </ProtectedRoute>
         }
       >

@@ -398,7 +398,7 @@ export default function EmployeeForm() {
           <CardHeader>
             <CardTitle>Employment Details</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
             <div>
               <RequiredLabel>Position</RequiredLabel>
               <Select value={form.position} onValueChange={(v) => updateField("position", v)}>

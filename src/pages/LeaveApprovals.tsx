@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeaveRequests, useApproveLeaveRequest } from '@/hooks/useLeaves';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,8 +18,17 @@ export default function LeaveApprovals() {
   const { data: leaves, isLoading } = useLeaveRequests();
   const approveLeave = useApproveLeaveRequest();
 
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [reviewLeave, setReviewLeave] = useState<any>(null);
   const [remarks, setRemarks] = useState('');
+
+  const filteredLeaves = useMemo(() => {
+    if (!leaves) return [];
+    if (statusFilter === 'all') return leaves;
+    if (statusFilter === 'approved') return leaves.filter((l: any) => l.status === 'manager_approved' || l.status === 'hr_approved');
+    if (statusFilter === 'rejected') return leaves.filter((l: any) => l.status === 'rejected');
+    return leaves.filter((l: any) => l.status === statusFilter);
+  }, [leaves, statusFilter]);
 
   const handleApprove = (action: 'approve' | 'reject') => {
     if (!reviewLeave) return;
@@ -73,17 +83,24 @@ export default function LeaveApprovals() {
         <CardHeader>
           <CardTitle>Leave Requests</CardTitle>
           <CardDescription>Review and approve/reject employee leave requests</CardDescription>
+          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="pending">Pending</TabsTrigger>
+              <TabsTrigger value="approved">Approved</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
           ) : (
-            <DataTable columns={columns} data={leaves || []} searchPlaceholder="Search leave requests..." emptyMessage="No leave requests found" />
+            <DataTable columns={columns} data={filteredLeaves} searchPlaceholder="Search leave requests..." emptyMessage="No leave requests found" />
           )}
         </CardContent>
       </Card>
 
-      {/* Review Dialog */}
       {reviewLeave && (
         <Dialog open={!!reviewLeave} onOpenChange={(open) => !open && setReviewLeave(null)}>
           <DialogContent className="max-h-[85vh] overflow-y-auto">

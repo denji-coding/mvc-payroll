@@ -17,7 +17,7 @@ export default function Employees() {
   const { role } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'active' | 'inactive' | 'deleted'>('active');
+  const [viewMode, setViewMode] = useState<'all' | 'active' | 'inactive' | 'deleted'>('all');
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -36,9 +36,10 @@ export default function Employees() {
       query = query.eq('employment_status', 'active');
     } else if (viewMode === 'inactive') {
       query = query.eq('employment_status', 'inactive');
-    } else {
+    } else if (viewMode === 'deleted') {
       query = query.eq('employment_status', 'terminated');
     }
+    // 'all' — no filter
     
     const { data } = await query;
     setEmployees(data || []);
@@ -123,6 +124,7 @@ export default function Employees() {
       enableSorting: false,
       cell: ({ row }) => {
         const emp = row.original;
+        const isDeleted = emp.employment_status === 'terminated';
         return (
           <div className="flex gap-1">
             <Button variant="ghost" size="icon" title="View" onClick={() => setSelectedEmployee(emp)}>
@@ -133,7 +135,7 @@ export default function Employees() {
                 <Link to={`/employees/${emp.id}`}><Edit className="h-4 w-4" /></Link>
               </Button>
             )}
-            {role === 'hr_admin' && viewMode === 'deleted' && (
+            {role === 'hr_admin' && isDeleted && (
               <>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -167,7 +169,7 @@ export default function Employees() {
                 </AlertDialog>
               </>
             )}
-            {role === 'hr_admin' && viewMode !== 'deleted' && (
+            {role === 'hr_admin' && !isDeleted && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
@@ -197,8 +199,9 @@ export default function Employees() {
 
       <Card>
         <CardHeader>
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'active' | 'inactive' | 'deleted')}>
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
             <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="inactive">Inactive</TabsTrigger>
               <TabsTrigger value="deleted">Deleted</TabsTrigger>
@@ -213,7 +216,7 @@ export default function Employees() {
               columns={columns}
               data={employees}
               searchPlaceholder="Search employees..."
-              emptyMessage={viewMode === 'active' ? 'No active employees found' : viewMode === 'inactive' ? 'No inactive employees found' : 'No deleted employees'}
+              emptyMessage="No employees found"
             />
           )}
         </CardContent>

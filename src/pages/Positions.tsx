@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,9 +19,17 @@ export default function Positions() {
   const updatePosition = useUpdatePosition();
   const deletePosition = useDeletePosition();
 
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [createOpen, setCreateOpen] = useState(false);
   const [editPosition, setEditPosition] = useState<any>(null);
   const [form, setForm] = useState({ name: '', description: '', is_active: true });
+
+  const filteredPositions = useMemo(() => {
+    if (!positions) return [];
+    if (statusFilter === 'all') return positions;
+    if (statusFilter === 'active') return positions.filter((p: any) => p.is_active !== false);
+    return positions.filter((p: any) => p.is_active === false);
+  }, [positions, statusFilter]);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,12 +102,21 @@ export default function Positions() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>All Positions</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>All Positions</CardTitle>
+          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="space-y-2">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : (
-            <DataTable columns={columns} data={positions || []} searchPlaceholder="Search positions..." emptyMessage="No positions found. Create your first position." />
+            <DataTable columns={columns} data={filteredPositions} searchPlaceholder="Search positions..." emptyMessage="No positions found. Create your first position." />
           )}
         </CardContent>
       </Card>

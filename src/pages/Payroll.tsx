@@ -50,6 +50,26 @@ export default function Payroll() {
   const [viewPayslip, setViewPayslip] = useState<any>(null);
 
   const handleViewPeriod = (periodId: string) => { setSelectedPeriod(periodId); setActiveTab('records'); };
+
+  const handleDownloadSummary = async (period: any) => {
+    try {
+      const { data: periodRecords, error } = await supabase
+        .from('payroll_records')
+        .select('*, employees(employee_id, first_name, last_name)')
+        .eq('payroll_period_id', period.id)
+        .order('employees(last_name)', { ascending: true });
+      
+      if (error) throw error;
+      
+      generatePayrollSummaryPdf({
+        records: periodRecords || [],
+        periodStart: period.period_start,
+        periodEnd: period.period_end,
+      });
+    } catch (err) {
+      console.error('Failed to generate summary PDF:', err);
+    }
+  };
   
   // Check if month already has a processed/processing payroll
   const isMonthAlreadyProcessed = (periodStart: string) => {

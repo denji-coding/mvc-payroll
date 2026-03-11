@@ -124,6 +124,9 @@ export default function Payroll() {
         return (
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => handleViewPeriod(p.id)}><Eye className="h-4 w-4" /></Button>
+            {(p.status === 'approved' || p.status === 'paid') && (
+              <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><Download className="h-4 w-4" /></Button>
+            )}
             {isHR && p.status === 'draft' && (
               <Button size="sm" onClick={() => runPayroll.mutate({ periodId: p.id })} disabled={runPayroll.isPending}>
                 {runPayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><Calculator className="mr-1 h-4 w-4" />Run</>}

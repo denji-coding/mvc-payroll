@@ -245,8 +245,11 @@ serve(async (req) => {
         }
       }
 
-      const daysWorked = attendance?.filter(a => a.status !== 'absent').length || 0;
-      const totalOvertimeHours = attendance?.reduce((sum, a) => sum + (parseFloat(a.overtime_hours) || 0), 0) || 0;
+      // Calculate days worked from total hours worked / 8 (same as manual calculation)
+      const totalHoursWorked = attendance?.reduce((sum, a) => sum + (parseFloat(String(a.hours_worked)) || 0), 0) || 0;
+      const daysWorked = Math.round((totalHoursWorked / 8) * 100) / 100;
+      const totalOvertimeHours = attendance?.reduce((sum, a) => sum + (parseFloat(String(a.overtime_hours)) || 0), 0) || 0;
+      const totalLateMinutes = attendance?.reduce((sum, a) => sum + (parseInt(String(a.late_minutes)) || 0), 0) || 0;
 
       // Get employee salary adjustments (allowances/deductions)
       const { data: adjustments } = await supabase
@@ -255,10 +258,12 @@ serve(async (req) => {
         .eq('employee_id', employee.id)
         .eq('is_recurring', true);
 
-      // Calculate pay components
-      const dailyRate = employee.basic_salary / 22; // Assuming 22 working days per month
+      // Calculate pay components - basic_salary is the DAILY RATE
+      const dailyRate = employee.basic_salary;
       const hourlyRate = dailyRate / 8;
+      const minuteRate = hourlyRate / 60;
       const basicPay = dailyRate * daysWorked;
+      const lateDeduction = Math.round(minuteRate * totalLateMinutes * 100) / 100;
       const overtimePay = hourlyRate * 1.25 * totalOvertimeHours;
       const leavePay = dailyRate * leaveWithPayDays;
 

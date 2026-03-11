@@ -295,8 +295,11 @@ serve(async (req) => {
       const withholdingTax = computeWithholdingTax(taxableIncome * 2) / 2; // Monthly tax / 2
 
       // Other deductions from adjustments
-      let otherDeductions = 0;
+      let otherDeductions = lateDeduction;
       const deductionsBreakdown: Record<string, number> = {};
+      if (lateDeduction > 0) {
+        deductionsBreakdown[`Late (${totalLateMinutes} mins)`] = lateDeduction;
+      }
       adjustments?.filter(a => a.salary_components?.type === 'deduction').forEach(adj => {
         otherDeductions += parseFloat(adj.amount);
         deductionsBreakdown[adj.salary_components.name] = parseFloat(adj.amount);

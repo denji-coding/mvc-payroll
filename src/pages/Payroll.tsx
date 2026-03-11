@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2 } from 'lucide-react';
+import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2, Printer } from 'lucide-react';
+import { generatePayrollSummaryPdf } from '@/lib/generatePayrollSummaryPdf';
 import { SalaryCalculator } from '@/components/payroll/SalaryCalculator';
 import { ManualPayrollDialog } from '@/components/payroll/ManualPayrollDialog';
 import { usePayrollPeriods, usePayrollRecords, useCreatePayrollPeriod, useRunPayroll, useApprovePayroll, useDeletePayrollPeriod, useDeletePayrollRecord } from '@/hooks/usePayroll';
@@ -49,6 +51,26 @@ export default function Payroll() {
   const [viewPayslip, setViewPayslip] = useState<any>(null);
 
   const handleViewPeriod = (periodId: string) => { setSelectedPeriod(periodId); setActiveTab('records'); };
+
+  const handleDownloadSummary = async (period: any) => {
+    try {
+      const { data: periodRecords, error } = await supabase
+        .from('payroll_records')
+        .select('*, employees(employee_id, first_name, last_name)')
+        .eq('payroll_period_id', period.id)
+        .order('employees(last_name)', { ascending: true });
+      
+      if (error) throw error;
+      
+      generatePayrollSummaryPdf({
+        records: periodRecords || [],
+        periodStart: period.period_start,
+        periodEnd: period.period_end,
+      });
+    } catch (err) {
+      console.error('Failed to generate summary PDF:', err);
+    }
+  };
   
   // Check if month already has a processed/processing payroll
   const isMonthAlreadyProcessed = (periodStart: string) => {
@@ -102,6 +124,9 @@ export default function Payroll() {
         return (
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => handleViewPeriod(p.id)}><Eye className="h-4 w-4" /></Button>
+            {(p.status === 'approved' || p.status === 'paid') && (
+              <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><Download className="h-4 w-4" /></Button>
+            )}
             {isHR && p.status === 'draft' && (
               <Button size="sm" onClick={() => runPayroll.mutate({ periodId: p.id })} disabled={runPayroll.isPending}>
                 {runPayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><Calculator className="mr-1 h-4 w-4" />Run</>}

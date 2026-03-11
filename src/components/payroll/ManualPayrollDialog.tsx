@@ -76,9 +76,9 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
     }
   }, [open, isEditMode, editRecord, selectedEmployee?.basic_salary]);
 
-  // Auto-calculate days worked from attendance hours (hours / 8 = days) - only in create mode
+  // Auto-calculate days worked from attendance hours (hours / 8 = days) - for both create and edit modes
   useEffect(() => {
-    if (!isEditMode && attendanceRecords && attendanceRecords.length > 0) {
+    if (attendanceRecords && attendanceRecords.length > 0) {
       const totalHours = attendanceRecords.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
       const days = Math.round((totalHours / 8) * 100) / 100;
       setDaysWorkedStr(String(days));
@@ -87,7 +87,7 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
       const totalLate = attendanceRecords.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
       setLateMinutesStr(String(totalLate));
     }
-  }, [attendanceRecords, isEditMode]);
+  }, [attendanceRecords]);
 
   // basic_salary is the daily rate
   const dailyRate = monthlySalary;

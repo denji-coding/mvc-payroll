@@ -151,7 +151,7 @@ export default function Payroll() {
 
   const recordColumns: ColumnDef<any, any>[] = [
     { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name) },
-    { accessorKey: 'is_manual', header: 'Type', cell: ({ getValue }) => getValue() ? <Badge variant="outline" className="bg-info/10 text-info border-info/30">Manual</Badge> : <Badge variant="outline">Computed</Badge> },
+    { accessorKey: 'is_manual', header: 'Type of Calculation', cell: ({ getValue }) => getValue() ? <Badge variant="outline" className="bg-info/10 text-info border-info/30">Manual</Badge> : <Badge variant="outline">Automated</Badge> },
     { accessorKey: 'basic_pay', header: 'Basic', cell: ({ getValue }) => formatCurrency(getValue() as number) },
     { accessorKey: 'gross_pay', header: 'Gross', cell: ({ getValue }) => formatCurrency(getValue() as number) },
     { accessorKey: 'total_deductions', header: 'Deductions', cell: ({ getValue }) => formatCurrency(getValue() as number) },

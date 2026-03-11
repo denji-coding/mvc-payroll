@@ -19,8 +19,13 @@ interface TerminalSettings {
   allow_manual_entry: boolean;
 }
 
+// Helper: parse "HH:MM" time string to minutes since midnight
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + (m || 0);
+}
+
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -29,11 +34,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Note: Terminal secret validation removed — web-based terminal cannot securely
-    // transmit secrets without exposing them in the browser bundle.
-    // Security is handled via verify_jwt=false + CORS + the function being
-    // scoped to attendance-only operations with no sensitive data exposure.
 
     // Fetch terminal settings
     const { data: settingsData } = await supabase
@@ -61,7 +61,7 @@ serve(async (req) => {
     const phTimeFormatter = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: false
     });
-    const currentPHTime = phTimeFormatter.format(new Date()); // "HH:MM"
+    const currentPHTime = phTimeFormatter.format(new Date());
     const shiftStart = settings.work_start_time || '06:00';
     const shiftEnd = settings.work_end_time || '22:00';
     
@@ -113,7 +113,6 @@ serve(async (req) => {
     const { data: employee, error: empError } = await employeeQuery.single();
 
     if (empError || !employee) {
-      console.error('Employee lookup error:', empError);
       return new Response(
         JSON.stringify({ error: 'Employee not found or inactive' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -121,11 +120,10 @@ serve(async (req) => {
     }
 
     const now = new Date();
-    // Use Philippine timezone for date calculation to prevent past-date recording
     const phFormatter = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit'
     });
-    const today = phFormatter.format(now); // "YYYY-MM-DD" in PHT
+    const today = phFormatter.format(now);
     const currentTime = now.toISOString();
 
     // Check for approved leave
@@ -139,14 +137,11 @@ serve(async (req) => {
       .maybeSingle();
 
     if (activeLeave) {
-      console.log(`Employee ${employee.first_name} ${employee.last_name} is on leave`);
       return new Response(
         JSON.stringify({ 
           error: 'Currently on leave',
           employee_name: `${employee.first_name} ${employee.last_name}`,
           message: `You are on ${activeLeave.leave_type} leave until ${activeLeave.end_date}. Attendance is not required.`,
-          leave_type: activeLeave.leave_type,
-          leave_end: activeLeave.end_date
         }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -169,8 +164,8 @@ serve(async (req) => {
       );
     }
 
-    // Check today's schedule — use PHT date to get correct day of week
-    const phtDate = new Date(`${today}T12:00:00+08:00`); // Parse PHT date at noon to avoid DST issues
+    // Check today's schedule
+    const phtDate = new Date(`${today}T12:00:00+08:00`);
     const dayOfWeek = phtDate.getDay();
     const { data: scheduleData } = await supabase
       .from('employee_schedules')
@@ -190,6 +185,16 @@ serve(async (req) => {
       );
     }
 
+    const morningStart = scheduleData.morning_start || '08:00';
+    const morningEnd = scheduleData.morning_end || '12:00';
+    const afternoonStart = scheduleData.afternoon_start || '13:00';
+    const afternoonEnd = scheduleData.afternoon_end || '17:00';
+
+    // Calculate scheduled session durations in hours
+    const morningScheduledHours = (timeToMinutes(morningEnd) - timeToMinutes(morningStart)) / 60;
+    const afternoonScheduledHours = (timeToMinutes(afternoonEnd) - timeToMinutes(afternoonStart)) / 60;
+    const totalScheduledHours = morningScheduledHours + afternoonScheduledHours;
+
     // Get existing attendance record
     const { data: existingRecord } = await supabase
       .from('attendance')
@@ -198,59 +203,73 @@ serve(async (req) => {
       .eq('date', today)
       .single();
 
-    // 4-Time Schedule Logic:
-    // 1st scan -> morning_in
-    // 2nd scan -> morning_out
-    // 3rd scan -> afternoon_in  
-    // 4th scan -> afternoon_out
-    
     let result;
     let action: 'morning_in' | 'morning_out' | 'afternoon_in' | 'afternoon_out';
 
-    const morningStart = scheduleData.morning_start || '08:00';
-    const morningEnd = scheduleData.morning_end || '12:00';
-    const afternoonStart = scheduleData.afternoon_start || '13:00';
-    const afternoonEnd = scheduleData.afternoon_end || '17:00';
-
     if (!existingRecord) {
-      // 1st scan - Morning In
-      action = 'morning_in';
-      
-      const startTime = new Date(`${today}T${morningStart}`);
-      const graceEndTime = new Date(startTime.getTime() + (settings.grace_period_minutes * 60 * 1000));
-      
-      let lateMinutes = 0;
-      if (now > graceEndTime) {
-        lateMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+      // 1st scan — check if it's afternoon-only (half-day)
+      const currentMinutes = timeToMinutes(currentPHTime);
+      const afternoonStartMinutes = timeToMinutes(afternoonStart);
+
+      if (currentMinutes >= afternoonStartMinutes) {
+        // Afternoon-only half-day: skip morning, go straight to afternoon_in
+        action = 'afternoon_in';
+
+        const { data, error } = await supabase
+          .from('attendance')
+          .insert({
+            employee_id: employee.id,
+            date: today,
+            afternoon_in: currentTime,
+            rfid_time_in: rfid_card_number,
+            status: 'half_day',
+            late_minutes: 0,
+            overtime_hours: 0,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = data;
+      } else {
+        // Normal morning_in
+        action = 'morning_in';
+        
+        const startTime = new Date(`${today}T${morningStart}`);
+        const graceEndTime = new Date(startTime.getTime() + (settings.grace_period_minutes * 60 * 1000));
+        
+        let lateMinutes = 0;
+        if (now > graceEndTime) {
+          lateMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+        }
+
+        const status = lateMinutes > 0 ? 'late' : 'present';
+
+        const { data, error } = await supabase
+          .from('attendance')
+          .insert({
+            employee_id: employee.id,
+            date: today,
+            time_in: currentTime,
+            morning_in: currentTime,
+            rfid_time_in: rfid_card_number,
+            status: status,
+            late_minutes: lateMinutes,
+            overtime_hours: 0,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = data;
       }
-
-      const status = lateMinutes > 0 ? 'late' : 'present';
-
-      const { data, error } = await supabase
-        .from('attendance')
-        .insert({
-          employee_id: employee.id,
-          date: today,
-          time_in: currentTime,
-          morning_in: currentTime,
-          rfid_time_in: rfid_card_number,
-          status: status,
-          late_minutes: lateMinutes,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      result = data;
-    } else if (!existingRecord.morning_out) {
+    } else if (existingRecord.morning_in && !existingRecord.morning_out && !existingRecord.afternoon_in) {
       // 2nd scan - Morning Out
       action = 'morning_out';
 
       const { data, error } = await supabase
         .from('attendance')
-        .update({
-          morning_out: currentTime,
-        })
+        .update({ morning_out: currentTime })
         .eq('id', existingRecord.id)
         .select()
         .single();
@@ -258,14 +277,12 @@ serve(async (req) => {
       if (error) throw error;
       result = data;
     } else if (!existingRecord.afternoon_in) {
-      // 3rd scan - Afternoon In
+      // 3rd scan (or 2nd for afternoon-only records) - Afternoon In
       action = 'afternoon_in';
 
       const { data, error } = await supabase
         .from('attendance')
-        .update({
-          afternoon_in: currentTime,
-        })
+        .update({ afternoon_in: currentTime })
         .eq('id', existingRecord.id)
         .select()
         .single();
@@ -273,34 +290,45 @@ serve(async (req) => {
       if (error) throw error;
       result = data;
     } else if (!existingRecord.afternoon_out) {
-      // 4th scan - Afternoon Out
+      // Final scan - Afternoon Out
       action = 'afternoon_out';
 
-      // Calculate hours worked
+      // Calculate hours worked per session, capped to schedule
       const morningIn = existingRecord.morning_in ? new Date(existingRecord.morning_in) : null;
       const morningOut = existingRecord.morning_out ? new Date(existingRecord.morning_out) : null;
       const afternoonIn = existingRecord.afternoon_in ? new Date(existingRecord.afternoon_in) : null;
       
       let totalHours = 0;
+      let isHalfDay = false;
+
       if (morningIn && morningOut) {
-        totalHours += (morningOut.getTime() - morningIn.getTime()) / (1000 * 60 * 60);
-      }
-      if (afternoonIn) {
-        totalHours += (now.getTime() - afternoonIn.getTime()) / (1000 * 60 * 60);
+        const rawMorningHours = (morningOut.getTime() - morningIn.getTime()) / (1000 * 60 * 60);
+        totalHours += Math.min(rawMorningHours, morningScheduledHours);
+      } else {
+        isHalfDay = true; // No morning session
       }
 
-      // Calculate undertime
+      if (afternoonIn) {
+        const rawAfternoonHours = (now.getTime() - afternoonIn.getTime()) / (1000 * 60 * 60);
+        totalHours += Math.min(rawAfternoonHours, afternoonScheduledHours);
+      }
+
+      // If only one session, it's a half-day
+      if (!morningIn && !morningOut) {
+        isHalfDay = true;
+      }
+
+      // Cap total to scheduled hours
+      totalHours = Math.min(totalHours, totalScheduledHours);
+
+      // Calculate undertime based on scheduled end
       const endTime = new Date(`${today}T${afternoonEnd}`);
       let undertimeMinutes = 0;
       if (now < endTime) {
         undertimeMinutes = Math.floor((endTime.getTime() - now.getTime()) / (1000 * 60));
       }
 
-      // Calculate overtime (hours beyond 8)
-      let overtimeHours = 0;
-      if (totalHours > 8) {
-        overtimeHours = totalHours - 8;
-      }
+      const status = isHalfDay ? 'half_day' : (existingRecord.status || 'present');
 
       const { data, error } = await supabase
         .from('attendance')
@@ -310,7 +338,8 @@ serve(async (req) => {
           rfid_time_out: rfid_card_number,
           hours_worked: Math.round(totalHours * 100) / 100,
           undertime_minutes: undertimeMinutes,
-          overtime_hours: Math.round(overtimeHours * 100) / 100,
+          overtime_hours: 0,
+          status: status,
         })
         .eq('id', existingRecord.id)
         .select()
@@ -319,7 +348,7 @@ serve(async (req) => {
       if (error) throw error;
       result = data;
     } else {
-      // Already completed all 4 punches
+      // Already completed all punches
       return new Response(
         JSON.stringify({ 
           error: 'Already completed attendance for today',
@@ -333,7 +362,6 @@ serve(async (req) => {
       );
     }
 
-    // Map action to display text
     const actionLabels = {
       morning_in: 'MORNING IN',
       morning_out: 'MORNING OUT',

@@ -151,7 +151,7 @@ export default function Payroll() {
 
   const recordColumns: ColumnDef<any, any>[] = [
     { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name) },
-    { accessorKey: 'is_manual', header: 'Type', cell: ({ getValue }) => getValue() ? <Badge variant="outline" className="bg-info/10 text-info border-info/30">Manual</Badge> : <Badge variant="outline">Computed</Badge> },
+    { accessorKey: 'is_manual', header: 'Type of Calculation', cell: ({ getValue }) => getValue() ? <Badge variant="outline" className="bg-info/10 text-info border-info/30">Manual</Badge> : <Badge variant="outline">Automated</Badge> },
     { accessorKey: 'basic_pay', header: 'Basic', cell: ({ getValue }) => formatCurrency(getValue() as number) },
     { accessorKey: 'gross_pay', header: 'Gross', cell: ({ getValue }) => formatCurrency(getValue() as number) },
     { accessorKey: 'total_deductions', header: 'Deductions', cell: ({ getValue }) => formatCurrency(getValue() as number) },
@@ -259,9 +259,6 @@ export default function Payroll() {
                 <>
                   {!isPeriodProcessed && (
                     <div className="bg-warning/10 text-warning p-4 rounded-lg mb-4 text-center"><p className="text-sm font-medium">Payroll is not yet processed. View and download will be available after processing.</p></div>
-                  )}
-                  {isHR && selectedPeriodData?.status === 'processing' && (
-                    <div className="mb-4"><Button onClick={() => { setEditingRecord(null); setManualPayrollOpen(true); }}><FileEdit className="mr-2 h-4 w-4" /> Add Manual Payroll</Button></div>
                   )}
                   {recordsLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
                     <DataTable columns={recordColumns} data={records || []} searchPlaceholder="Search records..." emptyMessage="No records" />

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useCountUp } from '@/hooks/useCountUp';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download } from 'lucide-react';
 import { useAttendanceByDate, useAttendanceStats } from '@/hooks/useAttendance';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,9 +39,16 @@ function AttendanceStatCard({ label, value, colorClass, loading, showBorderL = f
 
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
   const { data: attendance, isLoading } = useAttendanceByDate(dateStr);
   const { data: stats, isLoading: statsLoading } = useAttendanceStats(dateStr);
+
+  const filteredAttendance = useMemo(() => {
+    if (!attendance) return [];
+    if (statusFilter === 'all') return attendance;
+    return attendance.filter((a: any) => (a.status || 'present') === statusFilter);
+  }, [attendance, statusFilter]);
 
   const formatTime = (timestamp: string | null) => {
     if (!timestamp) return '-';
@@ -97,13 +105,24 @@ export default function Attendance() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Daily Attendance - {selectedDate.toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Daily Attendance - {selectedDate.toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
+          </div>
+          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="present">Present</TabsTrigger>
+              <TabsTrigger value="late">Late</TabsTrigger>
+              <TabsTrigger value="absent">Absent</TabsTrigger>
+              <TabsTrigger value="on_leave">On Leave</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
           ) : (
-            <DataTable columns={columns} data={attendance || []} searchPlaceholder="Search attendance..." emptyMessage="No attendance records for this date" />
+            <DataTable columns={columns} data={filteredAttendance} searchPlaceholder="Search attendance..." emptyMessage="No attendance records for this date" />
           )}
         </CardContent>
       </Card>

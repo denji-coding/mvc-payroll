@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
@@ -26,6 +27,7 @@ export default function Branches() {
   const deleteMutation = useDeleteBranch();
   
   const [branchesWithCounts, setBranchesWithCounts] = useState<BranchWithCounts[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState({ name: '', code: '', address: '', contact_number: '', is_active: true });
@@ -51,6 +53,12 @@ export default function Branches() {
     );
     setBranchesWithCounts(enrichedBranches);
   };
+
+  const filteredBranches = useMemo(() => {
+    if (statusFilter === 'all') return branchesWithCounts;
+    if (statusFilter === 'active') return branchesWithCounts.filter(b => b.is_active !== false);
+    return branchesWithCounts.filter(b => b.is_active === false);
+  }, [branchesWithCounts, statusFilter]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,9 +136,18 @@ export default function Branches() {
       </div>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardHeader>
+          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardHeader>
+        <CardContent>
           {isLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
-            <DataTable columns={columns} data={branchesWithCounts} searchPlaceholder="Search branches..." emptyMessage="No branches found" />
+            <DataTable columns={columns} data={filteredBranches} searchPlaceholder="Search branches..." emptyMessage="No branches found" />
           )}
         </CardContent>
       </Card>

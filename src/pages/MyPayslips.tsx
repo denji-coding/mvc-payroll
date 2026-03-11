@@ -175,7 +175,9 @@ export default function MyPayslips() {
                   {Number(viewRecord.philhealth_contribution) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">PhilHealth</span><span>{fmt(Number(viewRecord.philhealth_contribution))}</span></div>}
                   {Number(viewRecord.pagibig_contribution) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Pag-IBIG</span><span>{fmt(Number(viewRecord.pagibig_contribution))}</span></div>}
                   {Number(viewRecord.withholding_tax) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Withholding Tax</span><span>{fmt(Number(viewRecord.withholding_tax))}</span></div>}
-                  {Number(viewRecord.other_deductions) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Other Deductions</span><span>{fmt(Number(viewRecord.other_deductions))}</span></div>}
+                  {viewRecord.deductions_breakdown && Object.entries(viewRecord.deductions_breakdown as Record<string, number>).map(([key, val]) => (
+                    Number(val) > 0 ? <div key={key} className="flex justify-between"><span className="text-muted-foreground">{key}</span><span>{fmt(Number(val))}</span></div> : null
+                  ))}
                   <div className="flex justify-between font-semibold pt-1 border-t"><span>Total Deductions</span><span className="text-destructive">{fmt(Number(viewRecord.total_deductions || 0))}</span></div>
                 </div>
               </div>

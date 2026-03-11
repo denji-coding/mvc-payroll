@@ -160,9 +160,6 @@ export default function MyPayslips() {
                 <h4 className="font-semibold text-sm mb-2" style={{ color: 'hsl(var(--success))' }}>Earnings</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between"><span className="text-muted-foreground">Basic Pay</span><span>{fmt(Number(viewRecord.basic_pay || 0))}</span></div>
-                  {Number(viewRecord.overtime_pay) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Overtime Pay</span><span>{fmt(Number(viewRecord.overtime_pay))}</span></div>}
-                  {Number(viewRecord.holiday_pay) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Holiday Pay</span><span>{fmt(Number(viewRecord.holiday_pay))}</span></div>}
-                  {Number(viewRecord.night_differential) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Night Differential</span><span>{fmt(Number(viewRecord.night_differential))}</span></div>}
                   {Number(viewRecord.total_allowances) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Allowances</span><span>{fmt(Number(viewRecord.total_allowances))}</span></div>}
                   <div className="flex justify-between font-semibold pt-1 border-t"><span>Gross Pay</span><span style={{ color: 'hsl(var(--success))' }}>{fmt(Number(viewRecord.gross_pay || 0))}</span></div>
                 </div>

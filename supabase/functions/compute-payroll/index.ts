@@ -81,7 +81,6 @@ function computePagIBIG(fixedAmount: number): { employee: number; employer: numb
 
 // BIR Withholding Tax 2024 (Monthly)
 function computeWithholdingTax(taxableIncome: number): number {
-  // Annual tax brackets converted to monthly
   const brackets = [
     { min: 0, max: 20833, rate: 0, base: 0 },
     { min: 20833, max: 33333, rate: 0.15, base: 0 },
@@ -97,6 +96,12 @@ function computeWithholdingTax(taxableIncome: number): number {
   
   const excess = taxableIncome - bracket.min;
   return bracket.base + (excess * bracket.rate);
+}
+
+// Helper: parse "HH:MM" time string to minutes since midnight
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + (m || 0);
 }
 
 interface PayrollRequest {
@@ -117,7 +122,6 @@ serve(async (req) => {
     // Custom JWT verification
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error("Missing or invalid authorization header");
       return new Response(
         JSON.stringify({ error: 'Missing authorization' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -128,14 +132,12 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     
     if (userError || !user) {
-      console.error("Token verification failed:", userError);
       return new Response(
         JSON.stringify({ error: 'Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check if user is HR admin
     const { data: roleData, error: roleError } = await supabase
       .from('user_roles')
       .select('role')
@@ -143,14 +145,11 @@ serve(async (req) => {
       .single();
 
     if (roleError || roleData?.role !== 'hr_admin') {
-      console.error("Authorization failed: user is not hr_admin", roleError);
       return new Response(
         JSON.stringify({ error: 'Only HR admins can run payroll' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log("Authorized user:", user.id, "with role:", roleData.role);
 
     const { payroll_period_id, employee_ids }: PayrollRequest = await req.json();
 
@@ -211,7 +210,6 @@ serve(async (req) => {
     const records = [];
     const periodStart = new Date(period.period_start);
     const periodEnd = new Date(period.period_end);
-    const workingDaysInPeriod = calculateWorkingDays(periodStart, periodEnd);
 
     for (const employee of employees || []) {
       // Get attendance for the period
@@ -221,6 +219,18 @@ serve(async (req) => {
         .eq('employee_id', employee.id)
         .gte('date', period.period_start)
         .lte('date', period.period_end);
+
+      // Get employee schedules (all days)
+      const { data: schedules } = await supabase
+        .from('employee_schedules')
+        .select('*')
+        .eq('employee_id', employee.id);
+
+      // Build schedule map by day_of_week
+      const scheduleMap: Record<number, any> = {};
+      for (const s of schedules || []) {
+        scheduleMap[s.day_of_week] = s;
+      }
 
       // Get approved leaves for the period
       const { data: leaveRequests } = await supabase
@@ -245,11 +255,32 @@ serve(async (req) => {
         }
       }
 
-      // Calculate days worked from total hours worked / 8 (same as manual calculation)
-      const totalHoursWorked = attendance?.reduce((sum, a) => sum + (parseFloat(String(a.hours_worked)) || 0), 0) || 0;
-      const daysWorked = Math.round((totalHoursWorked / 8) * 100) / 100;
-      const totalOvertimeHours = attendance?.reduce((sum, a) => sum + (parseFloat(String(a.overtime_hours)) || 0), 0) || 0;
+      // Calculate total hours worked, capped to scheduled hours per day
+      let totalCappedHours = 0;
       const totalLateMinutes = attendance?.reduce((sum, a) => sum + (parseInt(String(a.late_minutes)) || 0), 0) || 0;
+
+      for (const a of attendance || []) {
+        const rawHours = parseFloat(String(a.hours_worked)) || 0;
+        const attendanceDate = new Date(a.date + 'T12:00:00+08:00');
+        const dayOfWeek = attendanceDate.getDay();
+        const schedule = scheduleMap[dayOfWeek];
+
+        if (schedule && schedule.is_duty_day) {
+          const mStart = timeToMinutes(schedule.morning_start || '08:00');
+          const mEnd = timeToMinutes(schedule.morning_end || '12:00');
+          const aStart = timeToMinutes(schedule.afternoon_start || '13:00');
+          const aEnd = timeToMinutes(schedule.afternoon_end || '17:00');
+          const scheduledMinutes = (mEnd - mStart) + (aEnd - aStart);
+          const scheduledHours = scheduledMinutes / 60;
+          // Cap actual hours to scheduled hours (no overtime)
+          totalCappedHours += Math.min(rawHours, scheduledHours);
+        } else {
+          // No schedule for this day, use raw hours capped at 8
+          totalCappedHours += Math.min(rawHours, 8);
+        }
+      }
+
+      const daysWorked = Math.round((totalCappedHours / 8) * 100) / 100;
 
       // Get employee salary adjustments (allowances/deductions)
       const { data: adjustments } = await supabase
@@ -264,7 +295,6 @@ serve(async (req) => {
       const minuteRate = hourlyRate / 60;
       const basicPay = dailyRate * daysWorked;
       const lateDeduction = Math.round(minuteRate * totalLateMinutes * 100) / 100;
-      const overtimePay = hourlyRate * 1.25 * totalOvertimeHours;
       const leavePay = dailyRate * leaveWithPayDays;
 
       // Allowances
@@ -274,27 +304,23 @@ serve(async (req) => {
         totalAllowances += parseFloat(adj.amount);
         allowancesBreakdown[adj.salary_components.name] = parseFloat(adj.amount);
       });
-      // Add leave pay to allowances breakdown
       if (leaveWithPayDays > 0) {
         allowancesBreakdown[`Leave With Pay (${leaveWithPayDays} days)`] = Math.round(leavePay * 100) / 100;
       }
 
-      // Calculate gross pay (include leave pay)
-      const grossPay = basicPay + overtimePay + totalAllowances + leavePay;
+      // Gross pay — NO overtime
+      const grossPay = basicPay + totalAllowances + leavePay;
 
-      // Monthly equivalent for contribution calculations
-      const monthlyGross = grossPay * 2; // Semi-monthly payroll
-
-      // Government contributions - fixed amounts used directly as per-period deduction
+      // Government contributions
       const sssContribution = sssFixed;
       const philhealthContribution = philhealthFixed;
       const pagibigContribution = pagibigFixed;
 
-      // Taxable income (gross - mandatory deductions)
+      // Taxable income
       const taxableIncome = grossPay - sssContribution - philhealthContribution - pagibigContribution;
-      const withholdingTax = computeWithholdingTax(taxableIncome * 2) / 2; // Monthly tax / 2
+      const withholdingTax = computeWithholdingTax(taxableIncome * 2) / 2;
 
-      // Other deductions from adjustments
+      // Other deductions
       let otherDeductions = lateDeduction;
       const deductionsBreakdown: Record<string, number> = {};
       if (lateDeduction > 0) {
@@ -311,13 +337,12 @@ serve(async (req) => {
       const totalDeductions = sssContribution + philhealthContribution + pagibigContribution + withholdingTax + otherDeductions;
       const netPay = grossPay - totalDeductions;
 
-      // Create or update payroll record
       const payrollRecord = {
         payroll_period_id,
         employee_id: employee.id,
         basic_pay: Math.round(basicPay * 100) / 100,
         days_worked: daysWorked,
-        overtime_pay: Math.round(overtimePay * 100) / 100,
+        overtime_pay: 0,
         night_differential: 0,
         holiday_pay: 0,
         total_allowances: Math.round(totalAllowances * 100) / 100,

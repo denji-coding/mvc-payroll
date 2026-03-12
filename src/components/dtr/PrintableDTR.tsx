@@ -67,6 +67,7 @@ export function PrintableDTR({
       return `Late (${record.late_minutes}m)`;
     }
     if (record.status === 'on_leave') return 'On Leave';
+    if (record.status === 'half_day') return 'Half Day';
     return '';
   };
 

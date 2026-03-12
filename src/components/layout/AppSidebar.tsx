@@ -184,13 +184,20 @@ const employeePortalItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const { role, profile, signOut } = useAuth();
   const { effectiveRole, actualRole, isViewingSwitched, switchToEmployee, switchToAdmin } = useViewMode();
   const { data: permissions, isLoading: permissionsLoading } = useRolePermissionsByRole(effectiveRole);
   const collapsed = state === "collapsed";
+  const isMobile = useIsMobile();
+
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   // Filter function for navigation items based on effectiveRole and permissions
   const filterItems = (items: NavItem[]) =>

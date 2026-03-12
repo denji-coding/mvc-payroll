@@ -10,6 +10,25 @@ import { calculateSalary } from "@/lib/salaryCalculations";
 import { useEmployeeAttendance } from "@/hooks/useAttendance";
 import { useBenefitRates } from "@/hooks/useBenefitRates";
 import { formatFullName } from "@/lib/formatName";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + (m || 0);
+}
+
+function computeSessionHours(
+  sessionIn: string | null | undefined,
+  sessionOut: string | null | undefined,
+  scheduledDurationHours: number
+): number {
+  if (!sessionIn || !sessionOut) return 0;
+  const inTime = new Date(sessionIn).getTime();
+  const outTime = new Date(sessionOut).getTime();
+  const rawHours = (outTime - inTime) / (1000 * 60 * 60);
+  return Math.min(Math.max(rawHours, 0), scheduledDurationHours);
+}
 
 interface ManualPayrollDialogProps {
   periodId: string;

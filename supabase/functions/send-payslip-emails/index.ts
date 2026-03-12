@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
         '</table></td></tr></table>',
         '<p style="color:#333;font-size:14px;line-height:1.6;margin:0 0 25px;">For a detailed breakdown of your payslip, please log in to the HR portal.</p>',
         '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">',
-        '<tr><td align="center" style="padding:10px 0 25px;"><a href="https://migrant-path-hr.lovable.app/my-payslips" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:14px 35px;border-radius:8px;font-size:15px;font-weight:600;">View Full Payslip</a></td></tr></table>',
+        '<tr><td align="center" style="padding:10px 0 25px;"><a href="https://mvc-rose.vercel.app/my-payslips" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:14px 35px;border-radius:8px;font-size:15px;font-weight:600;">View Full Payslip</a></td></tr></table>',
         '<p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 10px;">If you have any questions about your payslip, please contact the HR department.</p>',
         '<p style="color:#333;font-size:14px;line-height:1.6;margin:20px 0 0;">Best regards,<br /><strong>Migrants Venture Corporation HR Team</strong></p>',
         '</td></tr>',

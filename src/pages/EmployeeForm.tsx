@@ -128,7 +128,7 @@ export default function EmployeeForm() {
       { field: "employee_id", label: "Employee ID" },
       { field: "first_name", label: "First Name" },
       { field: "last_name", label: "Last Name" },
-      { field: "middle_name", label: "Middle Name" },
+      
       { field: "email", label: "Email" },
       { field: "phone", label: "Phone" },
       { field: "date_of_birth", label: "Date of Birth" },
@@ -327,7 +327,7 @@ export default function EmployeeForm() {
                   />
                 </div>
                 <div>
-                  <RequiredLabel>Middle Name</RequiredLabel>
+                  <Label>Middle Name</Label>
                   <Input
                     value={form.middle_name}
                     onChange={(e) => updateField("middle_name", e.target.value)}

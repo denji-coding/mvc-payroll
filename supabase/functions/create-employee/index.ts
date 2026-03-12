@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
           type: 'account_created', to: employeeData.email,
           name: `${employeeData.first_name} ${employeeData.last_name}`,
           email: employeeData.email, password: employeeData.password,
-          role: employeeData.role, portalUrl: 'https://migrant-path-hr.lovable.app'
+          role: employeeData.role, portalUrl: 'https://mvc-rose.vercel.app/'
         }
       });
     } catch (emailError) {

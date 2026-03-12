@@ -116,7 +116,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="page-container max-w-5xl">
+    <div className="page-container max-w-5xl overflow-x-hidden">
       <div className="page-header"><h1 className="page-title">My Profile</h1></div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -124,15 +124,15 @@ export default function Profile() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20 ring-4 ring-primary/10">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 ring-4 ring-primary/10 flex-shrink-0">
                 <AvatarImage src={profile?.avatarUrl} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">{getInitials()}</AvatarFallback>
               </Avatar>
-              <div>
-                <CardTitle className="text-xl">{profile?.firstName} {profile?.lastName}</CardTitle>
-                <p className="text-muted-foreground flex items-center gap-2 mt-1">
-                  <Mail className="h-4 w-4" />
-                  {profile?.email}
+              <div className="min-w-0">
+                <CardTitle className="text-lg sm:text-xl truncate">{profile?.firstName} {profile?.lastName}</CardTitle>
+                <p className="text-muted-foreground flex items-center gap-2 mt-1 text-sm truncate">
+                  <Mail className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{profile?.email}</span>
                 </p>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { capitalizeWords } from "@/lib/formatName";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   LayoutDashboard,
   Users,
@@ -183,13 +184,20 @@ const employeePortalItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const { role, profile, signOut } = useAuth();
   const { effectiveRole, actualRole, isViewingSwitched, switchToEmployee, switchToAdmin } = useViewMode();
   const { data: permissions, isLoading: permissionsLoading } = useRolePermissionsByRole(effectiveRole);
   const collapsed = state === "collapsed";
+  const isMobile = useIsMobile();
+
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   // Filter function for navigation items based on effectiveRole and permissions
   const filterItems = (items: NavItem[]) =>
@@ -299,6 +307,7 @@ export function AppSidebar() {
                           end={item.url === "/"}
                           className="flex items-center gap-2"
                           activeClassName="bg-sidebar-accent text-sidebar-accent-foreground"
+                          onClick={handleNavClick}
                         >
                           <item.icon className="w-4 h-4 flex-shrink-0" />
                           {!collapsed && <span className="text-sm">{item.title}</span>}
@@ -332,6 +341,7 @@ export function AppSidebar() {
                         end={item.url === "/"}
                         className="flex items-center gap-2"
                         activeClassName="bg-sidebar-accent text-sidebar-accent-foreground"
+                        onClick={handleNavClick}
                       >
                         <item.icon className="w-4 h-4 flex-shrink-0" />
                         {!collapsed && <span className="text-sm">{item.title}</span>}

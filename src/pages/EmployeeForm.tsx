@@ -327,7 +327,7 @@ export default function EmployeeForm() {
                   />
                 </div>
                 <div>
-                  <Label>Middle Name</Label>
+                  <Label>Middle Name <span className="text-muted-foreground font-normal">(Optional)</span></Label>
                   <Input
                     value={form.middle_name}
                     onChange={(e) => updateField("middle_name", e.target.value)}

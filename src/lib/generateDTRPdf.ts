@@ -73,6 +73,7 @@ const getRemarks = (record: AttendanceRecord | undefined, isRestDay: boolean, is
   if (!record) return 'Absent';
   if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) return 'Late';
   if (record.status === 'on_leave') return 'On Leave';
+  if (record.status === 'half_day') return 'Half Day';
   if (record.status === 'present') return 'Present';
   return '-';
 };

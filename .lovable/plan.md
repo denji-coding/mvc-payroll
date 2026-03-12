@@ -1,88 +1,73 @@
 
 
-# Plan: Employee Fixes, Leave Credit Improvements, and Reports Cleanup
+## Plan: Fix Attendance Calculation, Notification Filtering, and Profile Layout
 
-## 1. Fix Employee Form Duplicate Error Messages
+### 1. Fix Attendance & Payroll Half-Day Calculation
 
-### Edge Function (`supabase/functions/create-employee/index.ts`)
-- Before creating the auth user, check for duplicates in the `employees` table: email, phone, rfid_card_number, sss_number, philhealth_number, pagibig_number
-- Return specific error messages like "An employee with this email already exists", "An employee with this phone number already exists", etc.
-- Also catch the Supabase Auth duplicate email error and return a clearer message
+**Problem:** The current attendance terminal and payroll logic have issues with half-day detection. The terminal handles afternoon-only half-days but doesn't properly handle morning-only half-days (where an employee clocks morning_in/morning_out but never returns for afternoon). The payroll computation uses raw `hours_worked` from the attendance record without properly checking which sessions actually have data.
 
-### Employee Edit Form (`src/pages/EmployeeForm.tsx`)
-- On update, before saving, query for duplicates (excluding current employee ID) for email, phone, RFID, and government IDs
-- Show specific toast error messages for each duplicate field
+**Fix in `supabase/functions/rfid-attendance/index.ts`:**
+- Add a new branch: if `existingRecord` has `morning_in` AND `morning_out` but NO `afternoon_in`, and the employee scans again, check the current time:
+  - If current time is within afternoon session window → record as `afternoon_in` (existing behavior)
+  - This already works via the `!existingRecord.afternoon_in` branch
+- On afternoon_out (final scan): the half-day detection already checks `!morningIn && !morningOut`. Add check for morning-only: if `!afternoonIn` shouldn't happen since we're in the afternoon_out branch, but ensure the `isHalfDay` flag also checks if only morning was recorded
+- The key fix: when computing `hours_worked` on afternoon_out, ensure morning-only scenario is impossible at that point (it already is since afternoon_out requires afternoon_in). The real issue is that `hours_worked` is only set on the final punch. For morning-only records that never get an afternoon punch, `hours_worked` stays NULL
 
-### Date Picker Auto-Close (`src/components/ui/date-picker.tsx`)
-- Add open/close state control to the `Popover` in `DatePicker`
-- When `onSelect` fires on the Calendar, close the popover automatically
+**Fix in `supabase/functions/compute-payroll/index.ts`:**
+- Instead of relying solely on `a.hours_worked`, compute hours from the actual session timestamps:
+  - If `morning_in` AND `morning_out` exist: calculate morning hours = min(morning_out - morning_in, scheduled morning duration)
+  - If `afternoon_in` AND `afternoon_out` exist: calculate afternoon hours = min(afternoon_out - afternoon_in, scheduled afternoon duration)
+  - Sum the session hours (only sessions with both in/out)
+  - If only one session has complete data → half day (hours = that session's hours only)
+  - If `hours_worked` is NULL (employee never completed afternoon), still calculate from available morning session data
+- This makes payroll independent of whether the terminal stored `hours_worked` correctly
 
-## 2. Permanent Delete on Deleted Tab + 6-Month Expiry
+### 2. Fix Notification Filtering by Portal Mode
 
-### Employees Page (`src/pages/Employees.tsx`)
-- Add a permanent delete button (Trash2 icon) in the "deleted" tab actions alongside the restore button
-- Add confirmation dialog warning this is irreversible
-- The handler calls the edge function or directly deletes (via a new edge function) the employee and their auth user
+**Problem:** When HR admin switches to employee portal view, they still see HR notifications (leave requests, etc.) instead of employee-specific notifications.
 
-### Edge Function (`supabase/functions/delete-employee/index.ts`) — New
-- Accepts employee ID, verifies HR admin role
-- Deletes the employee record and their auth user via `supabaseAdmin.auth.admin.deleteUser()`
-- Cleans up related records (attendance, leave_requests, leave_credits, payroll_records, etc.)
+**Fix in `src/hooks/useNotifications.ts`:**
+- Accept an additional parameter: `effectiveRole` from `useViewMode`
+- Filter notifications based on role:
+  - HR role types: `leave_request`, `leave_approved`, `leave_rejected` (from HR perspective)
+  - Employee role types: `attendance`, `payroll_ready`, `leave_approved`, `leave_rejected`, `announcement`
+- Apply `.in('type', allowedTypes)` filter to the query
 
-### 6-Month Auto-Purge — Database
-- Create a database function `purge_expired_deleted_employees()` that deletes employees where `employment_status = 'terminated'` and `updated_at < now() - interval '6 months'`
-- Set up a `pg_cron` job to run this monthly
-- The function will also need to call auth admin to delete users, so this is better handled as a cron-triggered edge function
+**Fix in `src/components/layout/AppHeader.tsx`:**
+- Import `useViewMode` and pass `effectiveRole` to `useNotifications`
 
-### Edge Function (`supabase/functions/purge-deleted-employees/index.ts`) — New
-- Queries terminated employees older than 6 months
-- Deletes their auth accounts and employee records
-- Scheduled via `pg_cron` + `pg_net`
+### 3. Fix Profile Page Layout
 
-## 3. Leave Credit Fixes
+**Problem:** The profile page uses `max-w-2xl` which constrains it to ~672px, leaving empty space on larger screens.
 
-### Leave Type Creation (`src/hooks/useLeaveTypes.ts`)
-- Fix `useCreateLeaveType`: when `applyToAll` is true, use the correct `default_credits` value from the newly created leave type
-- The current code already does this correctly, but the enum mapping may fail for custom leave types — fix the mapping to handle custom types properly
+**Fix in `src/pages/Profile.tsx`:**
+- Change `max-w-2xl` to `max-w-4xl` to better utilize available space
+- Use a two-column grid layout on large screens: profile info card on one side, password change on the other
 
-### Database Trigger for Auto-Assignment
-- The existing `assign_leave_credits_to_employee` trigger already assigns credits on employee creation
-- Need to ensure new leave types also get assigned — the `useCreateLeaveType` hook handles this with `applyToAll`
+### Technical Details
 
-### Monthly Credit Refresh Logic
-- Create a new edge function `refresh-leave-credits/index.ts` that runs monthly via `pg_cron`
-- Logic: For each employee's leave credit record:
-  - If `used_credits > 0`: reset `used_credits` to 0 (refresh consumed credits)
-  - If `used_credits = 0`: do nothing (balance stays the same, doesn't increase)
-- Schedule via `pg_cron` on the 1st of each month
+**Payroll session-based calculation (compute-payroll):**
+```text
+For each attendance record:
+  morningHours = 0, afternoonHours = 0
+  if (morning_in && morning_out):
+    morningHours = min(morning_out - morning_in, scheduledMorningHours)
+  if (afternoon_in && afternoon_out):
+    afternoonHours = min(afternoon_out - afternoon_in, scheduledAfternoonHours)
+  totalHours = morningHours + afternoonHours
+  (replaces using a.hours_worked)
+```
 
-## 4. Remove Branch Performance from Reports
+**Notification type mapping:**
+```text
+HR admin view:    ['leave_request']
+Employee view:    ['attendance', 'payroll_ready', 'leave_approved', 'leave_rejected', 'announcement']
+```
 
-### Reports Page (`src/pages/Reports.tsx`)
-- Remove the `branch-performance` entry from the `reports` array
-- Remove the `case 'branch-performance'` block from `generateReport`
-- Remove the `Building2` import if no longer used
-
-## Files to Create/Edit
-
-| File | Action |
-|------|--------|
-| `supabase/functions/create-employee/index.ts` | Add duplicate checks before creating |
-| `src/pages/EmployeeForm.tsx` | Add duplicate validation on edit |
-| `src/components/ui/date-picker.tsx` | Auto-close popover on date selection |
-| `src/pages/Employees.tsx` | Add permanent delete button in deleted tab |
-| `supabase/functions/delete-employee/index.ts` | New — permanent delete with auth cleanup |
-| `supabase/functions/purge-deleted-employees/index.ts` | New — cron job for 6-month expiry |
-| `src/hooks/useLeaveTypes.ts` | Fix enum mapping for custom leave types |
-| `supabase/functions/refresh-leave-credits/index.ts` | New — monthly credit refresh |
-| `src/pages/Reports.tsx` | Remove branch performance section |
-| Database | Enable `pg_cron`/`pg_net`, schedule purge + refresh jobs |
-
-## Implementation Order
-1. Date picker auto-close (quick fix)
-2. Reports page cleanup (quick fix)
-3. Employee form duplicate validation (edge function + frontend)
-4. Permanent delete feature (new edge function + UI)
-5. Leave credit fixes (enum mapping + new refresh edge function)
-6. Cron jobs for auto-purge and credit refresh
+**Files to modify:**
+- `supabase/functions/compute-payroll/index.ts` — session-based hours calculation
+- `supabase/functions/rfid-attendance/index.ts` — ensure morning-only records properly set hours_worked
+- `src/hooks/useNotifications.ts` — add role-based filtering
+- `src/components/layout/AppHeader.tsx` — pass effectiveRole to notifications hook
+- `src/pages/Profile.tsx` — responsive layout fix
 

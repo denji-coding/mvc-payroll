@@ -95,18 +95,61 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
     }
   }, [open, isEditMode, editRecord, selectedEmployee?.basic_salary]);
 
-  // Auto-calculate days worked from attendance hours (hours / 8 = days) - for both create and edit modes
+  // Fetch employee schedules for session-based hour calculation
+  const { data: employeeSchedules } = useQuery({
+    queryKey: ['employee-schedules-payroll', currentEmployeeId],
+    queryFn: async () => {
+      if (!currentEmployeeId) return [];
+      const { data, error } = await supabase
+        .from('employee_schedules')
+        .select('*')
+        .eq('employee_id', currentEmployeeId);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!currentEmployeeId,
+  });
+
+  // Auto-calculate days worked from session-based hours (hours / 8 = days)
   useEffect(() => {
     if (attendanceRecords && attendanceRecords.length > 0) {
-      const totalHours = attendanceRecords.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
-      const days = Math.round((totalHours / 8) * 100) / 100;
+      // Build schedule map
+      const scheduleMap: Record<number, any> = {};
+      for (const s of employeeSchedules || []) {
+        scheduleMap[s.day_of_week] = s;
+      }
+
+      let totalCappedHours = 0;
+      for (const a of attendanceRecords) {
+        const attendanceDate = new Date(a.date + 'T12:00:00+08:00');
+        const dayOfWeek = attendanceDate.getDay();
+        const schedule = scheduleMap[dayOfWeek];
+
+        if (schedule && schedule.is_duty_day) {
+          const mStartMin = timeToMinutes(schedule.morning_start || '08:00');
+          const mEndMin = timeToMinutes(schedule.morning_end || '12:00');
+          const aStartMin = timeToMinutes(schedule.afternoon_start || '13:00');
+          const aEndMin = timeToMinutes(schedule.afternoon_end || '17:00');
+          const morningScheduledHours = (mEndMin - mStartMin) / 60;
+          const afternoonScheduledHours = (aEndMin - aStartMin) / 60;
+
+          const morningHours = computeSessionHours(a.morning_in, a.morning_out, morningScheduledHours);
+          const afternoonHours = computeSessionHours(a.afternoon_in, a.afternoon_out, afternoonScheduledHours);
+          totalCappedHours += morningHours + afternoonHours;
+        } else {
+          // Fallback: use hours_worked capped at 8
+          totalCappedHours += Math.min(a.hours_worked || 0, 8);
+        }
+      }
+
+      const days = Math.round((totalCappedHours / 8) * 100) / 100;
       setDaysWorkedStr(String(days));
 
       // Also sum late minutes from attendance
       const totalLate = attendanceRecords.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
       setLateMinutesStr(String(totalLate));
     }
-  }, [attendanceRecords]);
+  }, [attendanceRecords, employeeSchedules]);
 
   // basic_salary is the daily rate
   const dailyRate = monthlySalary;

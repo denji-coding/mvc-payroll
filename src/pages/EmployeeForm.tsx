@@ -140,6 +140,31 @@ export default function EmployeeForm() {
     return null;
   };
 
+  const validatePhoneNumber = (phone: string, label: string): string | null => {
+    if (!phone || phone.trim() === "") return null; // handled by required check
+    const digitsOnly = phone.replace(/\D/g, "");
+    if (!digitsOnly.startsWith("09")) return `${label} must start with 09`;
+    if (digitsOnly.length !== 11) return `${label} must be exactly 11 digits`;
+    return null;
+  };
+
+  const validateGovernmentIds = (): string[] => {
+    const errors: string[] = [];
+    const sss = form.sss_number.replace(/[-\s]/g, "");
+    if (sss && sss.length > 0 && sss.length !== 10) {
+      errors.push("SSS Number must be exactly 10 digits (XX-XXXXXXX-X)");
+    }
+    const phil = form.philhealth_number.replace(/[-\s]/g, "");
+    if (phil && phil.length > 0 && phil.length !== 12) {
+      errors.push("PhilHealth Number must be exactly 12 digits (XX-XXXXXXXXX-X)");
+    }
+    const pagibig = form.pagibig_number.replace(/[-\s]/g, "");
+    if (pagibig && pagibig.length > 0 && pagibig.length !== 12) {
+      errors.push("Pag-IBIG Number must be exactly 12 digits (XXXX-XXXX-XXXX)");
+    }
+    return errors;
+  };
+
   const validateRequiredFields = (): boolean => {
     const requiredFields: { field: string; label: string }[] = [
       { field: "employee_id", label: "Employee ID" },
@@ -172,6 +197,20 @@ export default function EmployeeForm() {
     if (missingFields.length > 0) {
       const fieldNames = missingFields.map(f => f.label).join(", ");
       toast.error(`Please fill in the following required fields: ${fieldNames}`);
+      return false;
+    }
+
+    // Validate phone numbers start with 09 and are 11 digits
+    const phoneError = validatePhoneNumber(form.phone, "Phone");
+    if (phoneError) { toast.error(phoneError); return false; }
+
+    const emergencyPhoneError = validatePhoneNumber(form.emergency_contact_phone, "Emergency Contact Phone");
+    if (emergencyPhoneError) { toast.error(emergencyPhoneError); return false; }
+
+    // Validate government IDs if provided
+    const govIdErrors = validateGovernmentIds();
+    if (govIdErrors.length > 0) {
+      govIdErrors.forEach((err) => toast.error(err));
       return false;
     }
 

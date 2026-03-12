@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Common validation patterns
-const phoneRegex = /^(\+?63|0)?[0-9]{10,11}$/;
+const phoneRegex = /^09[0-9]{9}$/;
 const sssRegex = /^[0-9]{2}-[0-9]{7}-[0-9]$|^[0-9]{10}$/;
 const tinRegex = /^[0-9]{3}-[0-9]{3}-[0-9]{3}(-[0-9]{3,5})?$|^[0-9]{9,14}$/;
 const philhealthRegex = /^[0-9]{2}-[0-9]{9}-[0-9]$|^[0-9]{12}$/;

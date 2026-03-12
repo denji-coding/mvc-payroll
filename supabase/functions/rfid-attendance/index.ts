@@ -262,7 +262,7 @@ serve(async (req) => {
         const scheduledMorningMinutes = timeToMinutes(morningStart);
         let lateMinutes = 0;
         if (currentMinutes > scheduledMorningMinutes + settings.grace_period_minutes) {
-          lateMinutes = currentMinutes - scheduledMorningMinutes;
+          lateMinutes = currentMinutes - scheduledMorningMinutes - settings.grace_period_minutes;
         }
         const status = lateMinutes > 0 ? 'late' : 'present';
 

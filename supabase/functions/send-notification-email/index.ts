@@ -47,7 +47,7 @@ function getAccountCreatedHtml(data: AccountCreatedEmail): string {
     '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;"><tr><td align="center" style="padding:30px 0;">',
     '<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">',
     '<tr><td style="background-color:#1a6b3c;padding:30px 40px;text-align:center;">',
-    '<img src="https://migrant-path-hr.lovable.app/favicon.png" alt="MVC Logo" width="60" height="60" style="display:block;margin:0 auto 15px auto;border-radius:8px;" />',
+    '<img src="https://mvc-rose.vercel.app/favicon.png" alt="MVC Logo" width="60" height="60" style="display:block;margin:0 auto 15px auto;border-radius:8px;" />',
     '<h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;letter-spacing:0.5px;">Welcome to Migrants Venture Corporation</h1>',
     '</td></tr>',
     '<tr><td style="padding:35px 40px;">',

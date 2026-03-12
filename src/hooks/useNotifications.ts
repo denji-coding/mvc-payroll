@@ -13,8 +13,9 @@ export interface Notification {
 }
 
 // Notification types visible per role
-const HR_NOTIFICATION_TYPES = ['leave_request', 'system'];
-const EMPLOYEE_NOTIFICATION_TYPES = ['attendance', 'payroll_ready', 'leave_approved', 'leave_rejected', 'announcement', 'system'];
+type NotificationType = 'leave_request' | 'leave_approved' | 'leave_rejected' | 'payroll_ready' | 'announcement' | 'system' | 'attendance';
+const HR_NOTIFICATION_TYPES: NotificationType[] = ['leave_request', 'system'];
+const EMPLOYEE_NOTIFICATION_TYPES: NotificationType[] = ['attendance', 'payroll_ready', 'leave_approved', 'leave_rejected', 'announcement', 'system'];
 
 export function useNotifications(userId: string | undefined, effectiveRole?: string | null) {
   const [notifications, setNotifications] = useState<Notification[]>([]);

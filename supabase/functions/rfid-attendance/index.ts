@@ -237,7 +237,7 @@ serve(async (req) => {
         const scheduledAfternoonMinutes = timeToMinutes(afternoonStart);
         let lateMinutes = 0;
         if (currentMinutes > scheduledAfternoonMinutes + settings.grace_period_minutes) {
-          lateMinutes = currentMinutes - scheduledAfternoonMinutes;
+          lateMinutes = currentMinutes - scheduledAfternoonMinutes - settings.grace_period_minutes;
         }
         const status = lateMinutes > 0 ? 'late' : 'half_day';
 

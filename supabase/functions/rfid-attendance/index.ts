@@ -215,6 +215,15 @@ serve(async (req) => {
         // Afternoon-only half-day: skip morning, go straight to afternoon_in
         action = 'afternoon_in';
 
+        // Calculate late for afternoon session with grace period
+        const scheduledAfternoonMinutes = timeToMinutes(afternoonStart);
+        let lateMinutes = 0;
+        if (currentMinutes > scheduledAfternoonMinutes + settings.grace_period_minutes) {
+          lateMinutes = currentMinutes - scheduledAfternoonMinutes;
+        }
+
+        const status = lateMinutes > 0 ? 'late' : 'half_day';
+
         const { data, error } = await supabase
           .from('attendance')
           .insert({
@@ -222,8 +231,8 @@ serve(async (req) => {
             date: today,
             afternoon_in: currentTime,
             rfid_time_in: rfid_card_number,
-            status: 'half_day',
-            late_minutes: 0,
+            status: status,
+            late_minutes: lateMinutes,
             overtime_hours: 0,
           })
           .select()
@@ -235,12 +244,11 @@ serve(async (req) => {
         // Normal morning_in
         action = 'morning_in';
         
-        const startTime = new Date(`${today}T${morningStart}`);
-        const graceEndTime = new Date(startTime.getTime() + (settings.grace_period_minutes * 60 * 1000));
+        const scheduledMorningMinutes = timeToMinutes(morningStart);
         
         let lateMinutes = 0;
-        if (now > graceEndTime) {
-          lateMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+        if (currentMinutes > scheduledMorningMinutes + settings.grace_period_minutes) {
+          lateMinutes = currentMinutes - scheduledMorningMinutes;
         }
 
         const status = lateMinutes > 0 ? 'late' : 'present';

@@ -116,22 +116,22 @@ export default function Profile() {
   };
 
   return (
-    <div className="page-container max-w-5xl overflow-x-hidden">
+    <div className="page-container max-w-5xl overflow-hidden">
       <div className="page-header"><h1 className="page-title">My Profile</h1></div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Profile Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 ring-4 ring-primary/10 flex-shrink-0">
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <Avatar className="h-14 w-14 sm:h-20 sm:w-20 ring-4 ring-primary/10 flex-shrink-0">
                 <AvatarImage src={profile?.avatarUrl} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">{getInitials()}</AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground text-xl sm:text-2xl">{getInitials()}</AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <CardTitle className="text-lg sm:text-xl truncate">{profile?.firstName} {profile?.lastName}</CardTitle>
-                <p className="text-muted-foreground flex items-center gap-2 mt-1 text-sm truncate">
-                  <Mail className="h-4 w-4 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <CardTitle className="text-base sm:text-xl truncate">{profile?.firstName} {profile?.lastName}</CardTitle>
+                <p className="text-muted-foreground flex items-center gap-1.5 sm:gap-2 mt-1 text-xs sm:text-sm">
+                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="truncate">{profile?.email}</span>
                 </p>
               </div>

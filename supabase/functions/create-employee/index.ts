@@ -42,6 +42,23 @@ function cleanData(data: Record<string, unknown>): Record<string, unknown> {
   return cleaned;
 }
 
+async function validatePhoneAndGovIds(data: EmployeeData): Promise<string | null> {
+  const phoneRegex = /^09[0-9]{9}$/;
+  if (data.phone && data.phone.trim() !== '' && !phoneRegex.test(data.phone.replace(/\D/g, ''))) {
+    return 'Phone number must start with 09 and be exactly 11 digits';
+  }
+  if (data.emergency_contact_phone && data.emergency_contact_phone.trim() !== '' && !phoneRegex.test(data.emergency_contact_phone.replace(/\D/g, ''))) {
+    return 'Emergency contact phone must start with 09 and be exactly 11 digits';
+  }
+  const sssDigits = (data.sss_number || '').replace(/[-\s]/g, '');
+  if (sssDigits.length > 0 && sssDigits.length !== 10) return 'SSS Number must be exactly 10 digits';
+  const philDigits = (data.philhealth_number || '').replace(/[-\s]/g, '');
+  if (philDigits.length > 0 && philDigits.length !== 12) return 'PhilHealth Number must be exactly 12 digits';
+  const pagibigDigits = (data.pagibig_number || '').replace(/[-\s]/g, '');
+  if (pagibigDigits.length > 0 && pagibigDigits.length !== 12) return 'Pag-IBIG Number must be exactly 12 digits';
+  return null;
+}
+
 async function checkDuplicates(supabaseAdmin: any, data: EmployeeData) {
   const checks: { field: string; value: string | undefined; label: string }[] = [
     { field: 'email', value: data.email, label: 'email' },

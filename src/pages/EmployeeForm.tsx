@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { EmployeeAvatarUpload } from "@/components/employees/EmployeeAvatarUploa
 import { DateInput } from "@/components/ui/date-picker";
 import { PasswordInput } from "@/components/ui/password-input";
 import { usePositions } from "@/hooks/usePositions";
+import { useBranches } from "@/hooks/useBranches";
 
 const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
   <Label>

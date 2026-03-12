@@ -104,6 +104,8 @@ export default function Payroll() {
   const earnings = components?.filter(c => c.type === 'earning') || [];
   const deductions = components?.filter(c => c.type === 'deduction') || [];
 
+  const [runningPeriodId, setRunningPeriodId] = useState<string | null>(null);
+  const [approvingPeriodId, setApprovingPeriodId] = useState<string | null>(null);
   const isProcessing = runPayroll.isPending || approvePayroll.isPending;
 
   // Filter periods by status

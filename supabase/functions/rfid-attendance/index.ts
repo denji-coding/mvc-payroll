@@ -237,7 +237,7 @@ serve(async (req) => {
         const scheduledAfternoonMinutes = timeToMinutes(afternoonStart);
         let lateMinutes = 0;
         if (currentMinutes > scheduledAfternoonMinutes + settings.grace_period_minutes) {
-          lateMinutes = currentMinutes - scheduledAfternoonMinutes;
+          lateMinutes = currentMinutes - scheduledAfternoonMinutes - settings.grace_period_minutes;
         }
         const status = lateMinutes > 0 ? 'late' : 'half_day';
 
@@ -262,7 +262,7 @@ serve(async (req) => {
         const scheduledMorningMinutes = timeToMinutes(morningStart);
         let lateMinutes = 0;
         if (currentMinutes > scheduledMorningMinutes + settings.grace_period_minutes) {
-          lateMinutes = currentMinutes - scheduledMorningMinutes;
+          lateMinutes = currentMinutes - scheduledMorningMinutes - settings.grace_period_minutes;
         }
         const status = lateMinutes > 0 ? 'late' : 'present';
 
@@ -300,7 +300,7 @@ serve(async (req) => {
       const currentMinutes = timeToMinutes(currentPHTime);
       let afternoonLateMinutes = 0;
       if (currentMinutes > scheduledAfternoonMinutes + settings.grace_period_minutes) {
-        afternoonLateMinutes = currentMinutes - scheduledAfternoonMinutes;
+        afternoonLateMinutes = currentMinutes - scheduledAfternoonMinutes - settings.grace_period_minutes;
       }
       const existingLate = existingRecord.late_minutes || 0;
       const totalLate = existingLate + afternoonLateMinutes;

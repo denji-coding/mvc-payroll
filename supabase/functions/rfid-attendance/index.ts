@@ -300,7 +300,7 @@ serve(async (req) => {
       const currentMinutes = timeToMinutes(currentPHTime);
       let afternoonLateMinutes = 0;
       if (currentMinutes > scheduledAfternoonMinutes + settings.grace_period_minutes) {
-        afternoonLateMinutes = currentMinutes - scheduledAfternoonMinutes;
+        afternoonLateMinutes = currentMinutes - scheduledAfternoonMinutes - settings.grace_period_minutes;
       }
       const existingLate = existingRecord.late_minutes || 0;
       const totalLate = existingLate + afternoonLateMinutes;

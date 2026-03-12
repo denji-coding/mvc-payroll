@@ -124,7 +124,7 @@ export default function Profile() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20 ring-4 ring-primary/10">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 ring-4 ring-primary/10 flex-shrink-0">
                 <AvatarImage src={profile?.avatarUrl} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">{getInitials()}</AvatarFallback>
               </Avatar>

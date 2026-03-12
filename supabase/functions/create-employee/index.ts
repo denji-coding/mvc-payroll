@@ -124,6 +124,13 @@ Deno.serve(async (req) => {
 
     const employeeData: EmployeeData = await req.json();
 
+    // Validate phone numbers and government IDs
+    const validationError = await validatePhoneAndGovIds(employeeData);
+    if (validationError) {
+      return new Response(JSON.stringify({ error: validationError }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Check for duplicates before creating
     const duplicateError = await checkDuplicates(supabaseAdmin, employeeData);
     if (duplicateError) {

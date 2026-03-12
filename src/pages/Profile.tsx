@@ -116,7 +116,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="page-container max-w-5xl">
+    <div className="page-container max-w-5xl overflow-x-hidden">
       <div className="page-header"><h1 className="page-title">My Profile</h1></div>
 
       <div className="grid gap-6 lg:grid-cols-2">

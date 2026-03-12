@@ -100,7 +100,6 @@ export default function EmployeeForm() {
     }));
     setEmployeeLoaded(true);
   }, [employeeData, branches, employeeLoaded]);
-  };
 
   const checkDuplicatesOnEdit = async (
     payload: Record<string, unknown>,

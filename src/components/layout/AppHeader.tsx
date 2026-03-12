@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useViewMode } from '@/hooks/useViewMode';
 import { useTheme } from '@/components/theme-provider';
 import {
   DropdownMenu,
@@ -20,8 +21,9 @@ import { formatDistanceToNow } from 'date-fns';
 
 export function AppHeader() {
   const { user } = useAuth();
+  const { effectiveRole } = useViewMode();
   const navigate = useNavigate();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(user?.id);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(user?.id, effectiveRole);
   const { setTheme } = useTheme();
 
   const handleNotificationClick = (notification: any) => {

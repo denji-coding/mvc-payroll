@@ -116,10 +116,10 @@ export default function Profile() {
   };
 
   return (
-    <div className="page-container max-w-2xl">
+    <div className="page-container max-w-5xl">
       <div className="page-header"><h1 className="page-title">My Profile</h1></div>
 
-      <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Profile Card */}
         <Card>
           <CardHeader>

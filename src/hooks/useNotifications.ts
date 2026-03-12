@@ -12,7 +12,12 @@ export interface Notification {
   created_at: string;
 }
 
-export function useNotifications(userId: string | undefined) {
+// Notification types visible per role
+type NotificationType = 'leave_request' | 'leave_approved' | 'leave_rejected' | 'payroll_ready' | 'announcement' | 'system' | 'attendance';
+const HR_NOTIFICATION_TYPES: NotificationType[] = ['leave_request', 'system'];
+const EMPLOYEE_NOTIFICATION_TYPES: NotificationType[] = ['attendance', 'payroll_ready', 'leave_approved', 'leave_rejected', 'announcement', 'system'];
+
+export function useNotifications(userId: string | undefined, effectiveRole?: string | null) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -45,15 +50,22 @@ export function useNotifications(userId: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, effectiveRole]);
 
   const fetchNotifications = async () => {
     if (!userId) return;
+
+    const allowedTypes = effectiveRole === 'employee'
+      ? EMPLOYEE_NOTIFICATION_TYPES
+      : effectiveRole === 'hr_admin' || effectiveRole === 'branch_manager'
+        ? HR_NOTIFICATION_TYPES
+        : [...new Set([...HR_NOTIFICATION_TYPES, ...EMPLOYEE_NOTIFICATION_TYPES])];
 
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
       .eq('user_id', userId)
+      .in('type', allowedTypes)
       .order('created_at', { ascending: false })
       .limit(20);
 

@@ -68,18 +68,15 @@ function computeSSS(monthlySalary: number): { employee: number; employer: number
   return { employee: bracket.ee, employer: bracket.er };
 }
 
-// PhilHealth - fixed monthly amount (split equally)
 function computePhilHealth(fixedAmount: number): { employee: number; employer: number } {
   const share = fixedAmount / 2;
   return { employee: share, employer: share };
 }
 
-// Pag-IBIG - fixed monthly amount
 function computePagIBIG(fixedAmount: number): { employee: number; employer: number } {
   return { employee: fixedAmount, employer: fixedAmount };
 }
 
-// BIR Withholding Tax 2024 (Monthly)
 function computeWithholdingTax(taxableIncome: number): number {
   const brackets = [
     { min: 0, max: 20833, rate: 0, base: 0 },
@@ -102,6 +99,19 @@ function computeWithholdingTax(taxableIncome: number): number {
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
   return h * 60 + (m || 0);
+}
+
+// Calculate session hours from actual timestamps, capped to scheduled duration
+function computeSessionHours(
+  sessionIn: string | null,
+  sessionOut: string | null,
+  scheduledDurationHours: number
+): number {
+  if (!sessionIn || !sessionOut) return 0;
+  const inTime = new Date(sessionIn).getTime();
+  const outTime = new Date(sessionOut).getTime();
+  const rawHours = (outTime - inTime) / (1000 * 60 * 60);
+  return Math.min(Math.max(rawHours, 0), scheduledDurationHours);
 }
 
 interface PayrollRequest {
@@ -255,27 +265,30 @@ serve(async (req) => {
         }
       }
 
-      // Calculate total hours worked, capped to scheduled hours per day
+      // Calculate total hours worked using SESSION-BASED calculation
       let totalCappedHours = 0;
       const totalLateMinutes = attendance?.reduce((sum, a) => sum + (parseInt(String(a.late_minutes)) || 0), 0) || 0;
 
       for (const a of attendance || []) {
-        const rawHours = parseFloat(String(a.hours_worked)) || 0;
         const attendanceDate = new Date(a.date + 'T12:00:00+08:00');
         const dayOfWeek = attendanceDate.getDay();
         const schedule = scheduleMap[dayOfWeek];
 
         if (schedule && schedule.is_duty_day) {
-          const mStart = timeToMinutes(schedule.morning_start || '08:00');
-          const mEnd = timeToMinutes(schedule.morning_end || '12:00');
-          const aStart = timeToMinutes(schedule.afternoon_start || '13:00');
-          const aEnd = timeToMinutes(schedule.afternoon_end || '17:00');
-          const scheduledMinutes = (mEnd - mStart) + (aEnd - aStart);
-          const scheduledHours = scheduledMinutes / 60;
-          // Cap actual hours to scheduled hours (no overtime)
-          totalCappedHours += Math.min(rawHours, scheduledHours);
+          const mStartMin = timeToMinutes(schedule.morning_start || '08:00');
+          const mEndMin = timeToMinutes(schedule.morning_end || '12:00');
+          const aStartMin = timeToMinutes(schedule.afternoon_start || '13:00');
+          const aEndMin = timeToMinutes(schedule.afternoon_end || '17:00');
+          const morningScheduledHours = (mEndMin - mStartMin) / 60;
+          const afternoonScheduledHours = (aEndMin - aStartMin) / 60;
+
+          // Compute hours from actual session timestamps, capped to schedule
+          const morningHours = computeSessionHours(a.morning_in, a.morning_out, morningScheduledHours);
+          const afternoonHours = computeSessionHours(a.afternoon_in, a.afternoon_out, afternoonScheduledHours);
+          totalCappedHours += morningHours + afternoonHours;
         } else {
-          // No schedule for this day, use raw hours capped at 8
+          // No schedule for this day, fallback to hours_worked capped at 8
+          const rawHours = parseFloat(String(a.hours_worked)) || 0;
           totalCappedHours += Math.min(rawHours, 8);
         }
       }

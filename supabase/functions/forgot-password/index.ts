@@ -201,7 +201,7 @@ Deno.serve(async (req) => {
       },
     });
 
-    const portalUrl = "https://migrant-path-hr.lovable.app/auth";
+    const portalUrl = "https://mvc-rose.vercel.app/auth";
     const fullName = `${profile.first_name} ${profile.last_name}`;
 
     await client.send({

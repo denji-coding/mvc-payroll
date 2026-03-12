@@ -137,9 +137,9 @@ export default function Profile() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="first_name">First Name</Label>
                   <Input 
@@ -185,7 +185,7 @@ export default function Profile() {
                   />
                 </div>
               </div>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="w-full sm:w-auto">
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -203,8 +203,8 @@ export default function Profile() {
         </Card>
 
         {/* Password Change Card */}
-        <Card>
-          <CardHeader>
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
             <CardTitle className="flex items-center gap-2">
               <Lock className="h-5 w-5" />
               Change Password

@@ -213,7 +213,7 @@ export default function Profile() {
               Update your password to keep your account secure
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="current_password">Current Password</Label>
@@ -243,7 +243,7 @@ export default function Profile() {
                   placeholder="Confirm your new password"
                 />
               </div>
-              <Button type="submit" variant="secondary" disabled={passwordLoading}>
+              <Button type="submit" variant="secondary" disabled={passwordLoading} className="w-full sm:w-auto">
                 {passwordLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -104,6 +104,8 @@ export default function Payroll() {
   const earnings = components?.filter(c => c.type === 'earning') || [];
   const deductions = components?.filter(c => c.type === 'deduction') || [];
 
+  const [runningPeriodId, setRunningPeriodId] = useState<string | null>(null);
+  const [approvingPeriodId, setApprovingPeriodId] = useState<string | null>(null);
   const isProcessing = runPayroll.isPending || approvePayroll.isPending;
 
   // Filter periods by status
@@ -128,13 +130,13 @@ export default function Payroll() {
               <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><Download className="h-4 w-4" /></Button>
             )}
             {isHR && p.status === 'draft' && (
-              <Button size="sm" onClick={() => runPayroll.mutate({ periodId: p.id })} disabled={runPayroll.isPending}>
-                {runPayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><Calculator className="mr-1 h-4 w-4" />Run</>}
+              <Button size="sm" onClick={() => { setRunningPeriodId(p.id); runPayroll.mutate({ periodId: p.id }, { onSettled: () => setRunningPeriodId(null) }); }} disabled={runPayroll.isPending}>
+                {runningPeriodId === p.id && runPayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><Calculator className="mr-1 h-4 w-4" />Run</>}
               </Button>
             )}
             {isHR && p.status === 'processing' && (
-              <Button size="sm" variant="outline" onClick={() => approvePayroll.mutate(p.id)} disabled={approvePayroll.isPending}>
-                {approvePayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><CheckCircle className="mr-1 h-4 w-4" />Process</>}
+              <Button size="sm" variant="outline" onClick={() => { setApprovingPeriodId(p.id); approvePayroll.mutate(p.id, { onSettled: () => setApprovingPeriodId(null) }); }} disabled={approvePayroll.isPending}>
+                {approvingPeriodId === p.id && approvePayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><CheckCircle className="mr-1 h-4 w-4" />Process</>}
               </Button>
             )}
             {isHR && (p.status === 'draft' || p.status === 'processing') && (

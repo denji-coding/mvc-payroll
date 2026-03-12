@@ -69,15 +69,32 @@ export default function EmployeeForm() {
   const fetchEmployee = async () => {
     const { data } = await supabase.from("employees").select("*").eq("id", id).single();
     if (data)
-      setForm({
-        ...form,
-        ...data,
+      setForm((prev) => ({
+        ...prev,
+        employee_id: data.employee_id || "",
+        first_name: data.first_name || "",
+        last_name: data.last_name || "",
+        middle_name: data.middle_name || "",
+        email: data.email || "",
+        phone: data.phone || "",
         date_of_birth: data.date_of_birth || "",
+        gender: data.gender || "",
+        civil_status: data.civil_status || "",
+        address: data.address || "",
+        position: data.position || "",
+        department: data.department || "",
         date_hired: data.date_hired || "",
         basic_salary: data.basic_salary?.toString() || "",
+        branch_id: data.branch_id || "",
+        sss_number: data.sss_number || "",
+        philhealth_number: data.philhealth_number || "",
+        pagibig_number: data.pagibig_number || "",
+        emergency_contact_name: data.emergency_contact_name || "",
+        emergency_contact_phone: data.emergency_contact_phone || "",
+        rfid_card_number: data.rfid_card_number || "",
         employment_status: (data.employment_status as "active" | "inactive" | "terminated") || "active",
         avatar_url: data.avatar_url || null,
-      });
+      }));
   };
 
   const checkDuplicatesOnEdit = async (

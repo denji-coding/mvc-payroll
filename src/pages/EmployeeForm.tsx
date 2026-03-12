@@ -27,8 +27,10 @@ export default function EmployeeForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [branches, setBranches] = useState<any[]>([]);
+  const { data: branches = [] } = useBranches();
   const { data: positions } = usePositions();
+  const [employeeLoaded, setEmployeeLoaded] = useState(false);
+  const [employeeData, setEmployeeData] = useState<any>(null);
   const [form, setForm] = useState({
     employee_id: "",
     first_name: "",
@@ -57,45 +59,47 @@ export default function EmployeeForm() {
     avatar_url: null as string | null,
   });
 
+  // Fetch employee raw data once
   useEffect(() => {
-    fetchBranches();
-    if (id) fetchEmployee();
+    if (!id) return;
+    const fetchEmployee = async () => {
+      const { data } = await supabase.from("employees").select("*").eq("id", id).single();
+      if (data) setEmployeeData(data);
+    };
+    fetchEmployee();
   }, [id]);
 
-  const fetchBranches = async () => {
-    const { data } = await supabase.from("branches").select("id, name").eq("is_active", true);
-    setBranches(data || []);
-  };
-
-  const fetchEmployee = async () => {
-    const { data } = await supabase.from("employees").select("*").eq("id", id).single();
-    if (data)
-      setForm((prev) => ({
-        ...prev,
-        employee_id: data.employee_id || "",
-        first_name: data.first_name || "",
-        last_name: data.last_name || "",
-        middle_name: data.middle_name || "",
-        email: data.email || "",
-        phone: data.phone || "",
-        date_of_birth: data.date_of_birth || "",
-        gender: data.gender || "",
-        civil_status: data.civil_status || "",
-        address: data.address || "",
-        position: data.position || "",
-        department: data.department || "",
-        date_hired: data.date_hired || "",
-        basic_salary: data.basic_salary?.toString() || "",
-        branch_id: data.branch_id || "",
-        sss_number: data.sss_number || "",
-        philhealth_number: data.philhealth_number || "",
-        pagibig_number: data.pagibig_number || "",
-        emergency_contact_name: data.emergency_contact_name || "",
-        emergency_contact_phone: data.emergency_contact_phone || "",
-        rfid_card_number: data.rfid_card_number || "",
-        employment_status: (data.employment_status as "active" | "inactive" | "terminated") || "active",
-        avatar_url: data.avatar_url || null,
-      }));
+  // Populate form only after both employee data AND dropdown data (branches) are ready
+  useEffect(() => {
+    if (!employeeData || !branches.length || employeeLoaded) return;
+    setForm((prev) => ({
+      ...prev,
+      employee_id: employeeData.employee_id || "",
+      first_name: employeeData.first_name || "",
+      last_name: employeeData.last_name || "",
+      middle_name: employeeData.middle_name || "",
+      email: employeeData.email || "",
+      phone: employeeData.phone || "",
+      date_of_birth: employeeData.date_of_birth || "",
+      gender: employeeData.gender || "",
+      civil_status: employeeData.civil_status || "",
+      address: employeeData.address || "",
+      position: employeeData.position || "",
+      department: employeeData.department || "",
+      date_hired: employeeData.date_hired || "",
+      basic_salary: employeeData.basic_salary?.toString() || "",
+      branch_id: employeeData.branch_id || "",
+      sss_number: employeeData.sss_number || "",
+      philhealth_number: employeeData.philhealth_number || "",
+      pagibig_number: employeeData.pagibig_number || "",
+      emergency_contact_name: employeeData.emergency_contact_name || "",
+      emergency_contact_phone: employeeData.emergency_contact_phone || "",
+      rfid_card_number: employeeData.rfid_card_number || "",
+      employment_status: (employeeData.employment_status as "active" | "inactive" | "terminated") || "active",
+      avatar_url: employeeData.avatar_url || null,
+    }));
+    setEmployeeLoaded(true);
+  }, [employeeData, branches, employeeLoaded]);
   };
 
   const checkDuplicatesOnEdit = async (

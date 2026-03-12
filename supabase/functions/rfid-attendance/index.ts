@@ -288,9 +288,26 @@ serve(async (req) => {
       // 3rd scan (or 2nd for afternoon-only records) - Afternoon In
       action = 'afternoon_in';
 
+      // Calculate late for afternoon session with grace period
+      const scheduledAfternoonMinutes = timeToMinutes(afternoonStart);
+      const currentMinutes = timeToMinutes(currentPHTime);
+      let afternoonLateMinutes = 0;
+      if (currentMinutes > scheduledAfternoonMinutes + settings.grace_period_minutes) {
+        afternoonLateMinutes = currentMinutes - scheduledAfternoonMinutes;
+      }
+
+      // Add afternoon late to existing morning late
+      const existingLate = existingRecord.late_minutes || 0;
+      const totalLate = existingLate + afternoonLateMinutes;
+      const status = totalLate > 0 ? 'late' : (existingRecord.status || 'present');
+
       const { data, error } = await supabase
         .from('attendance')
-        .update({ afternoon_in: currentTime })
+        .update({ 
+          afternoon_in: currentTime,
+          late_minutes: totalLate,
+          status: status,
+        })
         .eq('id', existingRecord.id)
         .select()
         .single();

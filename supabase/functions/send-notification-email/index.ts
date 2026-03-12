@@ -62,7 +62,7 @@ function getAccountCreatedHtml(data: AccountCreatedEmail): string {
     '</table></td></tr></table>',
     '<p style="color:#d9534f;font-size:14px;line-height:1.6;margin:0 0 25px;font-weight:600;">Important: Please change your password after your first login for security purposes.</p>',
     '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">',
-    `<tr><td align="center" style="padding:10px 0 25px;"><a href="${data.portalUrl}" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:14px 35px;border-radius:8px;font-size:15px;font-weight:600;">Access HR Portal</a></td></tr>`,
+    `<tr><td align="center" style="padding:10px 0 25px;"><a href="https://mvc-rose.vercel.app/" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:14px 35px;border-radius:8px;font-size:15px;font-weight:600;">Access ${roleLabel} Portal</a></td></tr>`,
     '</table>',
     '<p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 10px;">If you have any questions, please contact the HR department.</p>',
     '<p style="color:#333;font-size:14px;line-height:1.6;margin:20px 0 0;">Best regards,<br /><strong>Migrants Venture Corporation HR Team</strong></p>',

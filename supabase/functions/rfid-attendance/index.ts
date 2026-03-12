@@ -19,7 +19,6 @@ interface TerminalSettings {
   allow_manual_entry: boolean;
 }
 
-// Helper: parse "HH:MM" time string to minutes since midnight
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
   return h * 60 + (m || 0);
@@ -35,55 +34,11 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch terminal settings
-    const { data: settingsData } = await supabase
-      .from('settings')
-      .select('value')
-      .eq('key', 'terminal')
-      .single();
-    
-    const settings: TerminalSettings = settingsData?.value || { 
-      terminal_enabled: true,
-      work_start_time: '08:00', 
-      work_end_time: '17:00', 
-      grace_period_minutes: 0,
-      allow_manual_entry: true
-    };
+    // Parse request body early (non-blocking)
+    const body: AttendanceRequest = await req.json();
+    const { rfid_card_number, employee_id } = body;
 
-    if (settings.terminal_enabled === false) {
-      return new Response(
-        JSON.stringify({ error: 'Attendance terminal is currently disabled' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if current time is within the allowed shift window
-    const phTimeFormatter = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: false
-    });
-    const currentPHTime = phTimeFormatter.format(new Date());
-    const shiftStart = settings.work_start_time || '06:00';
-    const shiftEnd = settings.work_end_time || '22:00';
-    
-    if (currentPHTime < shiftStart || currentPHTime > shiftEnd) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Outside shift hours',
-          message: `Attendance can only be recorded between ${shiftStart} and ${shiftEnd}. Current time: ${currentPHTime}.`
-        }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { rfid_card_number, employee_id }: AttendanceRequest = await req.json();
-
-    if (employee_id && !rfid_card_number && settings.allow_manual_entry === false) {
-      return new Response(
-        JSON.stringify({ error: 'Manual entry is disabled. Please use your RFID card.' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
+    // Quick input validation before any DB calls
     if (!rfid_card_number && !employee_id) {
       return new Response(
         JSON.stringify({ error: 'RFID card number or Employee ID is required' }),
@@ -98,7 +53,13 @@ serve(async (req) => {
       );
     }
 
-    // Find employee
+    // BATCH 1: Fetch settings + employee in parallel
+    const settingsPromise = supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'terminal')
+      .single();
+
     let employeeQuery = supabase
       .from('employees')
       .select('id, first_name, last_name, employee_id, branch_id')
@@ -106,39 +67,104 @@ serve(async (req) => {
 
     if (rfid_card_number) {
       employeeQuery = employeeQuery.ilike('rfid_card_number', rfid_card_number);
-    } else if (employee_id) {
-      employeeQuery = employeeQuery.ilike('employee_id', employee_id);
+    } else {
+      employeeQuery = employeeQuery.ilike('employee_id', employee_id!);
     }
 
-    const { data: employee, error: empError } = await employeeQuery.single();
+    const [settingsResult, employeeResult] = await Promise.all([
+      settingsPromise,
+      employeeQuery.single(),
+    ]);
 
-    if (empError || !employee) {
+    const settings: TerminalSettings = settingsResult.data?.value || {
+      terminal_enabled: true,
+      work_start_time: '08:00',
+      work_end_time: '17:00',
+      grace_period_minutes: 0,
+      allow_manual_entry: true,
+    };
+
+    // Validate terminal enabled
+    if (settings.terminal_enabled === false) {
+      return new Response(
+        JSON.stringify({ error: 'Attendance terminal is currently disabled' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate manual entry
+    if (employee_id && !rfid_card_number && settings.allow_manual_entry === false) {
+      return new Response(
+        JSON.stringify({ error: 'Manual entry is disabled. Please use your RFID card.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate shift hours
+    const phTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: false
+    });
+    const currentPHTime = phTimeFormatter.format(new Date());
+    const shiftStart = settings.work_start_time || '06:00';
+    const shiftEnd = settings.work_end_time || '22:00';
+
+    if (currentPHTime < shiftStart || currentPHTime > shiftEnd) {
+      return new Response(
+        JSON.stringify({
+          error: 'Outside shift hours',
+          message: `Attendance can only be recorded between ${shiftStart} and ${shiftEnd}. Current time: ${currentPHTime}.`
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate employee found
+    if (employeeResult.error || !employeeResult.data) {
       return new Response(
         JSON.stringify({ error: 'Employee not found or inactive' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    const employee = employeeResult.data;
     const now = new Date();
     const phFormatter = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit'
     });
     const today = phFormatter.format(now);
     const currentTime = now.toISOString();
+    const phtDate = new Date(`${today}T12:00:00+08:00`);
+    const dayOfWeek = phtDate.getDay();
 
-    // Check for approved leave
-    const { data: activeLeave } = await supabase
-      .from('leave_requests')
-      .select('id, leave_type, start_date, end_date')
-      .eq('employee_id', employee.id)
-      .eq('status', 'hr_approved')
-      .lte('start_date', today)
-      .gte('end_date', today)
-      .maybeSingle();
+    // BATCH 2: Leave check + today's schedule + existing attendance in parallel
+    const [leaveResult, scheduleResult, attendanceResult] = await Promise.all([
+      supabase
+        .from('leave_requests')
+        .select('id, leave_type, start_date, end_date')
+        .eq('employee_id', employee.id)
+        .eq('status', 'hr_approved')
+        .lte('start_date', today)
+        .gte('end_date', today)
+        .maybeSingle(),
+      supabase
+        .from('employee_schedules')
+        .select('*')
+        .eq('employee_id', employee.id)
+        .eq('day_of_week', dayOfWeek)
+        .maybeSingle(),
+      supabase
+        .from('attendance')
+        .select('*')
+        .eq('employee_id', employee.id)
+        .eq('date', today)
+        .maybeSingle(),
+    ]);
 
-    if (activeLeave) {
+    // Check leave
+    if (leaveResult.data) {
+      const activeLeave = leaveResult.data;
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Currently on leave',
           employee_name: `${employee.first_name} ${employee.last_name}`,
           message: `You are on ${activeLeave.leave_type} leave until ${activeLeave.end_date}. Attendance is not required.`,
@@ -147,36 +173,39 @@ serve(async (req) => {
       );
     }
 
-    // Check if employee has any schedule
-    const { data: allSchedules } = await supabase
-      .from('employee_schedules')
-      .select('id')
-      .eq('employee_id', employee.id);
-    
-    if (!allSchedules || allSchedules.length === 0) {
+    // Check schedule exists and is duty day
+    const scheduleData = scheduleResult.data;
+    if (!scheduleData) {
+      // Check if employee has ANY schedule at all
+      const { count } = await supabase
+        .from('employee_schedules')
+        .select('id', { count: 'exact', head: true })
+        .eq('employee_id', employee.id);
+
+      if (!count || count === 0) {
+        return new Response(
+          JSON.stringify({
+            error: 'No schedule assigned',
+            employee_name: `${employee.first_name} ${employee.last_name}`,
+            message: 'No time schedule has been assigned yet. Please contact HR.'
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ 
-          error: 'No schedule assigned',
+        JSON.stringify({
+          error: 'No duty today',
           employee_name: `${employee.first_name} ${employee.last_name}`,
-          message: 'No time schedule has been assigned yet. Please contact HR.'
+          message: 'You are not scheduled to work today.'
         }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check today's schedule
-    const phtDate = new Date(`${today}T12:00:00+08:00`);
-    const dayOfWeek = phtDate.getDay();
-    const { data: scheduleData } = await supabase
-      .from('employee_schedules')
-      .select('*')
-      .eq('employee_id', employee.id)
-      .eq('day_of_week', dayOfWeek)
-      .single();
-
-    if (!scheduleData || !scheduleData.is_duty_day) {
+    if (!scheduleData.is_duty_day) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'No duty today',
           employee_name: `${employee.first_name} ${employee.last_name}`,
           message: 'You are not scheduled to work today.'
@@ -190,38 +219,26 @@ serve(async (req) => {
     const afternoonStart = scheduleData.afternoon_start || '13:00';
     const afternoonEnd = scheduleData.afternoon_end || '17:00';
 
-    // Calculate scheduled session durations in hours
     const morningScheduledHours = (timeToMinutes(morningEnd) - timeToMinutes(morningStart)) / 60;
     const afternoonScheduledHours = (timeToMinutes(afternoonEnd) - timeToMinutes(afternoonStart)) / 60;
     const totalScheduledHours = morningScheduledHours + afternoonScheduledHours;
 
-    // Get existing attendance record
-    const { data: existingRecord } = await supabase
-      .from('attendance')
-      .select('*')
-      .eq('employee_id', employee.id)
-      .eq('date', today)
-      .single();
+    const existingRecord = attendanceResult.data;
 
     let result;
     let action: 'morning_in' | 'morning_out' | 'afternoon_in' | 'afternoon_out';
 
     if (!existingRecord) {
-      // 1st scan — check if it's afternoon-only (half-day)
       const currentMinutes = timeToMinutes(currentPHTime);
       const afternoonStartMinutes = timeToMinutes(afternoonStart);
 
       if (currentMinutes >= afternoonStartMinutes) {
-        // Afternoon-only half-day: skip morning, go straight to afternoon_in
         action = 'afternoon_in';
-
-        // Calculate late for afternoon session with grace period
         const scheduledAfternoonMinutes = timeToMinutes(afternoonStart);
         let lateMinutes = 0;
         if (currentMinutes > scheduledAfternoonMinutes + settings.grace_period_minutes) {
           lateMinutes = currentMinutes - scheduledAfternoonMinutes;
         }
-
         const status = lateMinutes > 0 ? 'late' : 'half_day';
 
         const { data, error } = await supabase
@@ -231,7 +248,7 @@ serve(async (req) => {
             date: today,
             afternoon_in: currentTime,
             rfid_time_in: rfid_card_number,
-            status: status,
+            status,
             late_minutes: lateMinutes,
             overtime_hours: 0,
           })
@@ -241,16 +258,12 @@ serve(async (req) => {
         if (error) throw error;
         result = data;
       } else {
-        // Normal morning_in
         action = 'morning_in';
-        
         const scheduledMorningMinutes = timeToMinutes(morningStart);
-        
         let lateMinutes = 0;
         if (currentMinutes > scheduledMorningMinutes + settings.grace_period_minutes) {
           lateMinutes = currentMinutes - scheduledMorningMinutes;
         }
-
         const status = lateMinutes > 0 ? 'late' : 'present';
 
         const { data, error } = await supabase
@@ -261,7 +274,7 @@ serve(async (req) => {
             time_in: currentTime,
             morning_in: currentTime,
             rfid_time_in: rfid_card_number,
-            status: status,
+            status,
             late_minutes: lateMinutes,
             overtime_hours: 0,
           })
@@ -272,57 +285,45 @@ serve(async (req) => {
         result = data;
       }
     } else if (existingRecord.morning_in && !existingRecord.morning_out && !existingRecord.afternoon_in) {
-      // 2nd scan - Morning Out
       action = 'morning_out';
-
       const { data, error } = await supabase
         .from('attendance')
         .update({ morning_out: currentTime })
         .eq('id', existingRecord.id)
         .select()
         .single();
-
       if (error) throw error;
       result = data;
     } else if (!existingRecord.afternoon_in) {
-      // 3rd scan (or 2nd for afternoon-only records) - Afternoon In
       action = 'afternoon_in';
-
-      // Calculate late for afternoon session with grace period
       const scheduledAfternoonMinutes = timeToMinutes(afternoonStart);
       const currentMinutes = timeToMinutes(currentPHTime);
       let afternoonLateMinutes = 0;
       if (currentMinutes > scheduledAfternoonMinutes + settings.grace_period_minutes) {
         afternoonLateMinutes = currentMinutes - scheduledAfternoonMinutes;
       }
-
-      // Add afternoon late to existing morning late
       const existingLate = existingRecord.late_minutes || 0;
       const totalLate = existingLate + afternoonLateMinutes;
       const status = totalLate > 0 ? 'late' : (existingRecord.status || 'present');
 
       const { data, error } = await supabase
         .from('attendance')
-        .update({ 
+        .update({
           afternoon_in: currentTime,
           late_minutes: totalLate,
-          status: status,
+          status,
         })
         .eq('id', existingRecord.id)
         .select()
         .single();
-
       if (error) throw error;
       result = data;
     } else if (!existingRecord.afternoon_out) {
-      // Final scan - Afternoon Out
       action = 'afternoon_out';
-
-      // Calculate hours worked per session, capped to schedule
       const morningIn = existingRecord.morning_in ? new Date(existingRecord.morning_in) : null;
       const morningOut = existingRecord.morning_out ? new Date(existingRecord.morning_out) : null;
       const afternoonIn = existingRecord.afternoon_in ? new Date(existingRecord.afternoon_in) : null;
-      
+
       let totalHours = 0;
       let isHalfDay = false;
 
@@ -330,7 +331,7 @@ serve(async (req) => {
         const rawMorningHours = (morningOut.getTime() - morningIn.getTime()) / (1000 * 60 * 60);
         totalHours += Math.min(rawMorningHours, morningScheduledHours);
       } else {
-        isHalfDay = true; // No morning session
+        isHalfDay = true;
       }
 
       if (afternoonIn) {
@@ -338,15 +339,12 @@ serve(async (req) => {
         totalHours += Math.min(rawAfternoonHours, afternoonScheduledHours);
       }
 
-      // If only one session, it's a half-day
       if (!morningIn && !morningOut) {
         isHalfDay = true;
       }
 
-      // Cap total to scheduled hours
       totalHours = Math.min(totalHours, totalScheduledHours);
 
-      // Calculate undertime based on scheduled end
       const endTime = new Date(`${today}T${afternoonEnd}`);
       let undertimeMinutes = 0;
       if (now < endTime) {
@@ -364,18 +362,16 @@ serve(async (req) => {
           hours_worked: Math.round(totalHours * 100) / 100,
           undertime_minutes: undertimeMinutes,
           overtime_hours: 0,
-          status: status,
+          status,
         })
         .eq('id', existingRecord.id)
         .select()
         .single();
-
       if (error) throw error;
       result = data;
     } else {
-      // Already completed all punches
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Already completed attendance for today',
           employee_name: `${employee.first_name} ${employee.last_name}`,
           morning_in: existingRecord.morning_in,

@@ -341,6 +341,7 @@ export function AppSidebar() {
                         end={item.url === "/"}
                         className="flex items-center gap-2"
                         activeClassName="bg-sidebar-accent text-sidebar-accent-foreground"
+                        onClick={handleNavClick}
                       >
                         <item.icon className="w-4 h-4 flex-shrink-0" />
                         {!collapsed && <span className="text-sm">{item.title}</span>}

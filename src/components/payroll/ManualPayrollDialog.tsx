@@ -341,18 +341,24 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
                 <div className="space-y-3">
                   <h4 className="font-semibold text-destructive text-sm">Deductions</h4>
                   <div className="bg-destructive/5 rounded-lg p-3 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">SSS</span>
-                      <span>{fmt(calc?.sssContribution || 0)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">PhilHealth</span>
-                      <span>{fmt(calc?.philhealthContribution || 0)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Pag-IBIG</span>
-                      <span>{fmt(calc?.pagibigContribution || 0)}</span>
-                    </div>
+                    {sssEnabled && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">SSS</span>
+                        <span>{fmt(effectiveSss)}</span>
+                      </div>
+                    )}
+                    {philhealthEnabled && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">PhilHealth</span>
+                        <span>{fmt(effectivePhilhealth)}</span>
+                      </div>
+                    )}
+                    {pagibigEnabled && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Pag-IBIG</span>
+                        <span>{fmt(effectivePagibig)}</span>
+                      </div>
+                    )}
                     {lateMinutes > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Late Deduction ({lateMinutes} mins)</span>

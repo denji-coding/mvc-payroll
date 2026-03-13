@@ -18,7 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import companyLogo from '@/assets/company-logo.png';
+import companyLogoDefault from '@/assets/company-logo.png';
+import { useCompanyInfo } from '@/hooks/useCompanyInfo';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),

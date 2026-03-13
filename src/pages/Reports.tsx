@@ -99,7 +99,7 @@ export default function Reports() {
         case 'employee-masterlist': {
           const { data, error } = await supabase.from('employees').select('*, branches(name)').order('last_name');
           if (error) throw error;
-          const headers = ['Employee ID', 'Last Name', 'First Name', 'Middle Name', 'Email', 'Phone', 'Position', 'Department', 'Branch', 'Date Hired', 'Status', 'Basic Salary'];
+          const headers = ['Employee ID', 'Last Name', 'First Name', 'Middle Name', 'Email', 'Phone', 'Position', 'Branch', 'Date Hired', 'Status', 'Basic Salary'];
           const rows = (data || []).map(e => [
             e.employee_id,
             e.last_name,
@@ -108,7 +108,6 @@ export default function Reports() {
             e.email,
             e.phone || '',
             e.position,
-            e.department || '',
             (e.branches as any)?.name || '',
             e.date_hired,
             e.employment_status || 'active',

@@ -129,7 +129,7 @@ export default function Reports() {
             .lte('date', dateRange.end)
             .order('date');
           if (error) throw error;
-          const headers = ['Date', 'Employee ID', 'Name', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Hours Worked', 'Late (min)', 'Overtime (hrs)', 'Status'];
+          const headers = ['Date', 'Employee ID', 'Name', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Hours Worked', 'Late (min)', 'Status'];
           const formatTs = (ts: string | null) => {
             if (!ts) return '';
             try { return format(new Date(ts), 'hh:mm a'); } catch { return ts; }
@@ -144,7 +144,6 @@ export default function Reports() {
             formatTs(a.afternoon_out || a.time_out),
             Number(a.hours_worked || 0),
             Number(a.late_minutes || 0),
-            Number(a.overtime_hours || 0),
             (a.status || 'present').replace('_', ' '),
           ]);
           await downloadExcel('Attendance Summary', headers, rows, 'attendance-summary');

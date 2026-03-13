@@ -855,9 +855,12 @@ function UserRoleManagement() {
     }
   };
 
-  const handleRemoveManager = async (id: string) => {
-    if (confirm('Remove this branch manager assignment?')) {
-      await removeManager.mutateAsync(id);
+  const [removeManagerId, setRemoveManagerId] = useState<string | null>(null);
+
+  const handleRemoveManager = async () => {
+    if (removeManagerId) {
+      await removeManager.mutateAsync(removeManagerId);
+      setRemoveManagerId(null);
     }
   };
 

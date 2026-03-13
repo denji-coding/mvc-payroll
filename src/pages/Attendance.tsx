@@ -109,13 +109,15 @@ export default function Attendance() {
             <CardTitle>Daily Attendance - {selectedDate.toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle>
           </div>
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="present">Present</TabsTrigger>
-              <TabsTrigger value="late">Late</TabsTrigger>
-              <TabsTrigger value="absent">Absent</TabsTrigger>
-              <TabsTrigger value="on_leave">On Leave</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto">
+              <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="present">Present</TabsTrigger>
+                <TabsTrigger value="late">Late</TabsTrigger>
+                <TabsTrigger value="absent">Absent</TabsTrigger>
+                <TabsTrigger value="on_leave">On Leave</TabsTrigger>
+              </TabsList>
+            </div>
           </Tabs>
         </CardHeader>
         <CardContent>

@@ -84,12 +84,14 @@ export default function LeaveApprovals() {
           <CardTitle>Leave Requests</CardTitle>
           <CardDescription>Review and approve/reject employee leave requests</CardDescription>
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="pending">Pending</TabsTrigger>
-              <TabsTrigger value="approved">Approved</TabsTrigger>
-              <TabsTrigger value="rejected">Rejected</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto">
+              <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="pending">Pending</TabsTrigger>
+                <TabsTrigger value="approved">Approved</TabsTrigger>
+                <TabsTrigger value="rejected">Rejected</TabsTrigger>
+              </TabsList>
+            </div>
           </Tabs>
         </CardHeader>
         <CardContent>

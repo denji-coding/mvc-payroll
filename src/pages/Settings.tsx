@@ -355,22 +355,22 @@ function PayrollSettings() {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <Label>Auto-compute SSS</Label>
-            <p className="text-sm text-muted-foreground">Automatically calculate SSS contributions</p>
+           <Label>SSS Deductions</Label>
+            <p className="text-sm text-muted-foreground">Include SSS contributions in payroll deductions</p>
           </div>
           <Switch checked={form.sss_enabled} onCheckedChange={(v) => handleToggle('sss_enabled', v)} />
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <Label>Auto-compute PhilHealth</Label>
-            <p className="text-sm text-muted-foreground">Automatically calculate PhilHealth contributions</p>
+            <Label>PhilHealth Deductions</Label>
+            <p className="text-sm text-muted-foreground">Include PhilHealth contributions in payroll deductions</p>
           </div>
           <Switch checked={form.philhealth_enabled} onCheckedChange={(v) => handleToggle('philhealth_enabled', v)} />
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <Label>Auto-compute Pag-IBIG</Label>
-            <p className="text-sm text-muted-foreground">Automatically calculate Pag-IBIG contributions</p>
+            <Label>Pag-IBIG Deductions</Label>
+            <p className="text-sm text-muted-foreground">Include Pag-IBIG contributions in payroll deductions</p>
           </div>
           <Switch checked={form.pagibig_enabled} onCheckedChange={(v) => handleToggle('pagibig_enabled', v)} />
         </div>

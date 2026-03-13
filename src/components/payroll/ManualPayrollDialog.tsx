@@ -41,6 +41,19 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
   const { data: employees } = useEmployees();
   const { data: periods } = usePayrollPeriods();
   const { data: benefitRates } = useBenefitRates();
+  const { data: deductionSettings } = useQuery({
+    queryKey: ['settings', 'payroll_deductions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'payroll_deductions')
+        .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      if (!data) return { sss_enabled: true, philhealth_enabled: true, pagibig_enabled: true };
+      return data.value as unknown as { sss_enabled: boolean; philhealth_enabled: boolean; pagibig_enabled: boolean };
+    },
+  });
   const createManualPayroll = useCreateManualPayroll();
   const updatePayrollRecord = useUpdatePayrollRecord();
 

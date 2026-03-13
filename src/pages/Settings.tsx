@@ -873,6 +873,19 @@ function UserRoleManagement() {
   };
 
   return (
+    <>
+    <AlertDialog open={!!removeManagerId} onOpenChange={(open) => !open && setRemoveManagerId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove Branch Manager</AlertDialogTitle>
+          <AlertDialogDescription>Are you sure you want to remove this branch manager assignment?</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleRemoveManager} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remove</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <div className="space-y-6">
       <Card>
         <CardHeader>

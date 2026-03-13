@@ -18,7 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import companyLogo from '@/assets/company-logo.png';
+import companyLogoDefault from '@/assets/company-logo.png';
+import { useCompanyInfo } from '@/hooks/useCompanyInfo';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -29,6 +30,9 @@ export default function Auth() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
   const { toast } = useToast();
+  const { data: companyInfo } = useCompanyInfo();
+  const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;
+  const companyName = companyInfo?.company_name || 'Migrants Venture Corporation';
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -119,10 +123,10 @@ export default function Auth() {
         <div className="flex flex-col items-center mb-8">
           <img 
             src={companyLogo} 
-            alt="Migrants Venture Corporation" 
+            alt={companyName} 
             className="w-20 h-20 object-contain mb-4"
           />
-          <h1 className="text-2xl font-bold text-foreground">Migrants Venture Corporation</h1>
+          <h1 className="text-2xl font-bold text-foreground">{companyName}</h1>
           <p className="text-muted-foreground mt-1">HR & Payroll Management System</p>
         </div>
 

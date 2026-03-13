@@ -23,6 +23,7 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useViewMode } from "@/hooks/useViewMode";
 import { useRolePermissionsByRole, PermissionKey } from "@/hooks/usePermissions";
+import { useCompanyInfo } from "@/hooks/useCompanyInfo";
 import {
   Sidebar,
   SidebarContent,
@@ -44,7 +45,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import companyLogo from "@/assets/company-logo.png";
+import companyLogoDefault from "@/assets/company-logo.png";
 
 // Navigation item type
 type NavItem = {
@@ -190,8 +191,17 @@ export function AppSidebar() {
   const { role, profile, signOut } = useAuth();
   const { effectiveRole, actualRole, isViewingSwitched, switchToEmployee, switchToAdmin } = useViewMode();
   const { data: permissions, isLoading: permissionsLoading } = useRolePermissionsByRole(effectiveRole);
+  const { data: companyInfo } = useCompanyInfo();
   const collapsed = state === "collapsed";
   const isMobile = useIsMobile();
+
+  const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;
+  const companyName = companyInfo?.company_name || 'Migrants Venture Corporation';
+  // Split company name into words for display
+  const nameParts = companyName.split(' ');
+  const midPoint = Math.ceil(nameParts.length / 2);
+  const nameLine1 = nameParts.slice(0, midPoint).join(' ');
+  const nameLine2 = nameParts.slice(midPoint).join(' ');
 
   const handleNavClick = () => {
     if (isMobile) {
@@ -263,13 +273,13 @@ export function AppSidebar() {
         >
           <img
             src={companyLogo}
-            alt="Migrants Venture Corporation"
+            alt={companyName}
             className={`object-contain flex-shrink-0 aspect-square ${collapsed ? "h-10 w-10" : "h-28 w-28"}`}
           />
           {!collapsed && (
             <span className="font-semibold text-sidebar-foreground text-center text-xs mt-1 mb-1 leading-tight group-hover:text-sidebar-accent-foreground block">
-              <span className="block text-2xl font-bold ">Migrants Venture</span>
-              <span className="block text-2xl font-bold">Corporation</span>
+              <span className="block text-2xl font-bold">{nameLine1}</span>
+              {nameLine2 && <span className="block text-2xl font-bold">{nameLine2}</span>}
             </span>
           )}
         </NavLink>

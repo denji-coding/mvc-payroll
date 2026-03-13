@@ -23,7 +23,7 @@ const reports = [
 
 const headerStyle: Partial<ExcelJS.Style> = {
   font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 },
-  fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } },
+  fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF166534' } },
   alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
   border: {
     top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
@@ -99,7 +99,7 @@ export default function Reports() {
         case 'employee-masterlist': {
           const { data, error } = await supabase.from('employees').select('*, branches(name)').order('last_name');
           if (error) throw error;
-          const headers = ['Employee ID', 'Last Name', 'First Name', 'Middle Name', 'Email', 'Phone', 'Position', 'Department', 'Branch', 'Date Hired', 'Status', 'Basic Salary'];
+          const headers = ['Employee ID', 'Last Name', 'First Name', 'Middle Name', 'Email', 'Phone', 'Position', 'Branch', 'Date Hired', 'Status', 'Basic Salary'];
           const rows = (data || []).map(e => [
             e.employee_id,
             e.last_name,
@@ -108,7 +108,6 @@ export default function Reports() {
             e.email,
             e.phone || '',
             e.position,
-            e.department || '',
             (e.branches as any)?.name || '',
             e.date_hired,
             e.employment_status || 'active',
@@ -130,7 +129,7 @@ export default function Reports() {
             .lte('date', dateRange.end)
             .order('date');
           if (error) throw error;
-          const headers = ['Date', 'Employee ID', 'Name', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Hours Worked', 'Late (min)', 'Overtime (hrs)', 'Status'];
+          const headers = ['Date', 'Employee ID', 'Name', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Hours Worked', 'Late (min)', 'Status'];
           const formatTs = (ts: string | null) => {
             if (!ts) return '';
             try { return format(new Date(ts), 'hh:mm a'); } catch { return ts; }
@@ -145,7 +144,6 @@ export default function Reports() {
             formatTs(a.afternoon_out || a.time_out),
             Number(a.hours_worked || 0),
             Number(a.late_minutes || 0),
-            Number(a.overtime_hours || 0),
             (a.status || 'present').replace('_', ' '),
           ]);
           await downloadExcel('Attendance Summary', headers, rows, 'attendance-summary');
@@ -176,7 +174,7 @@ export default function Reports() {
             .select('*, employees(employee_id, first_name, last_name), payroll_periods(period_start, period_end, pay_date)')
             .order('created_at', { ascending: false });
           if (error) throw error;
-          const headers = ['Period', 'Pay Date', 'Employee ID', 'Name', 'Days Worked', 'Basic Pay', 'Overtime Pay', 'Holiday Pay', 'Allowances', 'Gross Pay', 'SSS', 'PhilHealth', 'Pag-IBIG', 'Tax', 'Other Deductions', 'Total Deductions', 'Net Pay'];
+          const headers = ['Period', 'Pay Date', 'Employee ID', 'Name', 'Days Worked', 'Basic Pay', 'Gross Pay', 'SSS', 'PhilHealth', 'Pag-IBIG', 'Total Deductions', 'Net Pay'];
           const rows = (data || []).map(r => [
             `${(r.payroll_periods as any)?.period_start || ''} to ${(r.payroll_periods as any)?.period_end || ''}`,
             (r.payroll_periods as any)?.pay_date || '',
@@ -184,15 +182,10 @@ export default function Reports() {
             `${(r.employees as any)?.first_name || ''} ${(r.employees as any)?.last_name || ''}`.trim(),
             Number(r.days_worked || 0),
             Number(r.basic_pay || 0),
-            Number(r.overtime_pay || 0),
-            Number(r.holiday_pay || 0),
-            Number(r.total_allowances || 0),
             Number(r.gross_pay || 0),
             Number(r.sss_contribution || 0),
             Number(r.philhealth_contribution || 0),
             Number(r.pagibig_contribution || 0),
-            Number(r.withholding_tax || 0),
-            Number(r.other_deductions || 0),
             Number(r.total_deductions || 0),
             Number(r.net_pay || 0),
           ]);

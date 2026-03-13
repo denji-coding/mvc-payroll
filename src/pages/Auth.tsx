@@ -123,10 +123,10 @@ export default function Auth() {
         <div className="flex flex-col items-center mb-8">
           <img 
             src={companyLogo} 
-            alt="Migrants Venture Corporation" 
+            alt={companyName} 
             className="w-20 h-20 object-contain mb-4"
           />
-          <h1 className="text-2xl font-bold text-foreground">Migrants Venture Corporation</h1>
+          <h1 className="text-2xl font-bold text-foreground">{companyName}</h1>
           <p className="text-muted-foreground mt-1">HR & Payroll Management System</p>
         </div>
 

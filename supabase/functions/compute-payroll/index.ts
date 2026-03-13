@@ -201,6 +201,23 @@ serve(async (req) => {
     const philhealthFixed = benefitRates.philhealth_rate ?? 500;
     const pagibigFixed = benefitRates.pagibig_employee_rate ?? 200;
 
+    // Get payroll deduction toggles
+    const { data: deductionTogglesData } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'payroll_deductions')
+      .single();
+    
+    const deductionToggles = deductionTogglesData?.value as {
+      sss_enabled?: boolean;
+      philhealth_enabled?: boolean;
+      pagibig_enabled?: boolean;
+    } || {};
+
+    const sssEnabled = deductionToggles.sss_enabled !== false;
+    const philhealthEnabled = deductionToggles.philhealth_enabled !== false;
+    const pagibigEnabled = deductionToggles.pagibig_enabled !== false;
+
     // Get employees
     let employeesQuery = supabase
       .from('employees')
@@ -324,10 +341,10 @@ serve(async (req) => {
       // Gross pay — NO overtime
       const grossPay = basicPay + totalAllowances + leavePay;
 
-      // Government contributions
-      const sssContribution = sssFixed;
-      const philhealthContribution = philhealthFixed;
-      const pagibigContribution = pagibigFixed;
+      // Government contributions (respect toggle settings)
+      const sssContribution = sssEnabled ? sssFixed : 0;
+      const philhealthContribution = philhealthEnabled ? philhealthFixed : 0;
+      const pagibigContribution = pagibigEnabled ? pagibigFixed : 0;
 
       // Taxable income
       const taxableIncome = grossPay - sssContribution - philhealthContribution - pagibigContribution;

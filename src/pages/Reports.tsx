@@ -174,7 +174,7 @@ export default function Reports() {
             .select('*, employees(employee_id, first_name, last_name), payroll_periods(period_start, period_end, pay_date)')
             .order('created_at', { ascending: false });
           if (error) throw error;
-          const headers = ['Period', 'Pay Date', 'Employee ID', 'Name', 'Days Worked', 'Basic Pay', 'Overtime Pay', 'Holiday Pay', 'Allowances', 'Gross Pay', 'SSS', 'PhilHealth', 'Pag-IBIG', 'Tax', 'Other Deductions', 'Total Deductions', 'Net Pay'];
+          const headers = ['Period', 'Pay Date', 'Employee ID', 'Name', 'Days Worked', 'Basic Pay', 'Gross Pay', 'SSS', 'PhilHealth', 'Pag-IBIG', 'Total Deductions', 'Net Pay'];
           const rows = (data || []).map(r => [
             `${(r.payroll_periods as any)?.period_start || ''} to ${(r.payroll_periods as any)?.period_end || ''}`,
             (r.payroll_periods as any)?.pay_date || '',
@@ -182,15 +182,10 @@ export default function Reports() {
             `${(r.employees as any)?.first_name || ''} ${(r.employees as any)?.last_name || ''}`.trim(),
             Number(r.days_worked || 0),
             Number(r.basic_pay || 0),
-            Number(r.overtime_pay || 0),
-            Number(r.holiday_pay || 0),
-            Number(r.total_allowances || 0),
             Number(r.gross_pay || 0),
             Number(r.sss_contribution || 0),
             Number(r.philhealth_contribution || 0),
             Number(r.pagibig_contribution || 0),
-            Number(r.withholding_tax || 0),
-            Number(r.other_deductions || 0),
             Number(r.total_deductions || 0),
             Number(r.net_pay || 0),
           ]);

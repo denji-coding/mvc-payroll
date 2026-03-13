@@ -191,11 +191,48 @@ function GeneralSettings() {
 }
 
 function PayrollSettings() {
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['settings', 'payroll_deductions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'payroll_deductions')
+        .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      return (data?.value as unknown as { sss_enabled: boolean; philhealth_enabled: boolean; pagibig_enabled: boolean }) || { sss_enabled: true, philhealth_enabled: true, pagibig_enabled: true };
+    },
+  });
+
+  const [form, setForm] = useState({ sss_enabled: true, philhealth_enabled: true, pagibig_enabled: true });
+
+  useEffect(() => {
+    if (settings) setForm(settings);
+  }, [settings]);
+
+  const queryClient = useQueryClient();
+
+  const handleToggle = async (key: keyof typeof form, value: boolean) => {
+    const updated = { ...form, [key]: value };
+    setForm(updated);
+
+    const { data: existing } = await supabase.from('settings').select('id').eq('key', 'payroll_deductions').single();
+    if (existing) {
+      await supabase.from('settings').update({ value: JSON.parse(JSON.stringify(updated)) }).eq('key', 'payroll_deductions');
+    } else {
+      await supabase.from('settings').insert({ key: 'payroll_deductions', value: JSON.parse(JSON.stringify(updated)) });
+    }
+    queryClient.invalidateQueries({ queryKey: ['settings', 'payroll_deductions'] });
+    toast.success('Payroll deduction setting updated');
+  };
+
+  if (isLoading) return <Skeleton className="h-64 w-full" />;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Payroll Settings</CardTitle>
-        <CardDescription>Configure payroll computation rules</CardDescription>
+        <CardDescription>Configure payroll computation rules. Toggle deductions on or off to include or exclude them from payroll calculations.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
@@ -203,28 +240,21 @@ function PayrollSettings() {
             <Label>Auto-compute SSS</Label>
             <p className="text-sm text-muted-foreground">Automatically calculate SSS contributions</p>
           </div>
-          <Switch defaultChecked />
+          <Switch checked={form.sss_enabled} onCheckedChange={(v) => handleToggle('sss_enabled', v)} />
         </div>
         <div className="flex items-center justify-between">
           <div>
             <Label>Auto-compute PhilHealth</Label>
             <p className="text-sm text-muted-foreground">Automatically calculate PhilHealth contributions</p>
           </div>
-          <Switch defaultChecked />
+          <Switch checked={form.philhealth_enabled} onCheckedChange={(v) => handleToggle('philhealth_enabled', v)} />
         </div>
         <div className="flex items-center justify-between">
           <div>
             <Label>Auto-compute Pag-IBIG</Label>
             <p className="text-sm text-muted-foreground">Automatically calculate Pag-IBIG contributions</p>
           </div>
-          <Switch defaultChecked />
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <Label>Auto-compute Tax</Label>
-            <p className="text-sm text-muted-foreground">Automatically calculate withholding tax</p>
-          </div>
-          <Switch defaultChecked />
+          <Switch checked={form.pagibig_enabled} onCheckedChange={(v) => handleToggle('pagibig_enabled', v)} />
         </div>
       </CardContent>
     </Card>

@@ -201,6 +201,23 @@ serve(async (req) => {
     const philhealthFixed = benefitRates.philhealth_rate ?? 500;
     const pagibigFixed = benefitRates.pagibig_employee_rate ?? 200;
 
+    // Get payroll deduction toggles
+    const { data: deductionTogglesData } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'payroll_deductions')
+      .single();
+    
+    const deductionToggles = deductionTogglesData?.value as {
+      sss_enabled?: boolean;
+      philhealth_enabled?: boolean;
+      pagibig_enabled?: boolean;
+    } || {};
+
+    const sssEnabled = deductionToggles.sss_enabled !== false;
+    const philhealthEnabled = deductionToggles.philhealth_enabled !== false;
+    const pagibigEnabled = deductionToggles.pagibig_enabled !== false;
+
     // Get employees
     let employeesQuery = supabase
       .from('employees')

@@ -23,7 +23,7 @@ const reports = [
 
 const headerStyle: Partial<ExcelJS.Style> = {
   font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 },
-  fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } },
+  fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF166534' } },
   alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
   border: {
     top: { style: 'thin', color: { argb: 'FFD1D5DB' } },

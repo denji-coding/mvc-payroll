@@ -1046,7 +1046,7 @@ function UserRoleManagement() {
                           {format(new Date(manager.assigned_at), 'MMM dd, yyyy')}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => handleRemoveManager(manager.id)}>
+                          <Button variant="ghost" size="icon" onClick={() => setRemoveManagerId(manager.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TableCell>

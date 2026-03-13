@@ -5,9 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FileText, Users, DollarSign, Download, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { DateInput } from '@/components/ui/date-picker';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 type ReportType = 'employee-masterlist' | 'attendance-summary' | 'leave-balance' | 'payroll-summary' | 'gov-contributions';
 
@@ -19,22 +21,76 @@ const reports = [
   { id: 'gov-contributions' as ReportType, title: 'Government Contributions', description: 'SSS, PhilHealth, Pag-IBIG reports', icon: DollarSign, category: 'Payroll' },
 ];
 
+const headerStyle: Partial<ExcelJS.Style> = {
+  font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 },
+  fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } },
+  alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+  border: {
+    top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+    bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+    left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+    right: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+  },
+};
+
+const cellBorder: Partial<ExcelJS.Borders> = {
+  top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+  bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+  left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+  right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+};
+
+function autoFitColumns(worksheet: ExcelJS.Worksheet) {
+  worksheet.columns.forEach((column) => {
+    let maxLength = 10;
+    column.eachCell?.({ includeEmpty: true }, (cell) => {
+      const cellValue = cell.value ? cell.value.toString() : '';
+      maxLength = Math.max(maxLength, cellValue.length + 4);
+    });
+    column.width = Math.min(maxLength, 40);
+  });
+}
+
+function applyHeaderAndCellStyles(worksheet: ExcelJS.Worksheet) {
+  const headerRow = worksheet.getRow(1);
+  headerRow.height = 28;
+  headerRow.eachCell((cell) => {
+    cell.style = headerStyle as ExcelJS.Style;
+  });
+
+  for (let i = 2; i <= worksheet.rowCount; i++) {
+    const row = worksheet.getRow(i);
+    row.eachCell((cell) => {
+      cell.border = cellBorder;
+      cell.alignment = { vertical: 'middle' };
+    });
+    if (i % 2 === 0) {
+      row.eachCell((cell) => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } };
+      });
+    }
+  }
+}
+
+async function downloadExcel(sheetName: string, headers: string[], rows: any[][], filename: string) {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(sheetName);
+
+  worksheet.addRow(headers);
+  rows.forEach((row) => worksheet.addRow(row));
+
+  applyHeaderAndCellStyles(worksheet);
+  autoFitColumns(worksheet);
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  saveAs(blob, `${filename}-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+}
+
 export default function Reports() {
-  const { toast } = useToast();
   const [generating, setGenerating] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedReport, setSelectedReport] = useState<ReportType | null>(null);
-
-  const downloadCSV = (data: any[], filename: string, headers: string[]) => {
-    const csv = [headers.join(','), ...data.map(row => headers.map(h => `"${row[h] || ''}"`).join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filename}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const generateReport = async (reportId: ReportType) => {
     setGenerating(reportId);
@@ -43,27 +99,28 @@ export default function Reports() {
         case 'employee-masterlist': {
           const { data, error } = await supabase.from('employees').select('*, branches(name)').order('last_name');
           if (error) throw error;
-          const formatted = (data || []).map(e => ({
-            employee_id: e.employee_id,
-            first_name: e.first_name,
-            middle_name: e.middle_name || '',
-            last_name: e.last_name,
-            email: e.email,
-            phone: e.phone || '',
-            position: e.position,
-            department: e.department || '',
-            branch: (e.branches as any)?.name || '',
-            date_hired: e.date_hired,
-            status: e.employment_status,
-            basic_salary: e.basic_salary
-          }));
-          downloadCSV(formatted, 'employee-masterlist', ['employee_id', 'first_name', 'middle_name', 'last_name', 'email', 'phone', 'position', 'department', 'branch', 'date_hired', 'status', 'basic_salary']);
-          toast({ title: 'Report Generated', description: 'Employee masterlist downloaded successfully' });
+          const headers = ['Employee ID', 'Last Name', 'First Name', 'Middle Name', 'Email', 'Phone', 'Position', 'Department', 'Branch', 'Date Hired', 'Status', 'Basic Salary'];
+          const rows = (data || []).map(e => [
+            e.employee_id,
+            e.last_name,
+            e.first_name,
+            e.middle_name || '',
+            e.email,
+            e.phone || '',
+            e.position,
+            e.department || '',
+            (e.branches as any)?.name || '',
+            e.date_hired,
+            e.employment_status || 'active',
+            Number(e.basic_salary || 0),
+          ]);
+          await downloadExcel('Employee Masterlist', headers, rows, 'employee-masterlist');
+          toast.success('Employee Masterlist report generated successfully');
           break;
         }
         case 'attendance-summary': {
           if (!dateRange.start || !dateRange.end) {
-            toast({ title: 'Date Required', description: 'Please select a date range', variant: 'destructive' });
+            toast.error('Please select a date range');
             setGenerating(null);
             return;
           }
@@ -73,18 +130,26 @@ export default function Reports() {
             .lte('date', dateRange.end)
             .order('date');
           if (error) throw error;
-          const formatted = (data || []).map(a => ({
-            date: a.date,
-            employee_id: (a.employees as any)?.employee_id || '',
-            name: `${(a.employees as any)?.first_name || ''} ${(a.employees as any)?.last_name || ''}`,
-            time_in: a.time_in || '',
-            time_out: a.time_out || '',
-            hours_worked: a.hours_worked || 0,
-            late_minutes: a.late_minutes || 0,
-            status: a.status || 'present'
-          }));
-          downloadCSV(formatted, 'attendance-summary', ['date', 'employee_id', 'name', 'time_in', 'time_out', 'hours_worked', 'late_minutes', 'status']);
-          toast({ title: 'Report Generated', description: 'Attendance summary downloaded successfully' });
+          const headers = ['Date', 'Employee ID', 'Name', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Hours Worked', 'Late (min)', 'Overtime (hrs)', 'Status'];
+          const formatTs = (ts: string | null) => {
+            if (!ts) return '';
+            try { return format(new Date(ts), 'hh:mm a'); } catch { return ts; }
+          };
+          const rows = (data || []).map(a => [
+            a.date,
+            (a.employees as any)?.employee_id || '',
+            `${(a.employees as any)?.first_name || ''} ${(a.employees as any)?.last_name || ''}`.trim(),
+            formatTs(a.morning_in || a.time_in),
+            formatTs(a.morning_out),
+            formatTs(a.afternoon_in),
+            formatTs(a.afternoon_out || a.time_out),
+            Number(a.hours_worked || 0),
+            Number(a.late_minutes || 0),
+            Number(a.overtime_hours || 0),
+            (a.status || 'present').replace('_', ' '),
+          ]);
+          await downloadExcel('Attendance Summary', headers, rows, 'attendance-summary');
+          toast.success('Attendance Summary report generated successfully');
           break;
         }
         case 'leave-balance': {
@@ -92,17 +157,18 @@ export default function Reports() {
             .select('*, employees(employee_id, first_name, last_name)')
             .eq('year', new Date().getFullYear());
           if (error) throw error;
-          const formatted = (data || []).map(c => ({
-            employee_id: (c.employees as any)?.employee_id || '',
-            name: `${(c.employees as any)?.first_name || ''} ${(c.employees as any)?.last_name || ''}`,
-            leave_type: c.leave_type,
-            total_credits: c.total_credits || 0,
-            used_credits: c.used_credits || 0,
-            remaining: (c.total_credits || 0) - (c.used_credits || 0),
-            year: c.year
-          }));
-          downloadCSV(formatted, 'leave-balance', ['employee_id', 'name', 'leave_type', 'total_credits', 'used_credits', 'remaining', 'year']);
-          toast({ title: 'Report Generated', description: 'Leave balance report downloaded successfully' });
+          const headers = ['Employee ID', 'Name', 'Leave Type', 'Total Credits', 'Used Credits', 'Remaining Credits', 'Year'];
+          const rows = (data || []).map(c => [
+            (c.employees as any)?.employee_id || '',
+            `${(c.employees as any)?.first_name || ''} ${(c.employees as any)?.last_name || ''}`.trim(),
+            c.leave_type,
+            Number(c.total_credits || 0),
+            Number(c.used_credits || 0),
+            Number((c.total_credits || 0) - (c.used_credits || 0)),
+            c.year,
+          ]);
+          await downloadExcel('Leave Balance', headers, rows, 'leave-balance');
+          toast.success('Leave Balance report generated successfully');
           break;
         }
         case 'payroll-summary': {
@@ -110,51 +176,57 @@ export default function Reports() {
             .select('*, employees(employee_id, first_name, last_name), payroll_periods(period_start, period_end, pay_date)')
             .order('created_at', { ascending: false });
           if (error) throw error;
-          const formatted = (data || []).map(r => ({
-            period: `${(r.payroll_periods as any)?.period_start || ''} to ${(r.payroll_periods as any)?.period_end || ''}`,
-            pay_date: (r.payroll_periods as any)?.pay_date || '',
-            employee_id: (r.employees as any)?.employee_id || '',
-            name: `${(r.employees as any)?.first_name || ''} ${(r.employees as any)?.last_name || ''}`,
-            basic_pay: r.basic_pay,
-            overtime_pay: r.overtime_pay || 0,
-            allowances: r.total_allowances || 0,
-            gross_pay: r.gross_pay || 0,
-            sss: r.sss_contribution || 0,
-            philhealth: r.philhealth_contribution || 0,
-            pagibig: r.pagibig_contribution || 0,
-            tax: r.withholding_tax || 0,
-            deductions: r.total_deductions || 0,
-            net_pay: r.net_pay || 0
-          }));
-          downloadCSV(formatted, 'payroll-summary', ['period', 'pay_date', 'employee_id', 'name', 'basic_pay', 'overtime_pay', 'allowances', 'gross_pay', 'sss', 'philhealth', 'pagibig', 'tax', 'deductions', 'net_pay']);
-          toast({ title: 'Report Generated', description: 'Payroll summary downloaded successfully' });
+          const headers = ['Period', 'Pay Date', 'Employee ID', 'Name', 'Days Worked', 'Basic Pay', 'Overtime Pay', 'Holiday Pay', 'Allowances', 'Gross Pay', 'SSS', 'PhilHealth', 'Pag-IBIG', 'Tax', 'Other Deductions', 'Total Deductions', 'Net Pay'];
+          const rows = (data || []).map(r => [
+            `${(r.payroll_periods as any)?.period_start || ''} to ${(r.payroll_periods as any)?.period_end || ''}`,
+            (r.payroll_periods as any)?.pay_date || '',
+            (r.employees as any)?.employee_id || '',
+            `${(r.employees as any)?.first_name || ''} ${(r.employees as any)?.last_name || ''}`.trim(),
+            Number(r.days_worked || 0),
+            Number(r.basic_pay || 0),
+            Number(r.overtime_pay || 0),
+            Number(r.holiday_pay || 0),
+            Number(r.total_allowances || 0),
+            Number(r.gross_pay || 0),
+            Number(r.sss_contribution || 0),
+            Number(r.philhealth_contribution || 0),
+            Number(r.pagibig_contribution || 0),
+            Number(r.withholding_tax || 0),
+            Number(r.other_deductions || 0),
+            Number(r.total_deductions || 0),
+            Number(r.net_pay || 0),
+          ]);
+          await downloadExcel('Payroll Summary', headers, rows, 'payroll-summary');
+          toast.success('Payroll Summary report generated successfully');
           break;
         }
         case 'gov-contributions': {
           const { data, error } = await supabase.from('payroll_records')
-            .select('*, employees(employee_id, first_name, last_name, sss_number, philhealth_number, pagibig_number)')
+            .select('*, employees(employee_id, first_name, last_name, sss_number, philhealth_number, pagibig_number), payroll_periods(period_start, period_end)')
             .order('created_at', { ascending: false });
           if (error) throw error;
-          const formatted = (data || []).map(r => ({
-            employee_id: (r.employees as any)?.employee_id || '',
-            name: `${(r.employees as any)?.first_name || ''} ${(r.employees as any)?.last_name || ''}`,
-            sss_number: (r.employees as any)?.sss_number || '',
-            sss_ee: r.sss_contribution || 0,
-            sss_er: ((r.sss_contribution || 0) * 1.5).toFixed(2),
-            philhealth_number: (r.employees as any)?.philhealth_number || '',
-            philhealth_ee: r.philhealth_contribution || 0,
-            philhealth_er: r.philhealth_contribution || 0,
-            pagibig_number: (r.employees as any)?.pagibig_number || '',
-            pagibig_ee: r.pagibig_contribution || 0,
-            pagibig_er: r.pagibig_contribution || 0
-          }));
-          downloadCSV(formatted, 'gov-contributions', ['employee_id', 'name', 'sss_number', 'sss_ee', 'sss_er', 'philhealth_number', 'philhealth_ee', 'philhealth_er', 'pagibig_number', 'pagibig_ee', 'pagibig_er']);
-          toast({ title: 'Report Generated', description: 'Government contributions report downloaded successfully' });
+          const headers = ['Period', 'Employee ID', 'Name', 'SSS No.', 'SSS (EE)', 'SSS (ER)', 'PhilHealth No.', 'PhilHealth (EE)', 'PhilHealth (ER)', 'Pag-IBIG No.', 'Pag-IBIG (EE)', 'Pag-IBIG (ER)'];
+          const rows = (data || []).map(r => [
+            `${(r.payroll_periods as any)?.period_start || ''} to ${(r.payroll_periods as any)?.period_end || ''}`,
+            (r.employees as any)?.employee_id || '',
+            `${(r.employees as any)?.first_name || ''} ${(r.employees as any)?.last_name || ''}`.trim(),
+            (r.employees as any)?.sss_number || '',
+            Number(r.sss_contribution || 0),
+            Number(((r.sss_contribution || 0) * 1.5).toFixed(2)),
+            (r.employees as any)?.philhealth_number || '',
+            Number(r.philhealth_contribution || 0),
+            Number(r.philhealth_contribution || 0),
+            (r.employees as any)?.pagibig_number || '',
+            Number(r.pagibig_contribution || 0),
+            Number(r.pagibig_contribution || 0),
+          ]);
+          await downloadExcel('Government Contributions', headers, rows, 'gov-contributions');
+          toast.success('Government Contributions report generated successfully');
           break;
         }
       }
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to generate report', variant: 'destructive' });
+      toast.error(error.message || 'Failed to generate report');
     } finally {
       setGenerating(null);
       setSelectedReport(null);

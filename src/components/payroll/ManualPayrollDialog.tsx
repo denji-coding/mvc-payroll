@@ -188,8 +188,17 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
   // Late deduction: daily rate / 8 hours / 60 mins * late minutes
   const lateDeduction = Math.round((dailyRate / 8 / 60) * lateMinutes * 100) / 100;
 
+  // Apply deduction settings
+  const sssEnabled = deductionSettings?.sss_enabled !== false;
+  const philhealthEnabled = deductionSettings?.philhealth_enabled !== false;
+  const pagibigEnabled = deductionSettings?.pagibig_enabled !== false;
+
+  const effectiveSss = sssEnabled ? (calc?.sssContribution || 0) : 0;
+  const effectivePhilhealth = philhealthEnabled ? (calc?.philhealthContribution || 0) : 0;
+  const effectivePagibig = pagibigEnabled ? (calc?.pagibigContribution || 0) : 0;
+
   const grossPay = calc ? calc.grossPay : 0;
-  const totalDeductions = calc ? calc.sssContribution + calc.philhealthContribution + calc.pagibigContribution + lateDeduction : 0;
+  const totalDeductions = effectiveSss + effectivePhilhealth + effectivePagibig + lateDeduction;
   const netPay = grossPay - totalDeductions;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -205,9 +214,9 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
       holiday_pay: 0,
       night_differential: 0,
       total_allowances: calc.leaveWithPayEarnings,
-      sss_contribution: calc.sssContribution,
-      philhealth_contribution: calc.philhealthContribution,
-      pagibig_contribution: calc.pagibigContribution,
+      sss_contribution: effectiveSss,
+      philhealth_contribution: effectivePhilhealth,
+      pagibig_contribution: effectivePagibig,
       withholding_tax: 0,
       other_deductions: lateDeduction,
     };

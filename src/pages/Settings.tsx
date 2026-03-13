@@ -124,21 +124,136 @@ function GeneralSettings() {
   const { theme, setTheme } = useTheme();
   const { role } = useAuth();
   const isHR = role === 'hr_admin';
+  const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo();
+  const updateCompanyInfo = useUpdateCompanyInfo();
+  const [editingCompany, setEditingCompany] = useState(false);
+  const [companyName, setCompanyName] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [savingCompany, setSavingCompany] = useState(false);
+
+  useEffect(() => {
+    if (companyInfo) {
+      setCompanyName(companyInfo.company_name);
+    }
+  }, [companyInfo]);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setLogoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveCompany = async () => {
+    setSavingCompany(true);
+    try {
+      let logoUrl = companyInfo?.company_logo_url || null;
+
+      if (logoFile) {
+        const fileExt = logoFile.name.split('.').pop();
+        const filePath = `company-logo.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('employee-avatars')
+          .upload(filePath, logoFile, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('employee-avatars')
+          .getPublicUrl(filePath);
+        logoUrl = urlData.publicUrl + '?t=' + Date.now();
+      }
+
+      await updateCompanyInfo.mutateAsync({
+        company_name: companyName.trim(),
+        company_logo_url: logoUrl,
+      });
+
+      setEditingCompany(false);
+      setLogoFile(null);
+      setLogoPreview(null);
+    } catch (err) {
+      toast.error('Failed to save company information');
+    } finally {
+      setSavingCompany(false);
+    }
+  };
+
+  const currentLogo = logoPreview || companyInfo?.company_logo_url || companyLogoDefault;
 
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Company Information</CardTitle>
-          <CardDescription>Basic company settings</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Company Name</Label>
-              <p className="text-sm text-muted-foreground">Migrants Venture Corporation</p>
+              <CardTitle>Company Information</CardTitle>
+              <CardDescription>Basic company settings</CardDescription>
             </div>
+            {isHR && !editingCompany && (
+              <Button variant="outline" size="sm" onClick={() => setEditingCompany(true)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            )}
           </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {editingCompany ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={currentLogo}
+                  alt="Company Logo"
+                  className="h-20 w-20 object-contain rounded-lg border"
+                />
+                <div className="space-y-2">
+                  <Label>Company Logo</Label>
+                  <Input type="file" accept="image/*" onChange={handleLogoChange} />
+                  <p className="text-xs text-muted-foreground">Recommended: Square image, PNG or JPG</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Company Name</Label>
+                <Input
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Enter company name"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleSaveCompany} disabled={savingCompany || !companyName.trim()}>
+                  {savingCompany ? 'Saving...' : 'Save Changes'}
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  setEditingCompany(false);
+                  setLogoFile(null);
+                  setLogoPreview(null);
+                  setCompanyName(companyInfo?.company_name || '');
+                }}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <img
+                src={currentLogo}
+                alt="Company Logo"
+                className="h-16 w-16 object-contain rounded-lg"
+              />
+              <div>
+                <Label>Company Name</Label>
+                <p className="text-sm text-muted-foreground">
+                  {companyLoading ? 'Loading...' : companyInfo?.company_name || 'Migrants Venture Corporation'}
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

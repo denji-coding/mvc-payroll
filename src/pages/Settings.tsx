@@ -31,6 +31,8 @@ import { useBenefitRates, useUpdateBenefitRates, BenefitRates } from '@/hooks/us
 import { useTheme } from '@/components/theme-provider';
 import { Database } from '@/integrations/supabase/types';
 import { generateDataDictionaryPdf } from '@/lib/generateDataDictionaryPdf';
+import { useCompanyInfo, useUpdateCompanyInfo } from '@/hooks/useCompanyInfo';
+import companyLogoDefault from '@/assets/company-logo.png';
 
 type AppRole = Database['public']['Enums']['app_role'];
 

@@ -93,6 +93,13 @@ export default function Leaves() {
     setAttachmentFile(null);
   }, [form.leave_type]);
 
+  // Auto-switch to without_pay when LWP exhausted
+  useEffect(() => {
+    if (lwpExhausted && form.pay_type === 'with_pay') {
+      setForm(f => ({ ...f, pay_type: 'without_pay' }));
+    }
+  }, [lwpExhausted, form.pay_type]);
+
   const getDateDisabledFn = () => {
     const config = selectedLeaveType?.calendar_config || "disable_past";
     if (config === "disable_future") return (date: Date) => isAfter(date, today);

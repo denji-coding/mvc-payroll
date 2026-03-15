@@ -277,13 +277,13 @@ export default function Leaves() {
                 <div className="space-y-2">
                   <Label>Pay Type</Label>
                   <RadioGroup
-                    value={form.pay_type}
+                    value={lwpExhausted ? "without_pay" : form.pay_type}
                     onValueChange={(v) => setForm({ ...form, pay_type: v as "with_pay" | "without_pay" })}
                     className="flex gap-4"
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="with_pay" id="with_pay" />
-                      <Label htmlFor="with_pay" className="cursor-pointer">
+                      <RadioGroupItem value="with_pay" id="with_pay" disabled={lwpExhausted} />
+                      <Label htmlFor="with_pay" className={cn("cursor-pointer", lwpExhausted && "opacity-50 cursor-not-allowed")}>
                         With Pay
                       </Label>
                     </div>
@@ -294,6 +294,12 @@ export default function Leaves() {
                       </Label>
                     </div>
                   </RadioGroup>
+                  {lwpExhausted && (
+                    <p className="text-xs text-destructive">You have used all {lwpMaxCredits} Leave With Pay credits. Only "Without Pay" is available.</p>
+                  )}
+                  {!lwpExhausted && (
+                    <p className="text-xs text-muted-foreground">LWP remaining: {lwpRemaining} of {lwpMaxCredits} days</p>
+                  )}
                 </div>
                 {calculatedDays > 0 && (
                   <div className="space-y-1">

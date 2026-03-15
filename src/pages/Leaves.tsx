@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyLeaveRequests, useCreateLeaveRequest, useLeaveCredits, calculateWorkingDays } from "@/hooks/useLeaves";
+import { useLwpConfig } from "@/hooks/useSettings";
 import { useLeaveTypes, LeaveType } from "@/hooks/useLeaveTypes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

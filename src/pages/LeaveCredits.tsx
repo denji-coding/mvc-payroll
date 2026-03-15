@@ -226,7 +226,7 @@ export default function LeaveCredits() {
                 <li>Employees can select "With Pay" when applying for leave, up to the configured credit limit.</li>
                 <li>Once all LWP credits are used, employees can only apply for "Without Pay" leave.</li>
                 <li>Approved "With Pay" leaves are automatically included in payroll calculation.</li>
-                <li>Credits refresh based on the configured month cycle.</li>
+                <li>All leave credits (credits per application) and LWP credits refresh together based on the configured month cycle.</li>
               </ul>
             </div>
           </div>

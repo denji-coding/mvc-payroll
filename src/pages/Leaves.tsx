@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyLeaveRequests, useCreateLeaveRequest, useLeaveCredits, calculateWorkingDays } from "@/hooks/useLeaves";
+import { useLwpConfig } from "@/hooks/useSettings";
 import { useLeaveTypes, LeaveType } from "@/hooks/useLeaveTypes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ export default function Leaves() {
   const { data: myLeaves, isLoading } = useMyLeaveRequests();
   const { data: credits } = useLeaveCredits();
   const { data: leaveTypes } = useLeaveTypes();
+  const { data: lwpConfig } = useLwpConfig();
   const createLeave = useCreateLeaveRequest();
 
   const activeLeaveTypes = (leaveTypes || []).filter((lt) => lt.is_active);
@@ -68,6 +70,19 @@ export default function Leaves() {
   const availableCredits = totalCredits - (credit?.used_credits || 0);
   const hasCredits = !selectedLeaveType || availableCredits > 0;
 
+  // LWP (Leave With Pay) credits check
+  const lwpCreditsUsed = useMemo(() => {
+    if (!myLeaves) return 0;
+    // Count total days of approved or pending "with_pay" leaves
+    return myLeaves
+      .filter((l: any) => l.pay_type === 'with_pay' && ['pending', 'manager_approved', 'hr_approved'].includes(l.status))
+      .reduce((sum: number, l: any) => sum + (l.total_days || 0), 0);
+  }, [myLeaves]);
+
+  const lwpMaxCredits = lwpConfig?.paid_leave_credits || 3;
+  const lwpRemaining = Math.max(0, lwpMaxCredits - lwpCreditsUsed);
+  const lwpExhausted = lwpRemaining <= 0;
+
   // Max days limit check
   const maxDays = selectedLeaveType?.max_days_per_application || selectedLeaveType?.default_credits;
   const exceedsLimit = maxDays && calculatedDays > maxDays;
@@ -77,6 +92,13 @@ export default function Leaves() {
     setEndDate(undefined);
     setAttachmentFile(null);
   }, [form.leave_type]);
+
+  // Auto-switch to without_pay when LWP exhausted
+  useEffect(() => {
+    if (lwpExhausted && form.pay_type === 'with_pay') {
+      setForm(f => ({ ...f, pay_type: 'without_pay' }));
+    }
+  }, [lwpExhausted, form.pay_type]);
 
   const getDateDisabledFn = () => {
     const config = selectedLeaveType?.calendar_config || "disable_past";
@@ -262,13 +284,13 @@ export default function Leaves() {
                 <div className="space-y-2">
                   <Label>Pay Type</Label>
                   <RadioGroup
-                    value={form.pay_type}
+                    value={lwpExhausted ? "without_pay" : form.pay_type}
                     onValueChange={(v) => setForm({ ...form, pay_type: v as "with_pay" | "without_pay" })}
                     className="flex gap-4"
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="with_pay" id="with_pay" />
-                      <Label htmlFor="with_pay" className="cursor-pointer">
+                      <RadioGroupItem value="with_pay" id="with_pay" disabled={lwpExhausted} />
+                      <Label htmlFor="with_pay" className={cn("cursor-pointer", lwpExhausted && "opacity-50 cursor-not-allowed")}>
                         With Pay
                       </Label>
                     </div>
@@ -279,6 +301,12 @@ export default function Leaves() {
                       </Label>
                     </div>
                   </RadioGroup>
+                  {lwpExhausted && (
+                    <p className="text-xs text-destructive">You have used all {lwpMaxCredits} Leave With Pay credits. Only "Without Pay" is available.</p>
+                  )}
+                  {!lwpExhausted && (
+                    <p className="text-xs text-muted-foreground">LWP remaining: {lwpRemaining} of {lwpMaxCredits} days</p>
+                  )}
                 </div>
                 {calculatedDays > 0 && (
                   <div className="space-y-1">

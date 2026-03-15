@@ -42,6 +42,7 @@ export default function Leaves() {
   const { data: myLeaves, isLoading } = useMyLeaveRequests();
   const { data: credits } = useLeaveCredits();
   const { data: leaveTypes } = useLeaveTypes();
+  const { data: lwpConfig } = useLwpConfig();
   const createLeave = useCreateLeaveRequest();
 
   const activeLeaveTypes = (leaveTypes || []).filter((lt) => lt.is_active);
@@ -68,6 +69,19 @@ export default function Leaves() {
   const totalCredits = selectedLeaveType?.credits_per_application || credit?.total_credits || 0;
   const availableCredits = totalCredits - (credit?.used_credits || 0);
   const hasCredits = !selectedLeaveType || availableCredits > 0;
+
+  // LWP (Leave With Pay) credits check
+  const lwpCreditsUsed = useMemo(() => {
+    if (!myLeaves) return 0;
+    // Count total days of approved or pending "with_pay" leaves
+    return myLeaves
+      .filter((l: any) => l.pay_type === 'with_pay' && ['pending', 'manager_approved', 'hr_approved'].includes(l.status))
+      .reduce((sum: number, l: any) => sum + (l.total_days || 0), 0);
+  }, [myLeaves]);
+
+  const lwpMaxCredits = lwpConfig?.paid_leave_credits || 3;
+  const lwpRemaining = Math.max(0, lwpMaxCredits - lwpCreditsUsed);
+  const lwpExhausted = lwpRemaining <= 0;
 
   // Max days limit check
   const maxDays = selectedLeaveType?.max_days_per_application || selectedLeaveType?.default_credits;

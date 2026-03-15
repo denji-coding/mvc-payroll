@@ -209,16 +209,16 @@ export default function LeaveCredits() {
               <p className="text-xs text-muted-foreground">Maximum number of "With Pay" leave days an employee can use before the next refresh.</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lwp-refresh">Refresh Every (months)</Label>
-              <Input
-                id="lwp-refresh"
-                type="number"
-                min="1"
-                step="1"
-                value={lwpForm.refresh_months}
-                onChange={(e) => setLwpForm({ ...lwpForm, refresh_months: parseInt(e.target.value) || 1 })}
-              />
-              <p className="text-xs text-muted-foreground">Number of months before LWP credits automatically refresh per application cycle.</p>
+              <Label htmlFor="lwp-refresh">Refresh Every</Label>
+              <Select value={String(lwpForm.refresh_months)} onValueChange={(v) => setLwpForm({ ...lwpForm, refresh_months: parseInt(v) })}>
+                <SelectTrigger id="lwp-refresh"><SelectValue placeholder="Select interval" /></SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
+                    <SelectItem key={m} value={String(m)}>{m} {m === 1 ? 'month' : 'months'}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Number of months before all leave credits (including LWP) automatically refresh per application cycle.</p>
             </div>
             <div className="rounded-md border border-border p-3 bg-muted/30 space-y-1">
               <p className="text-sm font-medium">How it works</p>
@@ -226,7 +226,7 @@ export default function LeaveCredits() {
                 <li>Employees can select "With Pay" when applying for leave, up to the configured credit limit.</li>
                 <li>Once all LWP credits are used, employees can only apply for "Without Pay" leave.</li>
                 <li>Approved "With Pay" leaves are automatically included in payroll calculation.</li>
-                <li>Credits refresh based on the configured month cycle.</li>
+                <li>All leave credits (credits per application) and LWP credits refresh together based on the configured month cycle.</li>
               </ul>
             </div>
           </div>

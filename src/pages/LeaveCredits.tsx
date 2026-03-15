@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLeaveTypes, useCreateLeaveType, useUpdateLeaveType, useDeleteLeaveType, LeaveType } from '@/hooks/useLeaveTypes';
 import { useAllLeaveCredits } from '@/hooks/useLeaves';
+import { useLwpConfig, useUpdateLwpConfig, LwpConfig } from '@/hooks/useSettings';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,113 +15,50 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Eye, EyeOff, Trash2, RefreshCw, Edit } from 'lucide-react';
+import { Plus, Eye, EyeOff, Trash2, Edit, Settings, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
-
-interface LeaveTypeForm {
-  name: string;
-  default_credits: string;
-  credits_per_application: string;
-  description: string;
-  applyToAll: boolean;
-  calendar_config: 'disable_past' | 'disable_future' | 'no_disable';
-  required_fields: string[];
-  upload_condition_days: string;
-}
-
-const defaultForm: LeaveTypeForm = {
-  name: '', default_credits: '', credits_per_application: '1', description: '',
-  applyToAll: true, calendar_config: 'disable_past', required_fields: ['reason'],
-  upload_condition_days: '',
-};
-
-function LeaveTypeFormFields({ form, setForm, isEdit = false }: {
-  form: LeaveTypeForm;
-  setForm: (f: LeaveTypeForm) => void;
-  isEdit?: boolean;
-}) {
-  const hasUploadField = form.required_fields.includes('upload');
-
-  const handleRequiredFieldChange = (value: string) => {
-    let newFields: string[];
-    if (value === 'reason') {
-      newFields = ['reason'];
-    } else if (value === 'upload') {
-      newFields = ['upload'];
-    } else if (value === 'both') {
-      newFields = ['reason', 'upload'];
-    } else {
-      newFields = ['reason'];
-    }
-    setForm({ ...form, required_fields: newFields, upload_condition_days: (value === 'upload' || value === 'both') ? form.upload_condition_days : '' });
-  };
-
-  const currentFieldValue = form.required_fields.includes('reason') && form.required_fields.includes('upload') ? 'both' : form.required_fields.includes('upload') ? 'upload' : 'reason';
-
-  return (
-    <>
-      <div className="space-y-2">
-        <Label>Leave Type Name</Label>
-        <Input placeholder="e.g. Sick Leave, Annual Leave" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-      </div>
-      <div className="space-y-2">
-        <Label>Default Allowed Days / Limit</Label>
-        <Input type="number" min="1" step="1" placeholder="e.g. 15" value={form.default_credits} onChange={(e) => setForm({ ...form, default_credits: e.target.value })} />
-        <p className="text-xs text-muted-foreground">Maximum number of days an employee can apply per request</p>
-      </div>
-      <div className="space-y-2">
-        <Label>Credits Per Application</Label>
-        <Input type="number" min="1" step="1" placeholder="e.g. 1" value={form.credits_per_application} onChange={(e) => setForm({ ...form, credits_per_application: e.target.value })} />
-        <p className="text-xs text-muted-foreground">Number of credits consumed per approved leave application</p>
-      </div>
-      <div className="space-y-2">
-        <Label>Configuration Calendar</Label>
-        <RadioGroup value={form.calendar_config} onValueChange={(v) => setForm({ ...form, calendar_config: v as any })} className="space-y-1">
-          <div className="flex items-center space-x-2"><RadioGroupItem value="disable_past" id={`${isEdit ? 'edit-' : ''}cal-past`} /><Label htmlFor={`${isEdit ? 'edit-' : ''}cal-past`} className="cursor-pointer font-normal">Disable Past Date</Label></div>
-          <div className="flex items-center space-x-2"><RadioGroupItem value="disable_future" id={`${isEdit ? 'edit-' : ''}cal-future`} /><Label htmlFor={`${isEdit ? 'edit-' : ''}cal-future`} className="cursor-pointer font-normal">Disable Future Date</Label></div>
-          <div className="flex items-center space-x-2"><RadioGroupItem value="no_disable" id={`${isEdit ? 'edit-' : ''}cal-none`} /><Label htmlFor={`${isEdit ? 'edit-' : ''}cal-none`} className="cursor-pointer font-normal">Make Both Not Disable</Label></div>
-        </RadioGroup>
-      </div>
-      <div className="space-y-2">
-        <Label>Select Required Fields</Label>
-        <Select value={currentFieldValue} onValueChange={handleRequiredFieldChange}>
-          <SelectTrigger><SelectValue placeholder="Select fields..." /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="reason">Reason Field</SelectItem>
-            <SelectItem value="upload">Upload Field</SelectItem>
-            <SelectItem value="both">Both (Reason & Upload)</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      {(hasUploadField || form.required_fields.includes('both')) && (
-        <div className="space-y-2 rounded-md border border-border p-3 bg-muted/30">
-          <Label className="text-sm font-semibold text-warning">Upload Condition: Minimum days to require upload</Label>
-          <p className="text-xs text-muted-foreground">If the applied leave date range is equal to or exceeds this number of days, the upload field will replace the reason field.</p>
-          <Input type="number" min="1" step="1" placeholder="e.g. 3" value={form.upload_condition_days} onChange={(e) => setForm({ ...form, upload_condition_days: e.target.value })} />
-        </div>
-      )}
-      <div className="space-y-2">
-        <Label>Description</Label>
-        <Textarea placeholder="Enter description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
-      </div>
-    </>
-  );
-}
+import { LeaveTypeFormFields, LeaveTypeForm, defaultForm } from '@/components/leave-credits/LeaveTypeFormFields';
+import { toast } from 'sonner';
 
 export default function LeaveCredits() {
   const { role } = useAuth();
-  const { data: leaveTypes, isLoading, refetch } = useLeaveTypes();
+  const { data: leaveTypes, isLoading } = useLeaveTypes();
   const { data: allCredits } = useAllLeaveCredits();
   const createLeaveType = useCreateLeaveType();
   const updateLeaveType = useUpdateLeaveType();
   const deleteLeaveType = useDeleteLeaveType();
+  const { data: lwpConfig } = useLwpConfig();
+  const updateLwpConfig = useUpdateLwpConfig();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<LeaveType | null>(null);
   const [form, setForm] = useState<LeaveTypeForm>({ ...defaultForm });
   const [editForm, setEditForm] = useState<LeaveTypeForm>({ ...defaultForm });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [lwpForm, setLwpForm] = useState<LwpConfig>({ paid_leave_credits: 3, refresh_months: 1 });
+
+  const handleOpenSettings = () => {
+    if (lwpConfig) {
+      setLwpForm({ ...lwpConfig });
+    }
+    setSettingsOpen(true);
+  };
+
+  const handleSaveLwpConfig = () => {
+    if (lwpForm.paid_leave_credits < 1) {
+      toast.error('Paid leave credits must be at least 1');
+      return;
+    }
+    if (lwpForm.refresh_months < 1) {
+      toast.error('Refresh months must be at least 1');
+      return;
+    }
+    updateLwpConfig.mutate(lwpForm, {
+      onSuccess: () => setSettingsOpen(false),
+    });
+  };
 
   const handleAddLeaveType = (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,8 +170,8 @@ export default function LeaveCredits() {
       <div className="page-header">
         <div><h1 className="page-title">Leave Credits Management</h1><p className="text-muted-foreground">Manage employee leave credits and allocations.</p></div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Refresh</Button>
           <Button onClick={() => setDialogOpen(true)}><Plus className="mr-2 h-4 w-4" /> Add Leave Type</Button>
+          <Button variant="outline" size="icon" onClick={handleOpenSettings} title="LWP Settings"><Settings className="h-4 w-4" /></Button>
         </div>
       </div>
 
@@ -243,6 +182,61 @@ export default function LeaveCredits() {
           )}
         </CardContent>
       </Card>
+
+      {/* LWP Settings Drawer */}
+      <Drawer open={settingsOpen} onOpenChange={setSettingsOpen} direction="right">
+        <DrawerContent className="fixed inset-y-0 right-0 left-auto w-[400px] rounded-l-xl rounded-t-none border-l">
+          <div className="flex items-center justify-between p-4 border-b">
+            <div>
+              <DrawerTitle>Leave With Pay Settings</DrawerTitle>
+              <DrawerDescription className="text-sm text-muted-foreground mt-1">Configure LWP credit limits and refresh cycle.</DrawerDescription>
+            </div>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4" /></Button>
+            </DrawerClose>
+          </div>
+          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+            <div className="space-y-2">
+              <Label htmlFor="lwp-credits">Paid Leave Credits (days)</Label>
+              <Input
+                id="lwp-credits"
+                type="number"
+                min="1"
+                step="1"
+                value={lwpForm.paid_leave_credits}
+                onChange={(e) => setLwpForm({ ...lwpForm, paid_leave_credits: parseInt(e.target.value) || 1 })}
+              />
+              <p className="text-xs text-muted-foreground">Maximum number of "With Pay" leave days an employee can use before the next refresh.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lwp-refresh">Refresh Every (months)</Label>
+              <Input
+                id="lwp-refresh"
+                type="number"
+                min="1"
+                step="1"
+                value={lwpForm.refresh_months}
+                onChange={(e) => setLwpForm({ ...lwpForm, refresh_months: parseInt(e.target.value) || 1 })}
+              />
+              <p className="text-xs text-muted-foreground">Number of months before LWP credits automatically refresh per application cycle.</p>
+            </div>
+            <div className="rounded-md border border-border p-3 bg-muted/30 space-y-1">
+              <p className="text-sm font-medium">How it works</p>
+              <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
+                <li>Employees can select "With Pay" when applying for leave, up to the configured credit limit.</li>
+                <li>Once all LWP credits are used, employees can only apply for "Without Pay" leave.</li>
+                <li>Approved "With Pay" leaves are automatically included in payroll calculation.</li>
+                <li>Credits refresh based on the configured month cycle.</li>
+              </ul>
+            </div>
+          </div>
+          <DrawerFooter className="border-t">
+            <Button onClick={handleSaveLwpConfig} disabled={updateLwpConfig.isPending}>
+              {updateLwpConfig.isPending ? 'Saving...' : 'Save Settings'}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
       {/* Add Leave Type Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setForm({ ...defaultForm }); }}>

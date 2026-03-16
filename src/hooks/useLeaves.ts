@@ -332,31 +332,14 @@ export function useApproveLeaveRequest() {
           }
           
           if (creditRecord) {
-            // Look up the leave type config to get credits_per_application
-            // Try matching by the stored leave_type name
-            const { data: leaveTypeConfig } = await supabase
-              .from('leave_types')
-              .select('credits_per_application')
-              .eq('name', creditRecord.leave_type)
-              .maybeSingle();
-            
-            // If not found by exact name, try by mapped name
-            let creditsToDeduct = leaveTypeConfig?.credits_per_application || 1;
-            if (!leaveTypeConfig && leaveTypeName) {
-              const { data: altConfig } = await supabase
-                .from('leave_types')
-                .select('credits_per_application')
-                .eq('name', leaveTypeName)
-                .maybeSingle();
-              if (altConfig) creditsToDeduct = altConfig.credits_per_application;
-            }
-            
-            await supabase
+            const { error: creditUpdateError } = await supabase
               .from('leave_credits')
               .update({ 
-                used_credits: (creditRecord.used_credits || 0) + creditsToDeduct 
+                used_credits: (creditRecord.used_credits || 0) + 1
               })
               .eq('id', creditRecord.id);
+
+            if (creditUpdateError) throw creditUpdateError;
           }
         }
       }

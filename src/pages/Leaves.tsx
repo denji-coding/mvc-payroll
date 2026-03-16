@@ -37,6 +37,18 @@ const getLeaveTypeVisuals = (name: string) => {
   return { icon: CalendarDays, color: "text-primary" };
 };
 
+const normalizeLeaveTypeKey = (value?: string | null) =>
+  (value || "")
+    .toLowerCase()
+    .replace(/\s+leave$/i, "")
+    .replace(/\s+/g, "_")
+    .trim();
+
+const findCreditForLeaveType = (leaveTypeName: string, leaveCredits?: any[]) => {
+  const leaveTypeKey = normalizeLeaveTypeKey(leaveTypeName);
+  return leaveCredits?.find((credit: any) => normalizeLeaveTypeKey(credit.leave_type) === leaveTypeKey);
+};
+
 export default function Leaves() {
   const { user } = useAuth();
   const { data: myLeaves, isLoading } = useMyLeaveRequests();

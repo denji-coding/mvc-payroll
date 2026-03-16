@@ -87,6 +87,24 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
     periodEnd
   );
 
+  // Fetch approved leaves for this employee within the payroll period
+  const { data: approvedLeaves } = useQuery({
+    queryKey: ['approved-leaves-payroll', currentEmployeeId, periodStart, periodEnd],
+    queryFn: async () => {
+      if (!currentEmployeeId || !periodStart || !periodEnd) return [];
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select('*')
+        .eq('employee_id', currentEmployeeId)
+        .eq('status', 'hr_approved')
+        .lte('start_date', periodEnd)
+        .gte('end_date', periodStart);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!currentEmployeeId && !!periodStart && !!periodEnd,
+  });
+
   // Reset form when dialog opens/closes or populate with edit data
   useEffect(() => {
     if (!open) {
@@ -107,6 +125,33 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
       setLwpDaysStr(String(lwpEstimate));
     }
   }, [open, isEditMode, editRecord, selectedEmployee?.basic_salary]);
+
+  // Auto-calculate LWP days from approved leaves
+  useEffect(() => {
+    if (approvedLeaves && approvedLeaves.length > 0 && periodStart && periodEnd) {
+      const pStart = new Date(periodStart);
+      const pEnd = new Date(periodEnd);
+      let lwpTotal = 0;
+      for (const leave of approvedLeaves) {
+        if (leave.pay_type === 'with_pay') {
+          const leaveStart = new Date(Math.max(new Date(leave.start_date).getTime(), pStart.getTime()));
+          const leaveEnd = new Date(Math.min(new Date(leave.end_date).getTime(), pEnd.getTime()));
+          // Count working days between leaveStart and leaveEnd
+          let days = 0;
+          const current = new Date(leaveStart);
+          while (current <= leaveEnd) {
+            const dow = current.getDay();
+            if (dow !== 0 && dow !== 6) days++;
+            current.setDate(current.getDate() + 1);
+          }
+          lwpTotal += days;
+        }
+      }
+      if (lwpTotal > 0) {
+        setLwpDaysStr(String(lwpTotal));
+      }
+    }
+  }, [approvedLeaves, periodStart, periodEnd]);
 
   // Fetch employee schedules for session-based hour calculation
   const { data: employeeSchedules } = useQuery({

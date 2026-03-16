@@ -291,6 +291,17 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { r
     const a = document.createElement('a'); a.href = url; a.download = `payslip-${r.employees?.last_name || 'employee'}.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   };
 
+  // Parse allowances_breakdown for LWP display
+  const allowancesBreakdown = (r.allowances_breakdown && typeof r.allowances_breakdown === 'object') ? r.allowances_breakdown as Record<string, number> : {};
+  const deductionsBreakdown = (r.deductions_breakdown && typeof r.deductions_breakdown === 'object') ? r.deductions_breakdown as Record<string, number> : {};
+  
+  // Find LWP entries in allowances breakdown
+  const lwpEntries = Object.entries(allowancesBreakdown).filter(([key]) => key.toLowerCase().includes('leave with pay') || key.toLowerCase().startsWith('lwp'));
+  
+  // Find late/LWOP entries in deductions breakdown  
+  const lateEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('late'));
+  const lwopEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('without pay'));
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
@@ -300,21 +311,26 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { r
             <h4 className="font-semibold text-success mb-2">Earnings</h4>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between"><span>Basic Pay</span><span>{formatCurrency(r.basic_pay)}</span></div>
+              {lwpEntries.map(([key, value]) => (
+                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
+              ))}
               <div className="flex justify-between font-bold border-t pt-1"><span>Gross</span><span>{formatCurrency(r.gross_pay)}</span></div>
             </div>
           </div>
           <div>
             <h4 className="font-semibold text-destructive mb-2">Deductions</h4>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>SSS</span><span>{formatCurrency(r.sss_contribution)}</span></div>
-              <div className="flex justify-between"><span>PhilHealth</span><span>{formatCurrency(r.philhealth_contribution)}</span></div>
-              <div className="flex justify-between"><span>Pag-IBIG</span><span>{formatCurrency(r.pagibig_contribution)}</span></div>
-              {(r.other_deductions || 0) > 0 && (
+              {(r.sss_contribution || 0) > 0 && <div className="flex justify-between"><span>SSS</span><span>{formatCurrency(r.sss_contribution)}</span></div>}
+              {(r.philhealth_contribution || 0) > 0 && <div className="flex justify-between"><span>PhilHealth</span><span>{formatCurrency(r.philhealth_contribution)}</span></div>}
+              {(r.pagibig_contribution || 0) > 0 && <div className="flex justify-between"><span>Pag-IBIG</span><span>{formatCurrency(r.pagibig_contribution)}</span></div>}
+              {lateEntries.length > 0 ? lateEntries.map(([key, value]) => (
+                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
+              )) : (r.other_deductions || 0) > 0 && (
                 <div className="flex justify-between"><span>Late Deduction</span><span>{formatCurrency(r.other_deductions)}</span></div>
               )}
-              {(r.total_allowances || 0) > 0 && (
-                <div className="flex justify-between"><span>LWP Deduction</span><span>{formatCurrency(r.total_allowances)}</span></div>
-              )}
+              {lwopEntries.map(([key, value]) => (
+                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
+              ))}
               <div className="flex justify-between font-bold border-t pt-1"><span>Total</span><span>{formatCurrency(r.total_deductions)}</span></div>
             </div>
           </div>

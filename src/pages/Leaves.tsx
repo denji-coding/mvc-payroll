@@ -156,10 +156,7 @@ export default function Leaves() {
       let attachmentUrl: string | null = null;
       if (showUploadField && attachmentFile) attachmentUrl = await uploadAttachment();
 
-      const leaveTypeValue = form.leave_type
-        .toLowerCase()
-        .replace(/\s+leave$/i, "")
-        .replace(/\s+/g, "_");
+      const leaveTypeValue = normalizeLeaveTypeKey(form.leave_type);
       createLeave.mutate(
         {
           leave_type: leaveTypeValue as any,

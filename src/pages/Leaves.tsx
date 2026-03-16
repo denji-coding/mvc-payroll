@@ -384,7 +384,7 @@ export default function Leaves() {
           {credits && credits.length > 0 ? (
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {activeLeaveTypes.map((leaveType) => {
-                const credit = credits.find((c: any) => c.leave_type === leaveType.name);
+                const credit = findCreditForLeaveType(leaveType.name, credits);
                 const total = leaveType.credits_per_application || credit?.total_credits || 0;
                 const used = credit?.used_credits || 0;
                 const available = total - used;

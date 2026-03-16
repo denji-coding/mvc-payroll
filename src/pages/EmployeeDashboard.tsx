@@ -4,7 +4,7 @@ import { useEmployeeDashboard } from '@/hooks/useEmployeeDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, Calendar, CalendarDays, DollarSign, TrendingUp, AlertCircle, Gift } from 'lucide-react';
+import { Clock, Calendar, CalendarDays, PhilippinePeso, TrendingUp, AlertCircle, Gift } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 
 export default function EmployeeDashboard() {

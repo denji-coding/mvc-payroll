@@ -263,6 +263,8 @@ export interface ManualPayrollData {
   pagibig_contribution: number;
   withholding_tax: number;
   other_deductions: number;
+  allowances_breakdown?: Record<string, number>;
+  deductions_breakdown?: Record<string, number>;
 }
 
 export function useCreateManualPayroll() {

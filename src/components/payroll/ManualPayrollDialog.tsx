@@ -250,6 +250,16 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
     e.preventDefault();
     if (!currentEmployeeId || !calc) return;
 
+    // Build breakdowns for display in payslip view
+    const allowancesBreakdown: Record<string, number> = {};
+    if (lwpDays > 0) {
+      allowancesBreakdown[`Leave With Pay (${lwpDays} days)`] = calc.leaveWithPayEarnings;
+    }
+    const deductionsBreakdown: Record<string, number> = {};
+    if (lateMinutes > 0) {
+      deductionsBreakdown[`Late (${lateMinutes} mins)`] = lateDeduction;
+    }
+
     const payrollData = {
       payroll_period_id: periodId,
       employee_id: currentEmployeeId,
@@ -264,6 +274,8 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
       pagibig_contribution: effectivePagibig,
       withholding_tax: 0,
       other_deductions: lateDeduction,
+      allowances_breakdown: allowancesBreakdown,
+      deductions_breakdown: deductionsBreakdown,
     };
 
     if (isEditMode) {

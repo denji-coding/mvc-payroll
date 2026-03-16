@@ -77,7 +77,7 @@ export default function Leaves() {
   const showReasonField = !showUploadField;
 
   // Credits check
-  const credit = credits?.find((c: any) => c.leave_type === form.leave_type);
+  const credit = findCreditForLeaveType(form.leave_type, credits);
   const totalCredits = selectedLeaveType?.credits_per_application || credit?.total_credits || 0;
   const availableCredits = totalCredits - (credit?.used_credits || 0);
   const hasCredits = !selectedLeaveType || availableCredits > 0;

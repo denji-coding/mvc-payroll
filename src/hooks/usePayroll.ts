@@ -281,11 +281,25 @@ export function useCreateManualPayroll() {
       const { data: result, error } = await supabase
         .from('payroll_records')
         .insert({
-          ...data,
+          payroll_period_id: data.payroll_period_id,
+          employee_id: data.employee_id,
+          basic_pay: data.basic_pay,
+          days_worked: data.days_worked,
+          overtime_pay: data.overtime_pay,
+          holiday_pay: data.holiday_pay,
+          night_differential: data.night_differential,
+          total_allowances: data.total_allowances,
+          sss_contribution: data.sss_contribution,
+          philhealth_contribution: data.philhealth_contribution,
+          pagibig_contribution: data.pagibig_contribution,
+          withholding_tax: data.withholding_tax,
+          other_deductions: data.other_deductions,
           gross_pay: grossPay,
           total_deductions: totalDeductions,
           net_pay: netPay,
           is_manual: true,
+          allowances_breakdown: data.allowances_breakdown || {},
+          deductions_breakdown: data.deductions_breakdown || {},
         })
         .select()
         .single();

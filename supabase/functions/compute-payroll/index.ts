@@ -290,7 +290,7 @@ serve(async (req) => {
         }
       }
 
-      // Calculate total hours worked using SESSION-BASED calculation
+      // Calculate total hours worked using SESSION-BASED calculation with fallbacks
       let totalCappedHours = 0;
       const totalLateMinutes = attendance?.reduce((sum, a) => sum + (parseInt(String(a.late_minutes)) || 0), 0) || 0;
 
@@ -306,15 +306,37 @@ serve(async (req) => {
           const aEndMin = timeToMinutes(schedule.afternoon_end || '17:00');
           const morningScheduledHours = (mEndMin - mStartMin) / 60;
           const afternoonScheduledHours = (aEndMin - aStartMin) / 60;
+          const totalScheduledHours = morningScheduledHours + afternoonScheduledHours;
 
-          // Compute hours from actual session timestamps, capped to schedule
-          const morningHours = computeSessionHours(a.morning_in, a.morning_out, morningScheduledHours);
-          const afternoonHours = computeSessionHours(a.afternoon_in, a.afternoon_out, afternoonScheduledHours);
-          totalCappedHours += morningHours + afternoonHours;
+          const hasMorningSessions = a.morning_in && a.morning_out;
+          const hasAfternoonSessions = a.afternoon_in && a.afternoon_out;
+          const hasAnySessions = hasMorningSessions || hasAfternoonSessions;
+
+          if (hasAnySessions) {
+            // Use session-based timestamps, capped to schedule
+            const morningHours = computeSessionHours(a.morning_in, a.morning_out, morningScheduledHours);
+            const afternoonHours = computeSessionHours(a.afternoon_in, a.afternoon_out, afternoonScheduledHours);
+            totalCappedHours += morningHours + afternoonHours;
+          } else if (a.time_in && a.time_out) {
+            // Fallback: use time_in/time_out, capped to total scheduled hours
+            const inTime = new Date(a.time_in).getTime();
+            const outTime = new Date(a.time_out).getTime();
+            const rawHours = (outTime - inTime) / (1000 * 60 * 60);
+            totalCappedHours += Math.min(Math.max(rawHours, 0), totalScheduledHours);
+          } else if (a.hours_worked != null && a.hours_worked > 0) {
+            // Fallback: use stored hours_worked, capped to schedule
+            totalCappedHours += Math.min(parseFloat(String(a.hours_worked)), totalScheduledHours);
+          }
         } else {
           // No schedule for this day, fallback to hours_worked capped at 8
-          const rawHours = parseFloat(String(a.hours_worked)) || 0;
-          totalCappedHours += Math.min(rawHours, 8);
+          if (a.hours_worked != null && a.hours_worked > 0) {
+            totalCappedHours += Math.min(parseFloat(String(a.hours_worked)), 8);
+          } else if (a.time_in && a.time_out) {
+            const inTime = new Date(a.time_in).getTime();
+            const outTime = new Date(a.time_out).getTime();
+            const rawHours = (outTime - inTime) / (1000 * 60 * 60);
+            totalCappedHours += Math.min(Math.max(rawHours, 0), 8);
+          }
         }
       }
 

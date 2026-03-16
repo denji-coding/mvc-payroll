@@ -37,6 +37,18 @@ const getLeaveTypeVisuals = (name: string) => {
   return { icon: CalendarDays, color: "text-primary" };
 };
 
+const normalizeLeaveTypeKey = (value?: string | null) =>
+  (value || "")
+    .toLowerCase()
+    .replace(/\s+leave$/i, "")
+    .replace(/\s+/g, "_")
+    .trim();
+
+const findCreditForLeaveType = (leaveTypeName: string, leaveCredits?: any[]) => {
+  const leaveTypeKey = normalizeLeaveTypeKey(leaveTypeName);
+  return leaveCredits?.find((credit: any) => normalizeLeaveTypeKey(credit.leave_type) === leaveTypeKey);
+};
+
 export default function Leaves() {
   const { user } = useAuth();
   const { data: myLeaves, isLoading } = useMyLeaveRequests();
@@ -65,7 +77,7 @@ export default function Leaves() {
   const showReasonField = !showUploadField;
 
   // Credits check
-  const credit = credits?.find((c: any) => c.leave_type === form.leave_type);
+  const credit = findCreditForLeaveType(form.leave_type, credits);
   const totalCredits = selectedLeaveType?.credits_per_application || credit?.total_credits || 0;
   const availableCredits = totalCredits - (credit?.used_credits || 0);
   const hasCredits = !selectedLeaveType || availableCredits > 0;
@@ -144,10 +156,7 @@ export default function Leaves() {
       let attachmentUrl: string | null = null;
       if (showUploadField && attachmentFile) attachmentUrl = await uploadAttachment();
 
-      const leaveTypeValue = form.leave_type
-        .toLowerCase()
-        .replace(/\s+leave$/i, "")
-        .replace(/\s+/g, "_");
+      const leaveTypeValue = normalizeLeaveTypeKey(form.leave_type);
       createLeave.mutate(
         {
           leave_type: leaveTypeValue as any,
@@ -375,7 +384,7 @@ export default function Leaves() {
           {credits && credits.length > 0 ? (
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {activeLeaveTypes.map((leaveType) => {
-                const credit = credits.find((c: any) => c.leave_type === leaveType.name);
+                const credit = findCreditForLeaveType(leaveType.name, credits);
                 const total = leaveType.credits_per_application || credit?.total_credits || 0;
                 const used = credit?.used_credits || 0;
                 const available = total - used;

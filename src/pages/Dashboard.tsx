@@ -3,7 +3,7 @@ import { useDashboardStats, useRecentActivity } from '@/hooks/useDashboard';
 import { useAttendanceTrend, useLeavesByStatus, useEmployeesByBranch, usePayrollSummary } from '@/hooks/useDashboardCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Building2, Clock, DollarSign, CalendarDays, TrendingUp } from 'lucide-react';
+import { Users, Building2, Clock, PhilippinePeso, CalendarDays, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatFullName } from '@/lib/formatName';
 import { useCountUp } from '@/hooks/useCountUp';

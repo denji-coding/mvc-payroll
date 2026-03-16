@@ -368,8 +368,13 @@ serve(async (req) => {
         allowancesBreakdown[`Leave With Pay (${leaveWithPayDays} days)`] = Math.round(leavePay * 100) / 100;
       }
 
+      // Add LWP to total allowances
+      if (leaveWithPayDays > 0) {
+        totalAllowances += Math.round(leavePay * 100) / 100;
+      }
+
       // Gross pay — NO overtime
-      const grossPay = basicPay + totalAllowances + leavePay;
+      const grossPay = basicPay + totalAllowances;
 
       // Government contributions (respect toggle settings)
       const sssContribution = sssEnabled ? sssFixed : 0;

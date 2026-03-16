@@ -325,9 +325,14 @@ export function useApproveLeaveRequest() {
               .select('id, used_credits, leave_type')
               .eq('employee_id', leaveRequest.employee_id)
               .eq('year', currentYear);
-            
+
+            const normalizedRawLeaveType = rawLeaveType
+              .toLowerCase()
+              .replace(/\s+leave$/i, '')
+              .replace(/\s+/g, '_');
+
             creditRecord = allCredits?.find(c => 
-              c.leave_type.toLowerCase().replace(/\s+leave$/i, '').replace(/\s+/g, '_') === rawLeaveType
+              c.leave_type.toLowerCase().replace(/\s+leave$/i, '').replace(/\s+/g, '_') === normalizedRawLeaveType
             ) || null;
           }
           

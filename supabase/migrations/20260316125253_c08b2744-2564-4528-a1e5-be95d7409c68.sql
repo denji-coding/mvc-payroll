@@ -1,0 +1,1 @@
+UPDATE leave_credits SET used_credits = 0 WHERE id = 'e1ccea88-67a1-4f6d-84ad-043bdeaeee2f';

@@ -125,7 +125,7 @@ const adminNavigationItems: NavItem[] = [
   {
     title: "Payroll",
     url: "/payroll",
-    icon: DollarSign,
+    icon: PhilippinePeso,
     roles: ["hr_admin", "branch_manager", "employee"],
     permissionKey: "page_payroll",
   },

@@ -185,7 +185,7 @@ export default function LeaveCredits() {
 
       {/* LWP Settings Drawer */}
       <Drawer open={settingsOpen} onOpenChange={setSettingsOpen} direction="right">
-        <DrawerContent className="fixed inset-y-0 right-0 left-auto w-[400px] h-full rounded-l-xl rounded-t-none border-l mt-0">
+        <DrawerContent className="fixed inset-y-0 right-0 left-auto w-full sm:w-[400px] h-full rounded-none sm:rounded-l-xl rounded-t-none border-l mt-0">
           <div className="flex items-center justify-between p-4 border-b">
             <div>
               <DrawerTitle>Leave With Pay Settings</DrawerTitle>

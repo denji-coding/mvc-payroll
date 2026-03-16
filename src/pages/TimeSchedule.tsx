@@ -90,7 +90,14 @@ export default function TimeSchedule() {
   const handleEdit = (employeeId: string) => { setIsEditing(true); setSelectedEmployee(employeeId); };
   const handleDelete = (employeeId: string) => deleteSchedule.mutate(employeeId);
   const handleCancelEdit = () => { setSelectedEmployee(''); setIsEditing(false); setSchedules(DEFAULT_SCHEDULE); };
-  const formatTimeRange = (start: string, end: string) => `${start?.slice(0, 5) || '--:--'} - ${end?.slice(0, 5) || '--:--'}`;
+  const formatTime12h = (time: string | null) => {
+    if (!time) return '--:--';
+    const [h, m] = time.slice(0, 5).split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${m.toString().padStart(2, '0')} ${ampm}`;
+  };
+  const formatTimeRange = (start: string, end: string) => `${formatTime12h(start)} - ${formatTime12h(end)}`;
 
   const scheduleColumns: ColumnDef<any, any>[] = [
     { id: 'emp_id', header: 'Employee ID', accessorFn: (row) => row.employee?.employee_id || '-' },

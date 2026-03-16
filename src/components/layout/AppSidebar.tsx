@@ -7,7 +7,7 @@ import {
   Building2,
   Clock,
   CalendarDays,
-  DollarSign,
+  PhilippinePeso,
   FileText,
   Settings,
   ChevronDown,

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileText, Users, DollarSign, Download, Loader2 } from 'lucide-react';
+import { FileText, Users, PhilippinePeso, HandCoins, Download, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -17,8 +17,8 @@ const reports = [
   { id: 'employee-masterlist' as ReportType, title: 'Employee Masterlist', description: 'Complete list of all employees with details', icon: Users, category: 'HR' },
   { id: 'attendance-summary' as ReportType, title: 'Attendance Summary', description: 'Daily, weekly, or monthly attendance reports', icon: FileText, category: 'HR' },
   { id: 'leave-balance' as ReportType, title: 'Leave Balance Report', description: 'Leave credits and usage per employee', icon: FileText, category: 'HR' },
-  { id: 'payroll-summary' as ReportType, title: 'Payroll Summary', description: 'Payroll totals per period', icon: DollarSign, category: 'Payroll' },
-  { id: 'gov-contributions' as ReportType, title: 'Government Contributions', description: 'SSS, PhilHealth, Pag-IBIG reports', icon: DollarSign, category: 'Payroll' },
+  { id: 'payroll-summary' as ReportType, title: 'Payroll Summary', description: 'Payroll totals per period', icon: PhilippinePeso, category: 'Payroll' },
+  { id: 'gov-contributions' as ReportType, title: 'Government Contributions', description: 'SSS, PhilHealth, Pag-IBIG reports', icon: HandCoins, category: 'Payroll' },
 ];
 
 const headerStyle: Partial<ExcelJS.Style> = {

@@ -3,7 +3,7 @@ import { useDashboardStats, useRecentActivity } from '@/hooks/useDashboard';
 import { useAttendanceTrend, useLeavesByStatus, useEmployeesByBranch, usePayrollSummary } from '@/hooks/useDashboardCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Building2, Clock, DollarSign, CalendarDays, TrendingUp } from 'lucide-react';
+import { Users, Building2, Clock, PhilippinePeso, CalendarDays, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatFullName } from '@/lib/formatName';
 import { useCountUp } from '@/hooks/useCountUp';
@@ -68,7 +68,7 @@ function AdminDashboard() {
     { title: 'Active Branches', numValue: stats?.branchCount ?? 0, prefix: '', suffix: '', icon: Building2, change: '' },
     { title: 'Present Today', numValue: stats?.presentToday ?? 0, prefix: '', suffix: '', icon: Clock, change: stats?.attendanceRate ? `${stats.attendanceRate}%` : '' },
     { title: 'Pending Leaves', numValue: stats?.pendingLeaves ?? 0, prefix: '', suffix: '', icon: CalendarDays, change: '' },
-    { title: 'Payroll This Month', numValue: stats?.payrollTotal ? Math.round(stats.payrollTotal / 1000) : 0, prefix: '₱', suffix: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 'M' : stats?.payrollTotal ? 'K' : '', icon: DollarSign, change: '' },
+    { title: 'Payroll This Month', numValue: stats?.payrollTotal ? Math.round(stats.payrollTotal / 1000) : 0, prefix: '₱', suffix: stats?.payrollTotal && stats.payrollTotal >= 1000000 ? 'M' : stats?.payrollTotal ? 'K' : '', icon: PhilippinePeso, change: '' },
     { title: 'Avg. Attendance', numValue: stats?.attendanceRate ?? 0, prefix: '', suffix: '%', icon: TrendingUp, change: '' },
   ];
 

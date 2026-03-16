@@ -4,7 +4,7 @@ import { useEmployeeDashboard } from '@/hooks/useEmployeeDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, Calendar, CalendarDays, DollarSign, TrendingUp, AlertCircle, Gift } from 'lucide-react';
+import { Clock, Calendar, CalendarDays, PhilippinePeso, TrendingUp, AlertCircle, Gift } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 
 export default function EmployeeDashboard() {
@@ -133,7 +133,7 @@ export default function EmployeeDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
+              <PhilippinePeso className="h-5 w-5" />
               Recent Payslips
             </CardTitle>
             <CardDescription>Your latest payroll records</CardDescription>
@@ -151,15 +151,12 @@ export default function EmployeeDashboard() {
                         {payslip.payroll_periods?.status}
                       </p>
                     </div>
-                    <span className="font-semibold text-primary">
-                      ₱{Number(payslip.net_pay || 0).toLocaleString()}
-                    </span>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="text-center py-6 text-muted-foreground">
-                <DollarSign className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <PhilippinePeso className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No payslips available yet</p>
               </div>
             )}

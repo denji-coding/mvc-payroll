@@ -286,10 +286,25 @@ export default function Payroll() {
 function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { record: any; onClose: () => void; formatCurrency: (n: number | null) => string; periodStatus?: string }) {
   const canDownload = periodStatus === 'approved' || periodStatus === 'paid';
   const handleDownload = () => {
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip - ${r.employees?.first_name} ${r.employees?.last_name}</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto}.header{text-align:center;margin-bottom:30px;border-bottom:2px solid #333;padding-bottom:20px}.header h1{margin:0;color:#333}.section{margin-bottom:20px}.section h3{margin:0 0 10px;padding:5px;background:#f5f5f5}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee}.row.total{font-weight:bold;border-top:2px solid #333;margin-top:10px;padding-top:10px}.net-pay{text-align:center;background:#f0f7ff;padding:20px;border-radius:8px;margin-top:20px}.net-pay .amount{font-size:28px;font-weight:bold;color:#0066cc}</style></head><body><div class="header"><h1>MVC Corporation</h1><p>PAYSLIP</p></div><div><strong>Employee:</strong> ${r.employees?.first_name} ${r.employees?.last_name}<br><strong>Employee ID:</strong> ${r.employees?.employee_id || 'N/A'}</div><div class="section"><h3 style="color:#22c55e">Earnings</h3><div class="row"><span>Basic Pay</span><span>${formatCurrency(r.basic_pay)}</span></div><div class="row total"><span>Gross</span><span>${formatCurrency(r.gross_pay)}</span></div></div><div class="section"><h3 style="color:#ef4444">Deductions</h3><div class="row"><span>SSS</span><span>${formatCurrency(r.sss_contribution)}</span></div><div class="row"><span>PhilHealth</span><span>${formatCurrency(r.philhealth_contribution)}</span></div><div class="row"><span>Pag-IBIG</span><span>${formatCurrency(r.pagibig_contribution)}</span></div>${(r.other_deductions || 0) > 0 ? `<div class="row"><span>Late Deduction</span><span>${formatCurrency(r.other_deductions)}</span></div>` : ''}${(r.total_allowances || 0) > 0 ? `<div class="row"><span>LWP Deduction</span><span>${formatCurrency(r.total_allowances)}</span></div>` : ''}<div class="row total"><span>Total</span><span>${formatCurrency(r.total_deductions)}</span></div></div><div class="net-pay"><p style="margin:0 0 5px;color:#666">Net Pay</p><p class="amount" style="margin:0">${formatCurrency(r.net_pay)}</p></div></body></html>`;
+    const lwpHtml = lwpEntries.map(([key, value]) => `<div class="row"><span>${key}</span><span>${formatCurrency(value)}</span></div>`).join('');
+    const lateHtml = lateEntries.length > 0 
+      ? lateEntries.map(([key, value]) => `<div class="row"><span>${key}</span><span>${formatCurrency(value)}</span></div>`).join('')
+      : (r.other_deductions || 0) > 0 ? `<div class="row"><span>Late Deduction</span><span>${formatCurrency(r.other_deductions)}</span></div>` : '';
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip - ${r.employees?.first_name} ${r.employees?.last_name}</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto}.header{text-align:center;margin-bottom:30px;border-bottom:2px solid #333;padding-bottom:20px}.header h1{margin:0;color:#333}.section{margin-bottom:20px}.section h3{margin:0 0 10px;padding:5px;background:#f5f5f5}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee}.row.total{font-weight:bold;border-top:2px solid #333;margin-top:10px;padding-top:10px}.net-pay{text-align:center;background:#f0f7ff;padding:20px;border-radius:8px;margin-top:20px}.net-pay .amount{font-size:28px;font-weight:bold;color:#0066cc}</style></head><body><div class="header"><h1>MVC Corporation</h1><p>PAYSLIP</p></div><div><strong>Employee:</strong> ${r.employees?.first_name} ${r.employees?.last_name}<br><strong>Employee ID:</strong> ${r.employees?.employee_id || 'N/A'}</div><div class="section"><h3 style="color:#22c55e">Earnings</h3><div class="row"><span>Basic Pay</span><span>${formatCurrency(r.basic_pay)}</span></div>${lwpHtml}<div class="row total"><span>Gross</span><span>${formatCurrency(r.gross_pay)}</span></div></div><div class="section"><h3 style="color:#ef4444">Deductions</h3><div class="row"><span>SSS</span><span>${formatCurrency(r.sss_contribution)}</span></div><div class="row"><span>PhilHealth</span><span>${formatCurrency(r.philhealth_contribution)}</span></div><div class="row"><span>Pag-IBIG</span><span>${formatCurrency(r.pagibig_contribution)}</span></div>${lateHtml}<div class="row total"><span>Total</span><span>${formatCurrency(r.total_deductions)}</span></div></div><div class="net-pay"><p style="margin:0 0 5px;color:#666">Net Pay</p><p class="amount" style="margin:0">${formatCurrency(r.net_pay)}</p></div></body></html>`;
     const blob = new Blob([html], { type: 'text/html' }); const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `payslip-${r.employees?.last_name || 'employee'}.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   };
+
+  // Parse allowances_breakdown for LWP display
+  const allowancesBreakdown = (r.allowances_breakdown && typeof r.allowances_breakdown === 'object') ? r.allowances_breakdown as Record<string, number> : {};
+  const deductionsBreakdown = (r.deductions_breakdown && typeof r.deductions_breakdown === 'object') ? r.deductions_breakdown as Record<string, number> : {};
+  
+  // Find LWP entries in allowances breakdown
+  const lwpEntries = Object.entries(allowancesBreakdown).filter(([key]) => key.toLowerCase().includes('leave with pay') || key.toLowerCase().startsWith('lwp'));
+  
+  // Find late/LWOP entries in deductions breakdown  
+  const lateEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('late'));
+  const lwopEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('without pay'));
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -300,21 +315,26 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { r
             <h4 className="font-semibold text-success mb-2">Earnings</h4>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between"><span>Basic Pay</span><span>{formatCurrency(r.basic_pay)}</span></div>
+              {lwpEntries.map(([key, value]) => (
+                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
+              ))}
               <div className="flex justify-between font-bold border-t pt-1"><span>Gross</span><span>{formatCurrency(r.gross_pay)}</span></div>
             </div>
           </div>
           <div>
             <h4 className="font-semibold text-destructive mb-2">Deductions</h4>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>SSS</span><span>{formatCurrency(r.sss_contribution)}</span></div>
-              <div className="flex justify-between"><span>PhilHealth</span><span>{formatCurrency(r.philhealth_contribution)}</span></div>
-              <div className="flex justify-between"><span>Pag-IBIG</span><span>{formatCurrency(r.pagibig_contribution)}</span></div>
-              {(r.other_deductions || 0) > 0 && (
+              {(r.sss_contribution || 0) > 0 && <div className="flex justify-between"><span>SSS</span><span>{formatCurrency(r.sss_contribution)}</span></div>}
+              {(r.philhealth_contribution || 0) > 0 && <div className="flex justify-between"><span>PhilHealth</span><span>{formatCurrency(r.philhealth_contribution)}</span></div>}
+              {(r.pagibig_contribution || 0) > 0 && <div className="flex justify-between"><span>Pag-IBIG</span><span>{formatCurrency(r.pagibig_contribution)}</span></div>}
+              {lateEntries.length > 0 ? lateEntries.map(([key, value]) => (
+                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
+              )) : (r.other_deductions || 0) > 0 && (
                 <div className="flex justify-between"><span>Late Deduction</span><span>{formatCurrency(r.other_deductions)}</span></div>
               )}
-              {(r.total_allowances || 0) > 0 && (
-                <div className="flex justify-between"><span>LWP Deduction</span><span>{formatCurrency(r.total_allowances)}</span></div>
-              )}
+              {lwopEntries.map(([key, value]) => (
+                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
+              ))}
               <div className="flex justify-between font-bold border-t pt-1"><span>Total</span><span>{formatCurrency(r.total_deductions)}</span></div>
             </div>
           </div>

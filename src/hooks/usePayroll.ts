@@ -346,6 +346,8 @@ export function useUpdatePayrollRecord() {
           total_deductions: totalDeductions,
           net_pay: netPay,
           is_manual: true,
+          allowances_breakdown: data.allowances_breakdown || {},
+          deductions_breakdown: data.deductions_breakdown || {},
         })
         .eq('id', id)
         .select()

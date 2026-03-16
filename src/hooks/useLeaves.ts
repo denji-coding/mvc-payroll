@@ -284,34 +284,72 @@ export function useApproveLeaveRequest() {
         // Deduct leave credits when HR approves
         if (action === 'approve' && leaveRequest) {
           const currentYear = new Date().getFullYear();
+          const rawLeaveType = leaveRequest.leave_type;
           
-          // Map enum value back to leave type name for leave_credits lookup
+          // leave_credits may store the type as either the raw value ("sick") 
+          // or the full name ("Sick Leave"). Try both formats.
           const enumToName: Record<string, string> = {
             'sick': 'Sick Leave', 'vacation': 'Vacation Leave', 'emergency': 'Emergency Leave',
             'maternity': 'Maternity/Paternity Leave', 'paternity': 'Paternity Leave',
             'bereavement': 'Bereavement Leave', 'unpaid': 'Unpaid Leave',
           };
-          const leaveTypeName = enumToName[leaveRequest.leave_type] || leaveRequest.leave_type;
+          const leaveTypeName = enumToName[rawLeaveType];
           
-          // Find the leave credit record using text name
-          const { data: creditRecord } = await supabase
+          // Try finding credit record with raw value first, then mapped name
+          let creditRecord = null;
+          const { data: rawMatch } = await supabase
             .from('leave_credits')
-            .select('id, used_credits')
+            .select('id, used_credits, leave_type')
             .eq('employee_id', leaveRequest.employee_id)
-            .eq('leave_type', leaveTypeName)
+            .eq('leave_type', rawLeaveType)
             .eq('year', currentYear)
-            .single();
+            .maybeSingle();
+          
+          creditRecord = rawMatch;
+          
+          if (!creditRecord && leaveTypeName) {
+            const { data: nameMatch } = await supabase
+              .from('leave_credits')
+              .select('id, used_credits, leave_type')
+              .eq('employee_id', leaveRequest.employee_id)
+              .eq('leave_type', leaveTypeName)
+              .eq('year', currentYear)
+              .maybeSingle();
+            creditRecord = nameMatch;
+          }
+          
+          // Also try case-insensitive match for custom leave types (e.g. "personal" vs "Personal Leave")
+          if (!creditRecord) {
+            const { data: allCredits } = await supabase
+              .from('leave_credits')
+              .select('id, used_credits, leave_type')
+              .eq('employee_id', leaveRequest.employee_id)
+              .eq('year', currentYear);
+            
+            creditRecord = allCredits?.find(c => 
+              c.leave_type.toLowerCase().replace(/\s+leave$/i, '').replace(/\s+/g, '_') === rawLeaveType
+            ) || null;
+          }
           
           if (creditRecord) {
-            // Deduct credits per application based on leave type config
-            // Look up the leave type to get credits_per_application
+            // Look up the leave type config to get credits_per_application
+            // Try matching by the stored leave_type name
             const { data: leaveTypeConfig } = await supabase
               .from('leave_types')
               .select('credits_per_application')
-              .eq('name', leaveTypeName)
-              .single();
+              .eq('name', creditRecord.leave_type)
+              .maybeSingle();
             
-            const creditsToDeduct = leaveTypeConfig?.credits_per_application || 1;
+            // If not found by exact name, try by mapped name
+            let creditsToDeduct = leaveTypeConfig?.credits_per_application || 1;
+            if (!leaveTypeConfig && leaveTypeName) {
+              const { data: altConfig } = await supabase
+                .from('leave_types')
+                .select('credits_per_application')
+                .eq('name', leaveTypeName)
+                .maybeSingle();
+              if (altConfig) creditsToDeduct = altConfig.credits_per_application;
+            }
             
             await supabase
               .from('leave_credits')

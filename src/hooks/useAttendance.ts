@@ -65,11 +65,22 @@ export function useAttendanceStats(date: string) {
         .select('*', { count: 'exact', head: true })
         .eq('employment_status', 'active');
 
+      // Count employees on approved leave for this date from leave_requests
+      const { count: onLeaveCount } = await supabase
+        .from('leave_requests')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['manager_approved', 'hr_approved'])
+        .lte('start_date', date)
+        .gte('end_date', date);
+
+      const attendanceOnLeave = attendance?.filter(a => a.status === 'on_leave').length || 0;
+      const totalOnLeave = Math.max(onLeaveCount || 0, attendanceOnLeave);
+
       const stats = {
         present: attendance?.filter(a => a.status === 'present').length || 0,
         late: attendance?.filter(a => a.status === 'late').length || 0,
-        absent: (totalEmployees || 0) - (attendance?.length || 0),
-        onLeave: attendance?.filter(a => a.status === 'on_leave').length || 0,
+        absent: (totalEmployees || 0) - (attendance?.length || 0) - (totalOnLeave - attendanceOnLeave),
+        onLeave: totalOnLeave,
       };
 
       return stats;

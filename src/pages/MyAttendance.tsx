@@ -17,6 +17,26 @@ export default function MyAttendance() {
   const employeeId = data?.employeeId;
   const { data: recentAttendance } = useEmployeeAttendance(employeeId);
 
+  const now = new Date();
+  const monthStart = format(startOfMonth(now), 'yyyy-MM-dd');
+  const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
+
+  const { data: monthlyPayroll } = useQuery({
+    queryKey: ['my-monthly-payroll', employeeId, monthStart],
+    queryFn: async () => {
+      if (!employeeId) return 0;
+      const { data: records } = await supabase
+        .from('payroll_records')
+        .select('net_pay, payroll_periods!inner(period_start, status)')
+        .eq('employee_id', employeeId)
+        .gte('payroll_periods.period_start', monthStart)
+        .lte('payroll_periods.period_start', monthEnd)
+        .in('payroll_periods.status', ['approved', 'paid']);
+      return records?.reduce((sum, r) => sum + (Number(r.net_pay) || 0), 0) || 0;
+    },
+    enabled: !!employeeId,
+  });
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);

@@ -97,9 +97,6 @@ export default function MyPayslips() {
       },
     },
     { id: 'pay_date', header: 'Pay Date', accessorFn: (row) => row.payroll_periods.pay_date, cell: ({ row }) => format(new Date(row.original.payroll_periods.pay_date), 'MMM d, yyyy') },
-    { accessorKey: 'gross_pay', header: 'Gross Pay', cell: ({ getValue }) => fmt(Number(getValue() || 0)) },
-    { accessorKey: 'total_deductions', header: 'Deductions', cell: ({ getValue }) => <span className="text-destructive">-{fmt(Number(getValue() || 0))}</span> },
-    { accessorKey: 'net_pay', header: 'Net Pay', cell: ({ getValue }) => <span className="font-semibold">{fmt(Number(getValue() || 0))}</span> },
     { id: 'status', header: 'Status', accessorFn: (row) => row.payroll_periods.status, cell: ({ getValue }) => getStatusBadge(getValue() as string || 'draft') },
     {
       id: 'action', header: 'Action', enableSorting: false,

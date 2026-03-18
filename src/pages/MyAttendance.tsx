@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, AlertCircle, Calendar } from 'lucide-react';
+import { Clock, AlertCircle, Calendar, PhilippinePeso } from 'lucide-react';
 import { useTodayAttendance } from '@/hooks/useClockInOut';
 import { useEmployeeAttendance } from '@/hooks/useAttendance';
-import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 
 export default function MyAttendance() {
@@ -14,6 +16,26 @@ export default function MyAttendance() {
 
   const employeeId = data?.employeeId;
   const { data: recentAttendance } = useEmployeeAttendance(employeeId);
+
+  const now = new Date();
+  const monthStart = format(startOfMonth(now), 'yyyy-MM-dd');
+  const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
+
+  const { data: monthlyPayroll } = useQuery({
+    queryKey: ['my-monthly-payroll', employeeId, monthStart],
+    queryFn: async () => {
+      if (!employeeId) return 0;
+      const { data: records } = await supabase
+        .from('payroll_records')
+        .select('net_pay, payroll_periods!inner(period_start, status)')
+        .eq('employee_id', employeeId)
+        .gte('payroll_periods.period_start', monthStart)
+        .lte('payroll_periods.period_start', monthEnd)
+        .in('payroll_periods.status', ['approved', 'paid']);
+      return records?.reduce((sum, r) => sum + (Number(r.net_pay) || 0), 0) || 0;
+    },
+    enabled: !!employeeId,
+  });
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -142,6 +164,23 @@ export default function MyAttendance() {
           </CardContent>
         </Card>
       )}
+
+      {/* Payroll This Month */}
+      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+        <CardContent className="py-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-full bg-primary/10">
+              <PhilippinePeso className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Payroll This Month</p>
+              <p className="text-2xl font-bold text-primary">
+                ₱{(monthlyPayroll || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Attendance History */}
       <Card>

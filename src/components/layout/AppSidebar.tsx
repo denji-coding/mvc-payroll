@@ -148,7 +148,7 @@ const adminNavigationItems: NavItem[] = [
 // Employee Portal navigation items (accessible by all roles for self-service)
 const employeePortalItems: NavItem[] = [
   {
-    title: "DTR",
+    title: "My DTR",
     url: "/dtr",
     icon: ClipboardList,
     roles: ["hr_admin", "branch_manager", "employee"],

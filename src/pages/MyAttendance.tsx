@@ -165,6 +165,23 @@ export default function MyAttendance() {
         </Card>
       )}
 
+      {/* Payroll This Month */}
+      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+        <CardContent className="py-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-full bg-primary/10">
+              <PhilippinePeso className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Payroll This Month</p>
+              <p className="text-2xl font-bold text-primary">
+                ₱{(monthlyPayroll || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Recent Attendance History */}
       <Card>
         <CardHeader>

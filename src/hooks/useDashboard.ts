@@ -35,12 +35,15 @@ export function useDashboardStats() {
         .eq('status', 'pending');
 
       // Get current month payroll total
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
       const { data: payrollRecords } = await supabase
         .from('payroll_records')
-        .select('net_pay, payroll_periods!inner(period_start)')
-        .gte('payroll_periods.period_start', startOfMonth.toISOString().split('T')[0]);
+        .select('net_pay, payroll_periods!inner(period_start, status)')
+        .gte('payroll_periods.period_start', monthStart.toISOString().split('T')[0])
+        .lte('payroll_periods.period_start', monthEnd.toISOString().split('T')[0])
+        .in('payroll_periods.status', ['approved', 'paid']);
 
       const payrollTotal = payrollRecords?.reduce((sum, r) => sum + (Number(r.net_pay) || 0), 0) || 0;
 

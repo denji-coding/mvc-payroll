@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, AlertCircle, Calendar, PhilippinePeso } from 'lucide-react';
+import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays } from 'lucide-react';
 import { useTodayAttendance } from '@/hooks/useClockInOut';
 import { useEmployeeAttendance } from '@/hooks/useAttendance';
-import { supabase } from '@/integrations/supabase/client';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, isBefore, isToday } from 'date-fns';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 
 export default function MyAttendance() {
@@ -18,24 +16,32 @@ export default function MyAttendance() {
   const { data: recentAttendance } = useEmployeeAttendance(employeeId);
 
   const now = new Date();
-  const monthStart = format(startOfMonth(now), 'yyyy-MM-dd');
-  const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
+  const mStart = startOfMonth(now);
+  const mEnd = endOfMonth(now);
 
-  const { data: monthlyPayroll } = useQuery({
-    queryKey: ['my-monthly-payroll', employeeId, monthStart],
-    queryFn: async () => {
-      if (!employeeId) return 0;
-      const { data: records } = await supabase
-        .from('payroll_records')
-        .select('net_pay, payroll_periods!inner(period_start, status)')
-        .eq('employee_id', employeeId)
-        .gte('payroll_periods.period_start', monthStart)
-        .lte('payroll_periods.period_start', monthEnd)
-        .in('payroll_periods.status', ['approved', 'paid']);
-      return records?.reduce((sum, r) => sum + (Number(r.net_pay) || 0), 0) || 0;
-    },
-    enabled: !!employeeId,
-  });
+  const monthlyStats = useMemo(() => {
+    if (!recentAttendance) return { present: 0, late: 0, absent: 0, totalWorkDays: 0 };
+
+    const monthRecords = recentAttendance.filter((r: any) => {
+      const d = new Date(r.date);
+      return d >= mStart && d <= mEnd;
+    });
+
+    const present = monthRecords.filter((r: any) => r.status === 'present').length;
+    const late = monthRecords.filter((r: any) => r.status === 'late').length;
+    const onLeave = monthRecords.filter((r: any) => r.status === 'on_leave').length;
+
+    // Count working days up to today in this month
+    const daysToCount = eachDayOfInterval({
+      start: mStart,
+      end: isBefore(now, mEnd) ? now : mEnd,
+    }).filter(d => !isWeekend(d) && (isBefore(d, now) || isToday(d)));
+
+    const totalWorkDays = daysToCount.length;
+    const absent = Math.max(0, totalWorkDays - present - late - onLeave);
+
+    return { present, late, absent, totalWorkDays };
+  }, [recentAttendance, mStart, mEnd, now]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -165,18 +171,48 @@ export default function MyAttendance() {
         </Card>
       )}
 
-      {/* Payroll This Month */}
-      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <CardContent className="py-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-primary/10">
-              <PhilippinePeso className="h-6 w-6 text-primary" />
+      {/* This Month Attendances */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <CalendarDays className="h-5 w-5" />
+            This Month's Attendance
+          </CardTitle>
+          <CardDescription>{format(now, 'MMMM yyyy')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="rounded-lg border-l-4 border-l-success bg-success/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="h-4 w-4 text-success" />
+                <span className="text-xs font-medium text-muted-foreground">Present</span>
+              </div>
+              <p className="text-2xl font-bold text-success">{monthlyStats.present}</p>
+              <p className="text-xs text-muted-foreground">days</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Payroll This Month</p>
-              <p className="text-2xl font-bold text-primary">
-                ₱{(monthlyPayroll || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-              </p>
+            <div className="rounded-lg border-l-4 border-l-warning bg-warning/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <AlarmClock className="h-4 w-4 text-warning" />
+                <span className="text-xs font-medium text-muted-foreground">Late</span>
+              </div>
+              <p className="text-2xl font-bold text-warning">{monthlyStats.late}</p>
+              <p className="text-xs text-muted-foreground">days</p>
+            </div>
+            <div className="rounded-lg border-l-4 border-l-destructive bg-destructive/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <XCircle className="h-4 w-4 text-destructive" />
+                <span className="text-xs font-medium text-muted-foreground">Absent</span>
+              </div>
+              <p className="text-2xl font-bold text-destructive">{monthlyStats.absent}</p>
+              <p className="text-xs text-muted-foreground">days</p>
+            </div>
+            <div className="rounded-lg border-l-4 border-l-primary bg-primary/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground">Work Days</span>
+              </div>
+              <p className="text-2xl font-bold text-primary">{monthlyStats.totalWorkDays}</p>
+              <p className="text-xs text-muted-foreground">this month</p>
             </div>
           </div>
         </CardContent>

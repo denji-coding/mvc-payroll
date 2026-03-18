@@ -16,24 +16,32 @@ export default function MyAttendance() {
   const { data: recentAttendance } = useEmployeeAttendance(employeeId);
 
   const now = new Date();
-  const monthStart = format(startOfMonth(now), 'yyyy-MM-dd');
-  const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
+  const mStart = startOfMonth(now);
+  const mEnd = endOfMonth(now);
 
-  const { data: monthlyPayroll } = useQuery({
-    queryKey: ['my-monthly-payroll', employeeId, monthStart],
-    queryFn: async () => {
-      if (!employeeId) return 0;
-      const { data: records } = await supabase
-        .from('payroll_records')
-        .select('net_pay, payroll_periods!inner(period_start, status)')
-        .eq('employee_id', employeeId)
-        .gte('payroll_periods.period_start', monthStart)
-        .lte('payroll_periods.period_start', monthEnd)
-        .in('payroll_periods.status', ['approved', 'paid']);
-      return records?.reduce((sum, r) => sum + (Number(r.net_pay) || 0), 0) || 0;
-    },
-    enabled: !!employeeId,
-  });
+  const monthlyStats = useMemo(() => {
+    if (!recentAttendance) return { present: 0, late: 0, absent: 0, totalWorkDays: 0 };
+
+    const monthRecords = recentAttendance.filter((r: any) => {
+      const d = new Date(r.date);
+      return d >= mStart && d <= mEnd;
+    });
+
+    const present = monthRecords.filter((r: any) => r.status === 'present').length;
+    const late = monthRecords.filter((r: any) => r.status === 'late').length;
+    const onLeave = monthRecords.filter((r: any) => r.status === 'on_leave').length;
+
+    // Count working days up to today in this month
+    const daysToCount = eachDayOfInterval({
+      start: mStart,
+      end: isBefore(now, mEnd) ? now : mEnd,
+    }).filter(d => !isWeekend(d) && (isBefore(d, now) || isToday(d)));
+
+    const totalWorkDays = daysToCount.length;
+    const absent = Math.max(0, totalWorkDays - present - late - onLeave);
+
+    return { present, late, absent, totalWorkDays };
+  }, [recentAttendance, mStart, mEnd, now]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);

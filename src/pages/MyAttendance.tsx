@@ -171,18 +171,48 @@ export default function MyAttendance() {
         </Card>
       )}
 
-      {/* Payroll This Month */}
-      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <CardContent className="py-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-primary/10">
-              <PhilippinePeso className="h-6 w-6 text-primary" />
+      {/* This Month Attendances */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <CalendarDays className="h-5 w-5" />
+            This Month's Attendance
+          </CardTitle>
+          <CardDescription>{format(now, 'MMMM yyyy')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="rounded-lg border-l-4 border-l-success bg-success/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="h-4 w-4 text-success" />
+                <span className="text-xs font-medium text-muted-foreground">Present</span>
+              </div>
+              <p className="text-2xl font-bold text-success">{monthlyStats.present}</p>
+              <p className="text-xs text-muted-foreground">days</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Payroll This Month</p>
-              <p className="text-2xl font-bold text-primary">
-                ₱{(monthlyPayroll || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-              </p>
+            <div className="rounded-lg border-l-4 border-l-warning bg-warning/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <AlarmClock className="h-4 w-4 text-warning" />
+                <span className="text-xs font-medium text-muted-foreground">Late</span>
+              </div>
+              <p className="text-2xl font-bold text-warning">{monthlyStats.late}</p>
+              <p className="text-xs text-muted-foreground">days</p>
+            </div>
+            <div className="rounded-lg border-l-4 border-l-destructive bg-destructive/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <XCircle className="h-4 w-4 text-destructive" />
+                <span className="text-xs font-medium text-muted-foreground">Absent</span>
+              </div>
+              <p className="text-2xl font-bold text-destructive">{monthlyStats.absent}</p>
+              <p className="text-xs text-muted-foreground">days</p>
+            </div>
+            <div className="rounded-lg border-l-4 border-l-primary bg-primary/5 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground">Work Days</span>
+              </div>
+              <p className="text-2xl font-bold text-primary">{monthlyStats.totalWorkDays}</p>
+              <p className="text-xs text-muted-foreground">this month</p>
             </div>
           </div>
         </CardContent>

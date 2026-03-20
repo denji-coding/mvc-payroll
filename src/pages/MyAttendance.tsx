@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays } from 'lucide-react';
 import { useTodayAttendance } from '@/hooks/useClockInOut';
 import { useEmployeeAttendance } from '@/hooks/useAttendance';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, isBefore, isToday, subMonths, addMonths } from 'date-fns';
@@ -230,23 +231,24 @@ export default function MyAttendance() {
               <CardTitle>Attendance Records</CardTitle>
               <CardDescription>Your attendance for {format(selectedMonth, 'MMMM yyyy')}</CardDescription>
             </div>
-            <div className="flex items-center gap-1">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setSelectedMonth(new Date())}>
-                Today
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
-                disabled={format(selectedMonth, 'yyyy-MM') >= format(new Date(), 'yyyy-MM')}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            <Select
+              value={format(selectedMonth, 'yyyy-MM')}
+              onValueChange={(val) => setSelectedMonth(new Date(val + '-01'))}
+            >
+              <SelectTrigger className="w-[160px] h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const d = new Date(new Date().getFullYear(), i, 1);
+                  return (
+                    <SelectItem key={i} value={format(d, 'yyyy-MM')} disabled={d > new Date()}>
+                      {format(d, 'MMMM yyyy')}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>

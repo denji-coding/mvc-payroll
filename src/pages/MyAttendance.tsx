@@ -243,7 +243,7 @@ export default function MyAttendance() {
                   const d = new Date(new Date().getFullYear(), i, 1);
                   return (
                     <SelectItem key={i} value={format(d, 'yyyy-MM')} disabled={d > new Date()}>
-                      {format(d, 'MMMM yyyy')}
+                      {format(d, 'MMMM')}
                     </SelectItem>
                   );
                 })}

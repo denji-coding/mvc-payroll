@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays } from 'lucide-react';
 import { useTodayAttendance } from '@/hooks/useClockInOut';
 import { useEmployeeAttendance } from '@/hooks/useAttendance';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, isBefore, isToday, subMonths, addMonths } from 'date-fns';

@@ -2,18 +2,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays } from 'lucide-react';
+import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTodayAttendance } from '@/hooks/useClockInOut';
 import { useEmployeeAttendance } from '@/hooks/useAttendance';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, isBefore, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, isBefore, isToday, subMonths, addMonths } from 'date-fns';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { Button } from '@/components/ui/button';
 
 export default function MyAttendance() {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
   const { data, isLoading } = useTodayAttendance();
 
   const employeeId = data?.employeeId;
-  const { data: recentAttendance } = useEmployeeAttendance(employeeId);
+  const filterStart = format(startOfMonth(selectedMonth), 'yyyy-MM-dd');
+  const filterEnd = format(endOfMonth(selectedMonth), 'yyyy-MM-dd');
+  const { data: recentAttendance } = useEmployeeAttendance(employeeId, filterStart, filterEnd);
 
   const now = new Date();
   const mStart = startOfMonth(now);

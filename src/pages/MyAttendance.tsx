@@ -222,11 +222,32 @@ export default function MyAttendance() {
         </CardContent>
       </Card>
 
-      {/* Recent Attendance History */}
+      {/* Attendance History */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Attendance</CardTitle>
-          <CardDescription>Your attendance records</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Attendance Records</CardTitle>
+              <CardDescription>Your attendance for {format(selectedMonth, 'MMMM yyyy')}</CardDescription>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setSelectedMonth(new Date())}>
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+                disabled={format(selectedMonth, 'yyyy-MM') >= format(new Date(), 'yyyy-MM')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <DataTable columns={columns} data={recentAttendance || []} searchPlaceholder="Search attendance..." emptyMessage="No attendance records found" />

@@ -2,18 +2,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays } from 'lucide-react';
+import { Clock, AlertCircle, Calendar, CheckCircle, AlarmClock, XCircle, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTodayAttendance } from '@/hooks/useClockInOut';
 import { useEmployeeAttendance } from '@/hooks/useAttendance';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, isBefore, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, isBefore, isToday, subMonths, addMonths } from 'date-fns';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { Button } from '@/components/ui/button';
 
 export default function MyAttendance() {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
   const { data, isLoading } = useTodayAttendance();
 
   const employeeId = data?.employeeId;
-  const { data: recentAttendance } = useEmployeeAttendance(employeeId);
+  const filterStart = format(startOfMonth(selectedMonth), 'yyyy-MM-dd');
+  const filterEnd = format(endOfMonth(selectedMonth), 'yyyy-MM-dd');
+  const { data: recentAttendance } = useEmployeeAttendance(employeeId, filterStart, filterEnd);
 
   const now = new Date();
   const mStart = startOfMonth(now);
@@ -218,11 +222,32 @@ export default function MyAttendance() {
         </CardContent>
       </Card>
 
-      {/* Recent Attendance History */}
+      {/* Attendance History */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Attendance</CardTitle>
-          <CardDescription>Your attendance records</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Attendance Records</CardTitle>
+              <CardDescription>Your attendance for {format(selectedMonth, 'MMMM yyyy')}</CardDescription>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setSelectedMonth(new Date())}>
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+                disabled={format(selectedMonth, 'yyyy-MM') >= format(new Date(), 'yyyy-MM')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <DataTable columns={columns} data={recentAttendance || []} searchPlaceholder="Search attendance..." emptyMessage="No attendance records found" />

@@ -127,6 +127,7 @@ export function useEmployeeAttendance(employeeId: string | undefined, startDate?
       
       if (startDate) query = query.gte('date', startDate);
       if (endDate) query = query.lte('date', endDate);
+      if (!startDate && !endDate) query = query.limit(30);
       
       const { data, error } = await query.limit(30);
       

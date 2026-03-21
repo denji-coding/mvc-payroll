@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useCountUp } from '@/hooks/useCountUp';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

@@ -169,9 +169,9 @@ export default function LeaveCredits() {
     <div className="page-container">
       <div className="page-header">
         <div><h1 className="page-title">Leave Credits Management</h1><p className="text-muted-foreground">Manage employee leave credits and allocations.</p></div>
-        <div className="flex gap-2">
-          <Button onClick={() => setDialogOpen(true)}><Plus className="mr-2 h-4 w-4" /> Add Leave Type</Button>
-          <Button variant="outline" size="icon" onClick={handleOpenSettings} title="LWP Settings"><Settings className="h-4 w-4" /></Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button className="flex-1 sm:flex-initial" onClick={() => setDialogOpen(true)}><Plus className="mr-2 h-4 w-4" /> Add Leave Type</Button>
+          <Button variant="outline" size="icon" className="shrink-0" onClick={handleOpenSettings} title="LWP Settings"><Settings className="h-4 w-4" /></Button>
         </div>
       </div>
 

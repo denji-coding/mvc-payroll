@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Download, Calendar, DollarSign, TrendingUp, TrendingDown, Eye } from 'lucide-react';
+import { FileText, Download, Calendar, PhilippinePeso, TrendingUp, TrendingDown, Eye } from 'lucide-react';
 import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 
@@ -211,7 +211,7 @@ function SummaryCards({ totalEarnings, totalDeductions, totalNetPay, selectedYea
         <CardContent><div className="text-2xl font-bold text-destructive"><AnimatedValue value={totalDeductions} fmt={fmt} /></div><p className="text-xs text-muted-foreground">Deductions for {selectedYear}</p></CardContent>
       </Card>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Net Pay</CardTitle><DollarSign className="h-4 w-4 text-primary" /></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Net Pay</CardTitle><PhilippinePeso className="h-4 w-4 text-primary" /></CardHeader>
         <CardContent><div className="text-2xl font-bold"><AnimatedValue value={totalNetPay} fmt={fmt} /></div><p className="text-xs text-muted-foreground">Take-home pay for {selectedYear}</p></CardContent>
       </Card>
     </div>

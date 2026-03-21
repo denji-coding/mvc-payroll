@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useCountUp } from '@/hooks/useCountUp';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -192,7 +193,7 @@ export default function MyAttendance() {
                 <CheckCircle className="h-4 w-4 text-success" />
                 <span className="text-xs font-medium text-muted-foreground">Present</span>
               </div>
-              <p className="text-2xl font-bold text-success">{monthlyStats.present}</p>
+              <p className="text-2xl font-bold text-success"><AnimatedStat value={monthlyStats.present} /></p>
               <p className="text-xs text-muted-foreground">days</p>
             </div>
             <div className="rounded-lg border-l-4 border-l-warning bg-warning/5 p-4">
@@ -200,7 +201,7 @@ export default function MyAttendance() {
                 <AlarmClock className="h-4 w-4 text-warning" />
                 <span className="text-xs font-medium text-muted-foreground">Late</span>
               </div>
-              <p className="text-2xl font-bold text-warning">{monthlyStats.late}</p>
+              <p className="text-2xl font-bold text-warning"><AnimatedStat value={monthlyStats.late} /></p>
               <p className="text-xs text-muted-foreground">days</p>
             </div>
             <div className="rounded-lg border-l-4 border-l-destructive bg-destructive/5 p-4">
@@ -208,7 +209,7 @@ export default function MyAttendance() {
                 <XCircle className="h-4 w-4 text-destructive" />
                 <span className="text-xs font-medium text-muted-foreground">Absent</span>
               </div>
-              <p className="text-2xl font-bold text-destructive">{monthlyStats.absent}</p>
+              <p className="text-2xl font-bold text-destructive"><AnimatedStat value={monthlyStats.absent} /></p>
               <p className="text-xs text-muted-foreground">days</p>
             </div>
             <div className="rounded-lg border-l-4 border-l-primary bg-primary/5 p-4">
@@ -216,7 +217,7 @@ export default function MyAttendance() {
                 <Calendar className="h-4 w-4 text-primary" />
                 <span className="text-xs font-medium text-muted-foreground">Work Days</span>
               </div>
-              <p className="text-2xl font-bold text-primary">{monthlyStats.totalWorkDays}</p>
+              <p className="text-2xl font-bold text-primary"><AnimatedStat value={monthlyStats.totalWorkDays} /></p>
               <p className="text-xs text-muted-foreground">this month</p>
             </div>
           </div>
@@ -257,4 +258,9 @@ export default function MyAttendance() {
       </Card>
     </div>
   );
+}
+
+function AnimatedStat({ value }: { value: number }) {
+  const animated = useCountUp(value, 800);
+  return <>{animated}</>;
 }

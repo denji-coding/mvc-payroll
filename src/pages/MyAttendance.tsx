@@ -209,7 +209,7 @@ export default function MyAttendance() {
                 <XCircle className="h-4 w-4 text-destructive" />
                 <span className="text-xs font-medium text-muted-foreground">Absent</span>
               </div>
-              <p className="text-2xl font-bold text-destructive">{monthlyStats.absent}</p>
+              <p className="text-2xl font-bold text-destructive"><AnimatedStat value={monthlyStats.absent} /></p>
               <p className="text-xs text-muted-foreground">days</p>
             </div>
             <div className="rounded-lg border-l-4 border-l-primary bg-primary/5 p-4">

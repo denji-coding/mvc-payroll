@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Download, Calendar, DollarSign, TrendingUp, TrendingDown, Eye } from 'lucide-react';
+import { FileText, Download, Calendar, PhilippinePeso, TrendingUp, TrendingDown, Eye } from 'lucide-react';
 import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 

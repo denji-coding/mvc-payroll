@@ -193,7 +193,7 @@ export default function MyAttendance() {
                 <CheckCircle className="h-4 w-4 text-success" />
                 <span className="text-xs font-medium text-muted-foreground">Present</span>
               </div>
-              <p className="text-2xl font-bold text-success">{monthlyStats.present}</p>
+              <p className="text-2xl font-bold text-success"><AnimatedStat value={monthlyStats.present} /></p>
               <p className="text-xs text-muted-foreground">days</p>
             </div>
             <div className="rounded-lg border-l-4 border-l-warning bg-warning/5 p-4">

@@ -217,7 +217,7 @@ export default function MyAttendance() {
                 <Calendar className="h-4 w-4 text-primary" />
                 <span className="text-xs font-medium text-muted-foreground">Work Days</span>
               </div>
-              <p className="text-2xl font-bold text-primary">{monthlyStats.totalWorkDays}</p>
+              <p className="text-2xl font-bold text-primary"><AnimatedStat value={monthlyStats.totalWorkDays} /></p>
               <p className="text-xs text-muted-foreground">this month</p>
             </div>
           </div>

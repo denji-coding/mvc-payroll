@@ -201,7 +201,7 @@ export default function MyAttendance() {
                 <AlarmClock className="h-4 w-4 text-warning" />
                 <span className="text-xs font-medium text-muted-foreground">Late</span>
               </div>
-              <p className="text-2xl font-bold text-warning">{monthlyStats.late}</p>
+              <p className="text-2xl font-bold text-warning"><AnimatedStat value={monthlyStats.late} /></p>
               <p className="text-xs text-muted-foreground">days</p>
             </div>
             <div className="rounded-lg border-l-4 border-l-destructive bg-destructive/5 p-4">

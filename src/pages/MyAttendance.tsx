@@ -226,12 +226,12 @@ export default function MyAttendance() {
 
       {/* Attendance History */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Attendance Records</CardTitle>
-              <CardDescription>Your attendance for {format(selectedMonth, 'MMMM yyyy')}</CardDescription>
-            </div>
+        <CardHeader className="space-y-3">
+          <div>
+            <CardTitle>Attendance Records</CardTitle>
+            <CardDescription>Your attendance for {format(selectedMonth, 'MMMM yyyy')}</CardDescription>
+          </div>
+          <div className="flex justify-end">
             <Select
               value={format(selectedMonth, 'yyyy-MM')}
               onValueChange={(val) => setSelectedMonth(new Date(val + '-01'))}

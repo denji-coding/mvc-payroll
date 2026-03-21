@@ -119,9 +119,9 @@ export default function MyPayslips() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-start gap-4">
         <div><h1 className="text-2xl font-bold">My Payslips</h1><p className="text-muted-foreground">View and download your payroll history</p></div>
-        <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}><SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger><SelectContent>{years.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}</SelectContent></Select>
+        <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}><SelectTrigger className="w-[120px] shrink-0"><SelectValue /></SelectTrigger><SelectContent>{years.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}</SelectContent></Select>
       </div>
 
       <SummaryCards totalEarnings={totalEarnings} totalDeductions={totalDeductions} totalNetPay={totalNetPay} selectedYear={selectedYear} fmt={fmt} />

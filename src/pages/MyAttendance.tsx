@@ -259,3 +259,8 @@ export default function MyAttendance() {
     </div>
   );
 }
+
+function AnimatedStat({ value }: { value: number }) {
+  const animated = useCountUp(value, 800);
+  return <>{animated}</>;
+}

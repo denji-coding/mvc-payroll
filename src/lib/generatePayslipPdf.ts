@@ -122,12 +122,18 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     margin: { left: margin, right: margin },
   });
 
-  // Blank separator row
+  // Blank separator row (same 4-col total width = 160)
   y = (doc as any).lastAutoTable.finalY;
   autoTable(doc, {
     startY: y,
     body: [[{ content: '', colSpan: 4, styles: { minCellHeight: 4 } }]],
     styles: { fontSize: 1, cellPadding: 0, lineColor: [0, 0, 0], lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 40 },
+      3: { cellWidth: 40 },
+    },
     theme: 'grid',
     margin: { left: margin, right: margin },
   });

@@ -228,9 +228,9 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
     footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
     columnStyles: {
-      0: { cellWidth: 25 },
-      1: { cellWidth: 75 },
-      2: { cellWidth: 60, halign: 'right' },
+      0: { cellWidth: 30 },
+      1: { cellWidth: 90 },
+      2: { cellWidth: 40, halign: 'right' },
     },
     theme: 'grid',
     margin: { left: margin, right: margin },

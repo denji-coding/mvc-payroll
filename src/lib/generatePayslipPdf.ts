@@ -102,7 +102,7 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
 
   // Employee Info Table
   y += 10;
-  const computedDailyRate = dailyRate || (payroll.days_worked > 0 ? payroll.basic_pay / payroll.days_worked : 0);
+  const computedDailyRate = dailyRate || 0;
 
   autoTable(doc, {
     startY: y,
@@ -114,20 +114,26 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
     columnStyles: {
       0: { cellWidth: 30 },
-      1: { cellWidth: 55 },
-      2: { cellWidth: 30 },
-      3: { cellWidth: 45 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 40 },
+      3: { cellWidth: 40 },
     },
     theme: 'grid',
     margin: { left: margin, right: margin },
   });
 
-  // Blank separator row
+  // Blank separator row (same 4-col total width = 160)
   y = (doc as any).lastAutoTable.finalY;
   autoTable(doc, {
     startY: y,
     body: [[{ content: '', colSpan: 4, styles: { minCellHeight: 4 } }]],
     styles: { fontSize: 1, cellPadding: 0, lineColor: [0, 0, 0], lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 40 },
+      3: { cellWidth: 40 },
+    },
     theme: 'grid',
     margin: { left: margin, right: margin },
   });
@@ -161,21 +167,27 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
     footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
     columnStyles: {
-      0: { cellWidth: 25 },
+      0: { cellWidth: 30 },
       1: { cellWidth: 50 },
-      2: { cellWidth: 35, halign: 'left' },
-      3: { cellWidth: 50, halign: 'right' },
+      2: { cellWidth: 40, halign: 'left' },
+      3: { cellWidth: 40, halign: 'right' },
     },
     theme: 'grid',
     margin: { left: margin, right: margin },
   });
 
-  // Blank separator row
+  // Blank separator row (same 4-col total width = 160)
   y = (doc as any).lastAutoTable.finalY;
   autoTable(doc, {
     startY: y,
-    body: [[{ content: '', colSpan: 3, styles: { minCellHeight: 4 } }]],
+    body: [[{ content: '', colSpan: 4, styles: { minCellHeight: 4 } }]],
     styles: { fontSize: 1, cellPadding: 0, lineColor: [0, 0, 0], lineWidth: 0.2 },
+    columnStyles: {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 40 },
+      3: { cellWidth: 40 },
+    },
     theme: 'grid',
     margin: { left: margin, right: margin },
   });
@@ -216,9 +228,9 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
     footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
     columnStyles: {
-      0: { cellWidth: 25 },
-      1: { cellWidth: 75 },
-      2: { cellWidth: 60, halign: 'right' },
+      0: { cellWidth: 30 },
+      1: { cellWidth: 90 },
+      2: { cellWidth: 40, halign: 'right' },
     },
     theme: 'grid',
     margin: { left: margin, right: margin },
@@ -231,8 +243,8 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     body: [[{ content: 'Net Monthly Earnings', styles: { fontStyle: 'bold' } }, { content: fmtAmount(payroll.net_pay), styles: { fontStyle: 'bold', halign: 'right' } }]],
     styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
     columnStyles: {
-      0: { cellWidth: 100 },
-      1: { cellWidth: 60, halign: 'right' },
+      0: { cellWidth: 120 },
+      1: { cellWidth: 40, halign: 'right' },
     },
     theme: 'grid',
     margin: { left: margin, right: margin },

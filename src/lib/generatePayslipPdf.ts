@@ -102,7 +102,7 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
 
   // Employee Info Table
   y += 10;
-  const computedDailyRate = dailyRate || (payroll.days_worked > 0 ? payroll.basic_pay / payroll.days_worked : 0);
+  const computedDailyRate = dailyRate || 0;
 
   autoTable(doc, {
     startY: y,

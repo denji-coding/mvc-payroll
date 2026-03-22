@@ -234,7 +234,7 @@ export async function generatePayslipPdf(params: GeneratePayslipPdfParams): Prom
   const periodStart = new Date(payroll.period_start);
   const periodEnd = new Date(payroll.period_end);
 
-  const doc = React.createElement(PayslipDocument, params);
+  const doc = React.createElement(PayslipDocument, params) as any;
   const blob = await pdf(doc).toBlob();
 
   const periodStr = format(periodStart, "MMMdd") + "-" + format(periodEnd, "MMMdd_yyyy");

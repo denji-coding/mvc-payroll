@@ -56,27 +56,25 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     console.warn('Failed to load logo:', e);
   }
 
-  // Header - PAYSLIP title
+  // Header
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.text('PAYSLIP', pageWidth / 2 + 10, y + 8, { align: 'center' });
 
-  // Company name
   y += 14;
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.text('Migrants Venture Corporation', pageWidth / 2 + 10, y, { align: 'center' });
 
-  // Address
   y += 5;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.text('Lapu-Lapu St. Tagum City, Davao del Norte', pageWidth / 2 + 10, y, { align: 'center' });
 
-  // Pay Period line
-  y += 5;
   const periodStart = new Date(payroll.period_start);
   const periodEnd = new Date(payroll.period_end);
+
+  y += 5;
   const periodLabel = `Pay Period: ${format(periodStart, 'MMM d')} - ${format(periodEnd, 'MMM d, yyyy')}`;
   doc.text(periodLabel, pageWidth / 2 + 10, y, { align: 'center' });
 
@@ -124,15 +122,22 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     margin: { left: margin, right: margin },
   });
 
+  // Blank separator row
+  y = (doc as any).lastAutoTable.finalY;
+  autoTable(doc, {
+    startY: y,
+    body: [[{ content: '', colSpan: 4, styles: { minCellHeight: 4 } }]],
+    styles: { fontSize: 1, cellPadding: 0, lineColor: [0, 0, 0], lineWidth: 0.2 },
+    theme: 'grid',
+    margin: { left: margin, right: margin },
+  });
+
   // Earnings Table
-  y = (doc as any).lastAutoTable.finalY + 5;
+  y = (doc as any).lastAutoTable.finalY;
 
   const earningsBody: any[][] = [];
-
-  // No. of Days (basic)
   earningsBody.push(['', 'No. of Days', `${payroll.days_worked} days`, fmtAmount(payroll.basic_pay)]);
 
-  // Leave With Pay from allowances_breakdown
   if (payroll.allowances_breakdown) {
     Object.entries(payroll.allowances_breakdown).forEach(([name, amount]) => {
       if (Number(amount) > 0) {
@@ -143,9 +148,8 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     earningsBody.push(['', 'Allowances', '', fmtAmount(payroll.total_allowances)]);
   }
 
-  // Add "Earnings" label to first row
   if (earningsBody.length > 0) {
-    earningsBody[0][0] = { content: 'Earnings', rowSpan: earningsBody.length, styles: { fontStyle: 'bold', valign: 'middle' } };
+    earningsBody[0][0] = { content: 'Earnings', rowSpan: earningsBody.length, styles: { fontStyle: 'bold', valign: 'middle', halign: 'center' } };
   }
 
   autoTable(doc, {
@@ -166,25 +170,25 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     margin: { left: margin, right: margin },
   });
 
+  // Blank separator row
+  y = (doc as any).lastAutoTable.finalY;
+  autoTable(doc, {
+    startY: y,
+    body: [[{ content: '', colSpan: 3, styles: { minCellHeight: 4 } }]],
+    styles: { fontSize: 1, cellPadding: 0, lineColor: [0, 0, 0], lineWidth: 0.2 },
+    theme: 'grid',
+    margin: { left: margin, right: margin },
+  });
+
   // Deductions Table
-  y = (doc as any).lastAutoTable.finalY + 5;
+  y = (doc as any).lastAutoTable.finalY;
 
   const deductionsBody: any[][] = [];
+  if (payroll.sss_contribution > 0) deductionsBody.push(['', 'SSS Contribution', fmtAmount(payroll.sss_contribution)]);
+  if (payroll.philhealth_contribution > 0) deductionsBody.push(['', 'PhilHealth Contribution', fmtAmount(payroll.philhealth_contribution)]);
+  if (payroll.pagibig_contribution > 0) deductionsBody.push(['', 'Pag-IBIG Contribution', fmtAmount(payroll.pagibig_contribution)]);
+  if (payroll.withholding_tax > 0) deductionsBody.push(['', 'Withholding Tax', fmtAmount(payroll.withholding_tax)]);
 
-  if (payroll.sss_contribution > 0) {
-    deductionsBody.push(['', 'SSS Contribution', fmtAmount(payroll.sss_contribution)]);
-  }
-  if (payroll.philhealth_contribution > 0) {
-    deductionsBody.push(['', 'PhilHealth Contribution', fmtAmount(payroll.philhealth_contribution)]);
-  }
-  if (payroll.pagibig_contribution > 0) {
-    deductionsBody.push(['', 'Pag-IBIG Contribution', fmtAmount(payroll.pagibig_contribution)]);
-  }
-  if (payroll.withholding_tax > 0) {
-    deductionsBody.push(['', 'Withholding Tax', fmtAmount(payroll.withholding_tax)]);
-  }
-
-  // Other deductions from breakdown
   if (payroll.deductions_breakdown) {
     Object.entries(payroll.deductions_breakdown).forEach(([name, amount]) => {
       if (Number(amount) > 0) {
@@ -195,15 +199,18 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     deductionsBody.push(['', 'Other Deductions', fmtAmount(payroll.other_deductions)]);
   }
 
-  // Add "Deductions" label to first row
+  if (deductionsBody.length === 0) {
+    deductionsBody.push(['', 'No deductions', '0.00']);
+  }
+
   if (deductionsBody.length > 0) {
-    deductionsBody[0][0] = { content: 'Deductions', rowSpan: deductionsBody.length, styles: { fontStyle: 'bold', valign: 'middle' } };
+    deductionsBody[0][0] = { content: 'Deductions', rowSpan: deductionsBody.length, styles: { fontStyle: 'bold', valign: 'middle', halign: 'center' } };
   }
 
   autoTable(doc, {
     startY: y,
     head: [['', { content: 'Descriptions', styles: { halign: 'left' } }, { content: 'Amount', styles: { halign: 'right' } }]],
-    body: deductionsBody.length > 0 ? deductionsBody : [['', 'No deductions', '0.00']],
+    body: deductionsBody,
     foot: [[{ content: 'Total Deductions', colSpan: 2, styles: { fontStyle: 'bold' } }, { content: fmtAmount(payroll.total_deductions), styles: { fontStyle: 'bold', halign: 'right' } }]],
     styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
     headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },

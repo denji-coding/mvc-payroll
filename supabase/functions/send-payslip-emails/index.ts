@@ -44,12 +44,24 @@ function buildPayslipEmailHtml(employee: any, record: any, period: any): string 
   }
 
   // Build deductions rows
-  let deductionRows = '';
+  let deductionRows = "";
   let deductionsCount = 0;
-  if (sss > 0) { deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">SSS Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(sss)}</td></tr>`; deductionsCount++; }
-  if (philhealth > 0) { deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">PhilHealth Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(philhealth)}</td></tr>`; deductionsCount++; }
-  if (pagibig > 0) { deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">Pag-IBIG Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(pagibig)}</td></tr>`; deductionsCount++; }
-  if (tax > 0) { deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">Withholding Tax</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(tax)}</td></tr>`; deductionsCount++; }
+  if (sss > 0) {
+    deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">SSS Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(sss)}</td></tr>`;
+    deductionsCount++;
+  }
+  if (philhealth > 0) {
+    deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">PhilHealth Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(philhealth)}</td></tr>`;
+    deductionsCount++;
+  }
+  if (pagibig > 0) {
+    deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">Pag-IBIG Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(pagibig)}</td></tr>`;
+    deductionsCount++;
+  }
+  if (tax > 0) {
+    deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">Withholding Tax</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(tax)}</td></tr>`;
+    deductionsCount++;
+  }
   for (const [name, amount] of Object.entries(deductionsBreakdown)) {
     if (Number(amount) > 0) {
       deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">${name}</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(Number(amount))}</td></tr>`;
@@ -98,11 +110,11 @@ function buildPayslipEmailHtml(employee: any, record: any, period: any): string 
     <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Employee Name</b></td>
     <td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.last_name}, ${employee.first_name}</td>
     <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Employee ID</b></td>
-    <td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.employee_id || ''}</td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.employee_id || ""}</td>
   </tr>
   <tr>
     <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Position</b></td>
-    <td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.position || ''}</td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.position || ""}</td>
     <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Pay Date</b></td>
     <td style="border:1px solid #000;padding:4px;font-size:12px;">${payDate}</td>
   </tr>
@@ -158,7 +170,7 @@ function buildPayslipEmailHtml(employee: any, record: any, period: any): string 
   </tr>
   <tr>
     <td style="text-align:center;padding-bottom:20px;">
-      <a href="https://migrant-path-hr.lovable.app/my-payslips" style="display:inline-block;background-color:#16a34a;color:#ffffff;font-size:14px;font-weight:bold;padding:12px 30px;text-decoration:none;border-radius:6px;">Download Payslip</a>
+      <a href="https://mvc-rose.vercel.app/my-payslips" style="display:inline-block;background-color:#16a34a;color:#ffffff;font-size:14px;font-weight:bold;padding:12px 30px;text-decoration:none;border-radius:6px;">Download Payslip</a>
     </td>
   </tr>
   <tr>
@@ -184,70 +196,83 @@ Deno.serve(async (req) => {
     const gmailPassword = Deno.env.get("GMAIL_APP_PASSWORD");
 
     if (!gmailUser || !gmailPassword) {
-      return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Email service not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Missing authorization" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    const token = authHeader.replace("Bearer ", "");
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(token);
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid or expired token' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const { data: roleData } = await supabase
-      .from('user_roles').select('role').eq('user_id', user.id).single();
-    if (roleData?.role !== 'hr_admin') {
-      return new Response(JSON.stringify({ error: 'Only HR admins can send payslip emails' }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", user.id).single();
+    if (roleData?.role !== "hr_admin") {
+      return new Response(JSON.stringify({ error: "Only HR admins can send payslip emails" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const { payroll_period_id }: PayslipEmailRequest = await req.json();
 
     if (!payroll_period_id) {
-      return new Response(
-        JSON.stringify({ error: "payroll_period_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "payroll_period_id is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const { data: period, error: periodError } = await supabase
-      .from("payroll_periods").select("*").eq("id", payroll_period_id).single();
+      .from("payroll_periods")
+      .select("*")
+      .eq("id", payroll_period_id)
+      .single();
 
     if (periodError || !period) {
-      return new Response(
-        JSON.stringify({ error: "Payroll period not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Payroll period not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const { data: records, error: recordsError } = await supabase
       .from("payroll_records")
-      .select(`*, employees(id, first_name, last_name, email, user_id, employee_id, position, department, basic_salary)`)
+      .select(
+        `*, employees(id, first_name, last_name, email, user_id, employee_id, position, department, basic_salary)`,
+      )
       .eq("payroll_period_id", payroll_period_id);
 
     if (recordsError) {
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch payroll records" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to fetch payroll records" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     if (!records || records.length === 0) {
-      return new Response(
-        JSON.stringify({ success: true, message: "No payroll records found", emailsSent: 0 }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: true, message: "No payroll records found", emailsSent: 0 }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const client = new SMTPClient({
@@ -289,15 +314,19 @@ Deno.serve(async (req) => {
     await client.close();
 
     return new Response(
-      JSON.stringify({ success: true, message: `Sent ${emailsSent} payslip emails`, emailsSent, errors: errors.length > 0 ? errors : undefined }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        success: true,
+        message: `Sent ${emailsSent} payslip emails`,
+        emailsSent,
+        errors: errors.length > 0 ? errors : undefined,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-
   } catch (error) {
     console.error("Error sending payslip emails:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "An unknown error occurred" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });

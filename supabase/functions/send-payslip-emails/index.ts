@@ -34,95 +34,87 @@ function buildPayslipEmailHtml(employee: any, record: any, period: any): string 
   const deductionsBreakdown = record.deductions_breakdown || {};
 
   // Build earnings rows
-  let earningsRows = `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;">No. of Days</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:center;">${daysWorked} days</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:right;">${fmtPHP(basicPay)}</td></tr>`;
+  let earningsRows = `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">No. of Days</td><td style="border:1px solid #000;padding:4px;font-size:12px;">${daysWorked} days</td><td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(basicPay)}</td></tr>`;
+  let earningsCount = 1;
   for (const [name, amount] of Object.entries(allowances)) {
     if (Number(amount) > 0) {
-      earningsRows += `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;">${name}</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:center;"></td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:right;">${fmtPHP(Number(amount))}</td></tr>`;
+      earningsRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">${name}</td><td style="border:1px solid #000;padding:4px;font-size:12px;"></td><td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(Number(amount))}</td></tr>`;
+      earningsCount++;
     }
   }
 
   // Build deductions rows
   let deductionRows = '';
-  if (sss > 0) deductionRows += `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;">SSS Contribution</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:right;">${fmtPHP(sss)}</td></tr>`;
-  if (philhealth > 0) deductionRows += `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;">PhilHealth Contribution</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:right;">${fmtPHP(philhealth)}</td></tr>`;
-  if (pagibig > 0) deductionRows += `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;">Pag-IBIG Contribution</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:right;">${fmtPHP(pagibig)}</td></tr>`;
-  if (tax > 0) deductionRows += `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;">Withholding Tax</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:right;">${fmtPHP(tax)}</td></tr>`;
+  let deductionsCount = 0;
+  if (sss > 0) { deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">SSS Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(sss)}</td></tr>`; deductionsCount++; }
+  if (philhealth > 0) { deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">PhilHealth Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(philhealth)}</td></tr>`; deductionsCount++; }
+  if (pagibig > 0) { deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">Pag-IBIG Contribution</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(pagibig)}</td></tr>`; deductionsCount++; }
+  if (tax > 0) { deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">Withholding Tax</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(tax)}</td></tr>`; deductionsCount++; }
   for (const [name, amount] of Object.entries(deductionsBreakdown)) {
     if (Number(amount) > 0) {
-      deductionRows += `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;">${name}</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:right;">${fmtPHP(Number(amount))}</td></tr>`;
+      deductionRows += `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">${name}</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(Number(amount))}</td></tr>`;
+      deductionsCount++;
     }
   }
+  if (deductionsCount === 0) {
+    deductionRows = `<tr><td style="border:1px solid #000;padding:4px;font-size:12px;">No deductions</td><td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;">0.00</td></tr>`;
+    deductionsCount = 1;
+  }
+
+  const earningsRowspan = earningsCount + 1;
+  const deductionsRowspan = deductionsCount + 1;
 
   return [
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>',
-    '<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f4f4;">',
-    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;"><tr><td align="center" style="padding:30px 0;">',
-    '<table role="presentation" width="620" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">',
-
-    // Header
-    '<tr><td style="padding:25px 30px;text-align:center;border-bottom:2px solid #eee;">',
-    '<img src="https://mvc-rose.vercel.app/favicon.png" alt="MVC Logo" width="50" height="50" style="display:block;margin:0 auto 10px auto;border-radius:8px;" />',
-    '<h1 style="color:#1a6b3c;margin:0;font-size:20px;font-weight:700;">PAYSLIP</h1>',
-    '<p style="color:#333;font-size:13px;margin:5px 0 0;font-weight:600;">Migrants Venture Corporation</p>',
-    '<p style="color:#666;font-size:11px;margin:3px 0 0;">Lapu-Lapu St. Tagum City, Davao del Norte</p>',
-    `<p style="color:#666;font-size:11px;margin:3px 0 0;">Pay Period: ${periodStart} - ${periodEnd}</p>`,
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+    '</head>',
+    '<body style="margin:0;padding:20px;font-family:Arial,Helvetica,sans-serif;background:#fff;">',
+    '<table width="700" align="center" style="border-collapse:collapse;">',
+    '<tr><td colspan="4" style="text-align:center;padding-bottom:10px;">',
+    '<img src="https://mvc-rose.vercel.app/favicon.png" width="70" style="margin-bottom:5px;" />',
+    '<h2 style="margin:0;font-size:22px;letter-spacing:2px;">PAYSLIP</h2>',
+    '<div style="font-weight:bold;font-size:13px;">Migrants Venture Corporation</div>',
+    '<div style="font-size:11px;">Lapu-Lapu St. Tagum City, Davao del Norte</div>',
+    `<div style="font-size:11px;">Pay Period: ${periodStart} - ${periodEnd}</div>`,
     '</td></tr>',
-
-    // Body
-    '<tr><td style="padding:25px 30px;">',
-
-    // Greeting
-    '<p style="color:#333;font-size:14px;margin:0 0 10px;">Good day!</p>',
-    `<p style="color:#333;font-size:14px;margin:0 0 20px;">Furnishing you with the details of your <strong style="color:#1a6b3c;text-decoration:underline;">Payslips</strong> for the Period: <strong>${periodText}.</strong></p>`,
-
-    // Employee Info Table
-    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 15px;">',
-    `<tr><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;width:25%;">Employee Name</td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;width:35%;">${employee.last_name}, ${employee.first_name}</td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;width:20%;">Employee ID</td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;width:20%;">${employee.employee_id || ''}</td></tr>`,
-    `<tr><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;">Position</td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;">${employee.position || ''}</td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;">Pay Date</td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;">${payDate}</td></tr>`,
-    `<tr><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;">Daily Rate</td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;">${fmtPHP(dailyRate)}</td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;"></td><td style="padding:5px 10px;border:1px solid #ccc;font-size:13px;"></td></tr>`,
-    '</table>',
-
-    // Earnings Table
-    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 5px;">',
-    '<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;width:15%;"></td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;">Descriptions</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;text-align:center;">Details</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;text-align:right;">Amount</td></tr>',
-    `<tr><td rowspan="99" style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;vertical-align:middle;">Earnings</td></tr>`,
+    '<tr><td colspan="4" style="padding:10px 0;font-size:12px;">Good day!</td></tr>',
+    `<tr><td colspan="4" style="padding-bottom:10px;font-size:12px;">Furnishing you with the details of your Payslips for the Period: <b>${periodText}</b>.</td></tr>`,
+    '<tr>',
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Employee Name</b></td>`,
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.last_name}, ${employee.first_name}</td>`,
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Employee ID</b></td>`,
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.employee_id || ''}</td>`,
+    '</tr>',
+    '<tr>',
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Position</b></td>`,
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.position || ''}</td>`,
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Pay Date</b></td>`,
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${payDate}</td>`,
+    '</tr>',
+    '<tr>',
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Daily Rate</b></td>`,
+    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(dailyRate)}</td>`,
+    '<td style="border:1px solid #000;"></td>',
+    '<td style="border:1px solid #000;"></td>',
+    '</tr>',
+    '<tr>',
+    `<td rowspan="${earningsRowspan}" style="border:1px solid #000;padding:4px;font-size:12px;text-align:center;"><b>Earnings</b></td>`,
+    '<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Descriptions</b></td>',
+    '<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Details</b></td>',
+    '<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Amount</b></td>',
+    '</tr>',
     earningsRows,
+    `<tr><td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Total Earnings</b></td><td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(grossPay)}</td></tr>`,
+    '<tr>',
+    `<td rowspan="${deductionsRowspan}" style="border:1px solid #000;padding:4px;font-size:12px;text-align:center;"><b>Deductions</b></td>`,
+    '<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Descriptions</b></td>',
+    '<td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Amount</b></td>',
+    '</tr>',
+    deductionRows,
+    `<tr><td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Total Deductions</b></td><td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(totalDeductions)}</td></tr>`,
+    `<tr><td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Net Monthly Earnings</b></td><td style="border:1px solid #000;padding:4px;font-size:12px;"><b>${fmtPHP(netPay)}</b></td></tr>`,
     '</table>',
-
-    // Total Earnings
-    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 15px;">',
-    `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;">Total Earnings</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;text-align:right;">${fmtPHP(grossPay)}</td></tr>`,
-    '</table>',
-
-    // Deductions Table
-    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 5px;">',
-    '<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;width:15%;"></td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;">Descriptions</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;text-align:right;">Amount</td></tr>',
-    `<tr><td rowspan="99" style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;vertical-align:middle;">Deductions</td></tr>`,
-    deductionRows || '<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;">No deductions</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;text-align:right;">0.00</td></tr>',
-    '</table>',
-
-    // Total Deductions
-    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 5px;">',
-    `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;">Total Deductions</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;text-align:right;">${fmtPHP(totalDeductions)}</td></tr>`,
-    '</table>',
-
-    // Net Monthly Earnings
-    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 20px;">',
-    `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;">Net Monthly Earnings</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:13px;font-weight:bold;text-align:right;">${fmtPHP(netPay)}</td></tr>`,
-    '</table>',
-
-    '<p style="color:#666;font-size:12px;margin:15px 0 0;">For the full detailed payslip, please log in to the HR portal.</p>',
-    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:15px 0;"><a href="https://mvc-rose.vercel.app/my-payslips" style="display:inline-block;background-color:#1a6b3c;color:#ffffff;text-decoration:none;padding:12px 30px;border-radius:8px;font-size:14px;font-weight:600;">View Full Payslip</a></td></tr></table>',
-
-    '</td></tr>',
-
-    // Footer
-    '<tr><td style="background-color:#f8f8f8;padding:15px 30px;text-align:center;border-top:1px solid #eee;">',
-    '<p style="color:#999;font-size:11px;margin:0 0 3px;">This is an automated message. Please do not reply to this email.</p>',
-    `<p style="color:#999;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} Migrants Venture Corporation. All rights reserved.</p>`,
-    '</td></tr>',
-
-    '</table></td></tr></table></body></html>',
+    '</body></html>',
   ].join('');
 }
 

@@ -243,8 +243,8 @@ export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePay
     body: [[{ content: 'Net Monthly Earnings', styles: { fontStyle: 'bold' } }, { content: fmtAmount(payroll.net_pay), styles: { fontStyle: 'bold', halign: 'right' } }]],
     styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
     columnStyles: {
-      0: { cellWidth: 100 },
-      1: { cellWidth: 60, halign: 'right' },
+      0: { cellWidth: 120 },
+      1: { cellWidth: 40, halign: 'right' },
     },
     theme: 'grid',
     margin: { left: margin, right: margin },

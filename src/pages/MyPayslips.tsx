@@ -60,7 +60,7 @@ export default function MyPayslips() {
         other_deductions: Number(record.other_deductions || 0), deductions_breakdown: record.deductions_breakdown as Record<string, number> || {},
         total_deductions: Number(record.total_deductions || 0), net_pay: Number(record.net_pay || 0),
       },
-      dailyRate: employee.basic_salary ? Number(employee.basic_salary) / 26 : undefined,
+      dailyRate: employee.basic_salary ? Number(employee.basic_salary) : undefined,
     });
   };
 

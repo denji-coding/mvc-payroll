@@ -64,58 +64,112 @@ function buildPayslipEmailHtml(employee: any, record: any, period: any): string 
   const earningsRowspan = earningsCount + 1;
   const deductionsRowspan = deductionsCount + 1;
 
-  return [
-    '<!DOCTYPE html><html><head><meta charset="UTF-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
-    '</head>',
-    '<body style="margin:0;padding:20px;font-family:Arial,Helvetica,sans-serif;background:#fff;">',
-    '<table width="700" align="center" style="border-collapse:collapse;">',
-    '<tr><td colspan="4" style="text-align:center;padding-bottom:10px;">',
-    '<img src="https://mvc-rose.vercel.app/favicon.png" width="70" style="margin-bottom:5px;" />',
-    '<h2 style="margin:0;font-size:22px;letter-spacing:2px;">PAYSLIP</h2>',
-    '<div style="font-weight:bold;font-size:13px;">Migrants Venture Corporation</div>',
-    '<div style="font-size:11px;">Lapu-Lapu St. Tagum City, Davao del Norte</div>',
-    `<div style="font-size:11px;">Pay Period: ${periodStart} - ${periodEnd}</div>`,
-    '</td></tr>',
-    '<tr><td colspan="4" style="padding:10px 0;font-size:12px;">Good day!</td></tr>',
-    `<tr><td colspan="4" style="padding-bottom:10px;font-size:12px;">Furnishing you with the details of your Payslips for the Period: <b>${periodText}</b>.</td></tr>`,
-    '<tr>',
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Employee Name</b></td>`,
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.last_name}, ${employee.first_name}</td>`,
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Employee ID</b></td>`,
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.employee_id || ''}</td>`,
-    '</tr>',
-    '<tr>',
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Position</b></td>`,
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.position || ''}</td>`,
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Pay Date</b></td>`,
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${payDate}</td>`,
-    '</tr>',
-    '<tr>',
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Daily Rate</b></td>`,
-    `<td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(dailyRate)}</td>`,
-    '<td style="border:1px solid #000;"></td>',
-    '<td style="border:1px solid #000;"></td>',
-    '</tr>',
-    '<tr>',
-    `<td rowspan="${earningsRowspan}" style="border:1px solid #000;padding:4px;font-size:12px;text-align:center;"><b>Earnings</b></td>`,
-    '<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Descriptions</b></td>',
-    '<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Details</b></td>',
-    '<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Amount</b></td>',
-    '</tr>',
-    earningsRows,
-    `<tr><td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Total Earnings</b></td><td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(grossPay)}</td></tr>`,
-    '<tr>',
-    `<td rowspan="${deductionsRowspan}" style="border:1px solid #000;padding:4px;font-size:12px;text-align:center;"><b>Deductions</b></td>`,
-    '<td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Descriptions</b></td>',
-    '<td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Amount</b></td>',
-    '</tr>',
-    deductionRows,
-    `<tr><td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Total Deductions</b></td><td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(totalDeductions)}</td></tr>`,
-    `<tr><td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Net Monthly Earnings</b></td><td style="border:1px solid #000;padding:4px;font-size:12px;"><b>${fmtPHP(netPay)}</b></td></tr>`,
-    '</table>',
-    '</body></html>',
-  ].join('');
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payslip</title>
+</head>
+<body style="margin:0;padding:20px;font-family:Arial,Helvetica,sans-serif;background:#fff;">
+<table width="700" align="center" style="border-collapse:collapse;">
+  <!-- HEADER -->
+  <tr>
+    <td colspan="4" style="text-align:center;padding-bottom:10px;">
+      <img src="https://mvc-rose.vercel.app/favicon.png" width="70" style="margin-bottom:5px;" />
+      <h2 style="margin:0;font-size:22px;letter-spacing:2px;">PAYSLIP</h2>
+      <div style="font-weight:bold;font-size:13px;">Migrants Venture Corporation</div>
+      <div style="font-size:11px;">Lapu-Lapu St. Tagum City, Davao del Norte</div>
+      <div style="font-size:11px;">Pay Period: ${periodStart} - ${periodEnd}</div>
+    </td>
+  </tr>
+  <!-- GREETING -->
+  <tr>
+    <td colspan="4" style="padding:10px 0;font-size:12px;">Good day!</td>
+  </tr>
+  <tr>
+    <td colspan="4" style="padding-bottom:10px;font-size:12px;">
+      Furnishing you with the details of your Payslips for the Period:
+      <b>${periodText}</b>.
+    </td>
+  </tr>
+  <!-- EMPLOYEE INFO -->
+  <tr>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Employee Name</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.last_name}, ${employee.first_name}</td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Employee ID</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.employee_id || ''}</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Position</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${employee.position || ''}</td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Pay Date</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${payDate}</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Daily Rate</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(dailyRate)}</td>
+    <td style="border:1px solid #000;"></td>
+    <td style="border:1px solid #000;"></td>
+  </tr>
+  <!-- BLANK ROW -->
+  <tr>
+    <td colspan="4" style="border:1px solid #000;height:12px;"></td>
+  </tr>
+  <!-- EARNINGS -->
+  <tr>
+    <td rowspan="${earningsRowspan}" style="border:1px solid #000;padding:4px;font-size:12px;text-align:center;"><b>Earnings</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Descriptions</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Details</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Amount</b></td>
+  </tr>
+  ${earningsRows}
+  <tr>
+    <td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Total Earnings</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(grossPay)}</td>
+  </tr>
+  <!-- BLANK ROW -->
+  <tr>
+    <td colspan="4" style="border:1px solid #000;height:12px;"></td>
+  </tr>
+  <!-- DEDUCTIONS -->
+  <tr>
+    <td rowspan="${deductionsRowspan}" style="border:1px solid #000;padding:4px;font-size:12px;text-align:center;"><b>Deductions</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>Descriptions</b></td>
+    <td colspan="2" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Amount</b></td>
+  </tr>
+  ${deductionRows}
+  <tr>
+    <td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Total Deductions</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;">${fmtPHP(totalDeductions)}</td>
+  </tr>
+  <tr>
+    <td colspan="3" style="border:1px solid #000;padding:4px;font-size:12px;"><b>Net Monthly Earnings</b></td>
+    <td style="border:1px solid #000;padding:4px;font-size:12px;"><b>${fmtPHP(netPay)}</b></td>
+  </tr>
+</table>
+
+<!-- DOWNLOAD CTA -->
+<table width="700" align="center" style="border-collapse:collapse;margin-top:25px;">
+  <tr>
+    <td style="text-align:center;padding:15px 0;font-size:12px;color:#333;">
+      Want to download your payslip as a PDF? Log in to your account to download it.
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center;padding-bottom:20px;">
+      <a href="https://migrant-path-hr.lovable.app/my-payslips" style="display:inline-block;background-color:#16a34a;color:#ffffff;font-size:14px;font-weight:bold;padding:12px 30px;text-decoration:none;border-radius:6px;">Download Payslip</a>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center;font-size:10px;color:#999;padding-top:10px;">
+      This is a computer-generated document. No signature required.
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>`;
 }
 
 Deno.serve(async (req) => {
@@ -138,7 +192,6 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Authenticate caller
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Missing authorization' }),

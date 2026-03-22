@@ -277,7 +277,7 @@ export default function DailyTimeRecord() {
     }
   };
   return (
-    <div className="page-container">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Printable DTR - Hidden on screen, visible when printing */}
       <PrintableDTR
         employee={employee}

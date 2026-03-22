@@ -1,7 +1,6 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import React from "react";
+import { Document, Page, Text, View, Image, StyleSheet, pdf } from "@react-pdf/renderer";
 import { format } from "date-fns";
-import companyLogo from "@/assets/company-logo.png";
 
 interface PayslipEmployee {
   employee_id: string;
@@ -39,271 +38,212 @@ interface GeneratePayslipPdfParams {
   dailyRate?: number;
 }
 
-const fmtAmount = (amount: number): string => {
-  return amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
+const fmtAmount = (amount: number): string =>
+  amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export function generatePayslipPdf({ employee, payroll, dailyRate }: GeneratePayslipPdfParams): void {
-  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 15;
-  let y = 15;
+const border = { borderWidth: 1, borderColor: "#000" };
+const cellBase = { padding: 4, fontSize: 9 };
 
-  // Company Logo
-  try {
-    doc.addImage(companyLogo, "PNG", margin, y, 25, 25);
-  } catch (e) {
-    console.warn("Failed to load logo:", e);
+const s = StyleSheet.create({
+  page: { padding: 30, fontFamily: "Helvetica", fontSize: 9 },
+  headerWrap: { alignItems: "center", marginBottom: 10 },
+  logo: { width: 50, height: 50, marginBottom: 4 },
+  title: { fontSize: 18, fontFamily: "Helvetica-Bold", letterSpacing: 2 },
+  companyName: { fontSize: 11, fontFamily: "Helvetica-Bold", marginTop: 2 },
+  companyAddr: { fontSize: 9, marginTop: 1 },
+  periodLabel: { fontSize: 9, marginTop: 1 },
+  greeting: { fontSize: 10, marginTop: 12 },
+  furnish: { fontSize: 10, marginTop: 6, marginBottom: 10 },
+  boldText: { fontFamily: "Helvetica-Bold" },
+  row: { flexDirection: "row" },
+  // 4-col widths (total ~530 at A4 with 30pt margins each side)
+  c0: { ...cellBase, ...border, width: "18.75%", borderRight: 0, borderBottom: 0 },
+  c1: { ...cellBase, ...border, width: "31.25%", borderRight: 0, borderBottom: 0 },
+  c2: { ...cellBase, ...border, width: "25%", borderRight: 0, borderBottom: 0 },
+  c3: { ...cellBase, ...border, width: "25%", borderBottom: 0 },
+  // 3-col for deductions
+  d0: { ...cellBase, ...border, width: "18.75%", borderRight: 0, borderBottom: 0 },
+  d1: { ...cellBase, ...border, width: "56.25%", borderRight: 0, borderBottom: 0 },
+  d2: { ...cellBase, ...border, width: "25%", borderBottom: 0 },
+  // full-width blank
+  blank: { ...border, height: 10, borderBottom: 0 },
+  // footer
+  footerRow: { flexDirection: "row" },
+  f0: { ...cellBase, ...border, width: "75%", borderRight: 0 },
+  f1: { ...cellBase, ...border, width: "25%", textAlign: "right" },
+  // net
+  n0: { ...cellBase, ...border, width: "75%", borderRight: 0 },
+  n1: { ...cellBase, ...border, width: "25%", textAlign: "right" },
+  // generated footer
+  genFooter: { marginTop: 20, fontSize: 7, color: "#808080", textAlign: "center" },
+});
+
+// Last row needs bottom border
+const lastRowBorder = { borderBottomWidth: 1, borderBottomColor: "#000" };
+
+const PayslipDocument: React.FC<GeneratePayslipPdfParams> = ({ employee, payroll, dailyRate }) => {
+  const periodStart = new Date(payroll.period_start);
+  const periodEnd = new Date(payroll.period_end);
+  const periodText = `${format(periodStart, "MMMM d")}-${format(periodEnd, "d, yyyy")}`;
+  const computedDailyRate = dailyRate || 0;
+
+  // Build earnings rows
+  const earningsItems: { desc: string; detail: string; amount: string }[] = [];
+  earningsItems.push({ desc: "No. of Days", detail: `${payroll.days_worked} days`, amount: fmtAmount(payroll.basic_pay) });
+  if (payroll.allowances_breakdown) {
+    Object.entries(payroll.allowances_breakdown).forEach(([name, amt]) => {
+      if (Number(amt) > 0) earningsItems.push({ desc: name, detail: "", amount: fmtAmount(Number(amt)) });
+    });
+  } else if (payroll.total_allowances > 0) {
+    earningsItems.push({ desc: "Allowances", detail: "", amount: fmtAmount(payroll.total_allowances) });
   }
 
-  // Header
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.text("PAYSLIP", pageWidth / 2 + 10, y + 8, { align: "center" });
+  // Build deductions rows
+  const deductionItems: { desc: string; amount: string }[] = [];
+  if (payroll.sss_contribution > 0) deductionItems.push({ desc: "SSS Contribution", amount: fmtAmount(payroll.sss_contribution) });
+  if (payroll.philhealth_contribution > 0) deductionItems.push({ desc: "PhilHealth Contribution", amount: fmtAmount(payroll.philhealth_contribution) });
+  if (payroll.pagibig_contribution > 0) deductionItems.push({ desc: "Pag-IBIG Contribution", amount: fmtAmount(payroll.pagibig_contribution) });
+  if (payroll.withholding_tax > 0) deductionItems.push({ desc: "Withholding Tax", amount: fmtAmount(payroll.withholding_tax) });
+  if (payroll.deductions_breakdown) {
+    Object.entries(payroll.deductions_breakdown).forEach(([name, amt]) => {
+      if (Number(amt) > 0) deductionItems.push({ desc: name, amount: fmtAmount(Number(amt)) });
+    });
+  } else if (payroll.other_deductions > 0) {
+    deductionItems.push({ desc: "Other Deductions", amount: fmtAmount(payroll.other_deductions) });
+  }
+  if (deductionItems.length === 0) deductionItems.push({ desc: "No deductions", amount: "0.00" });
 
-  y += 14;
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.text("Migrants Venture Corporation", pageWidth / 2 + 10, y, { align: "center" });
+  const earningsHeaderRowCount = 1 + earningsItems.length; // header + data rows
+  const deductionsHeaderRowCount = 1 + deductionItems.length;
 
-  y += 5;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("Lapu-Lapu St. Tagum City, Davao del Norte", pageWidth / 2 + 10, y, { align: "center" });
+  return React.createElement(Document, null,
+    React.createElement(Page, { size: "A4", style: s.page },
+      // Header
+      React.createElement(View, { style: s.headerWrap },
+        React.createElement(Image, { src: "https://mvc-rose.vercel.app/favicon.png", style: s.logo }),
+        React.createElement(Text, { style: s.title }, "PAYSLIP"),
+        React.createElement(Text, { style: s.companyName }, "Migrants Venture Corporation"),
+        React.createElement(Text, { style: s.companyAddr }, "Lapu-Lapu St. Tagum City, Davao del Norte"),
+        React.createElement(Text, { style: s.periodLabel }, `Pay Period: ${format(periodStart, "MMM d")} - ${format(periodEnd, "MMM d, yyyy")}`),
+      ),
+      // Greeting
+      React.createElement(Text, { style: s.greeting }, "Good day!"),
+      React.createElement(Text, { style: s.furnish },
+        "Furnishing you with the details of your Payslips for the Period: ",
+        React.createElement(Text, { style: s.boldText }, `${periodText}.`),
+      ),
+      // Employee Info Table
+      React.createElement(View, { style: s.row },
+        React.createElement(View, { style: s.c0 }, React.createElement(Text, { style: s.boldText }, "Employee Name")),
+        React.createElement(View, { style: s.c1 }, React.createElement(Text, null, `${employee.last_name}, ${employee.first_name}`)),
+        React.createElement(View, { style: s.c2 }, React.createElement(Text, { style: s.boldText }, "Employee ID")),
+        React.createElement(View, { style: s.c3 }, React.createElement(Text, null, employee.employee_id)),
+      ),
+      React.createElement(View, { style: s.row },
+        React.createElement(View, { style: s.c0 }, React.createElement(Text, { style: s.boldText }, "Position")),
+        React.createElement(View, { style: s.c1 }, React.createElement(Text, null, employee.position)),
+        React.createElement(View, { style: s.c2 }, React.createElement(Text, { style: s.boldText }, "Pay Date")),
+        React.createElement(View, { style: s.c3 }, React.createElement(Text, null, format(new Date(payroll.pay_date), "MMMM d, yyyy"))),
+      ),
+      React.createElement(View, { style: s.row },
+        React.createElement(View, { style: { ...s.c0, ...lastRowBorder } }, React.createElement(Text, { style: s.boldText }, "Daily Rate")),
+        React.createElement(View, { style: { ...s.c1, ...lastRowBorder } }, React.createElement(Text, null, fmtAmount(computedDailyRate))),
+        React.createElement(View, { style: { ...s.c2, ...lastRowBorder } }, React.createElement(Text, null, "")),
+        React.createElement(View, { style: { ...s.c3, ...lastRowBorder } }, React.createElement(Text, null, "")),
+      ),
+      // Blank separator
+      React.createElement(View, { style: { ...s.blank, ...lastRowBorder } }),
+      // Earnings Header
+      React.createElement(View, { style: s.row },
+        React.createElement(View, { style: s.c0 }, React.createElement(Text, { style: s.boldText }, "")),
+        React.createElement(View, { style: s.c1 }, React.createElement(Text, { style: s.boldText }, "Descriptions")),
+        React.createElement(View, { style: s.c2 }, React.createElement(Text, { style: s.boldText }, "Details")),
+        React.createElement(View, { style: s.c3 }, React.createElement(Text, { style: s.boldText }, "Amount")),
+      ),
+      // Earnings rows
+      ...earningsItems.map((item, i) =>
+        React.createElement(View, { style: s.row, key: `e-${i}` },
+          React.createElement(View, { style: s.c0 },
+            i === 0
+              ? React.createElement(Text, { style: { ...s.boldText, textAlign: "center" } }, "Earnings")
+              : React.createElement(Text, null, ""),
+          ),
+          React.createElement(View, { style: s.c1 }, React.createElement(Text, null, item.desc)),
+          React.createElement(View, { style: s.c2 }, React.createElement(Text, null, item.detail)),
+          React.createElement(View, { style: s.c3 }, React.createElement(Text, { style: { textAlign: "right" } }, item.amount)),
+        ),
+      ),
+      // Total Earnings
+      React.createElement(View, { style: s.row },
+        React.createElement(View, { style: { ...s.c0, ...lastRowBorder, width: "75%", borderRight: 0 } },
+          React.createElement(Text, { style: s.boldText }, "Total Earnings"),
+        ),
+        React.createElement(View, { style: { ...s.c3, ...lastRowBorder } },
+          React.createElement(Text, { style: { textAlign: "right" } }, fmtAmount(payroll.gross_pay)),
+        ),
+      ),
+      // Blank separator
+      React.createElement(View, { style: { ...s.blank, ...lastRowBorder } }),
+      // Deductions Header
+      React.createElement(View, { style: s.row },
+        React.createElement(View, { style: s.d0 }, React.createElement(Text, { style: s.boldText }, "")),
+        React.createElement(View, { style: s.d1 }, React.createElement(Text, { style: s.boldText }, "Descriptions")),
+        React.createElement(View, { style: s.d2 }, React.createElement(Text, { style: s.boldText }, "Amount")),
+      ),
+      // Deduction rows
+      ...deductionItems.map((item, i) =>
+        React.createElement(View, { style: s.row, key: `d-${i}` },
+          React.createElement(View, { style: s.d0 },
+            i === 0
+              ? React.createElement(Text, { style: { ...s.boldText, textAlign: "center" } }, "Deductions")
+              : React.createElement(Text, null, ""),
+          ),
+          React.createElement(View, { style: s.d1 }, React.createElement(Text, null, item.desc)),
+          React.createElement(View, { style: s.d2 }, React.createElement(Text, { style: { textAlign: "right" } }, item.amount)),
+        ),
+      ),
+      // Total Deductions
+      React.createElement(View, { style: s.row },
+        React.createElement(View, { style: { ...s.d0, ...lastRowBorder, width: "75%", borderRight: 0 } },
+          React.createElement(Text, { style: s.boldText }, "Total Deductions"),
+        ),
+        React.createElement(View, { style: { ...s.d2, ...lastRowBorder } },
+          React.createElement(Text, { style: { textAlign: "right" } }, fmtAmount(payroll.total_deductions)),
+        ),
+      ),
+      // Net Monthly Earnings
+      React.createElement(View, { style: s.row },
+        React.createElement(View, { style: { ...s.n0 } },
+          React.createElement(Text, { style: s.boldText }, "Net Monthly Earnings"),
+        ),
+        React.createElement(View, { style: { ...s.n1 } },
+          React.createElement(Text, { style: { ...s.boldText, textAlign: "right" } }, fmtAmount(payroll.net_pay)),
+        ),
+      ),
+      // Footer
+      React.createElement(View, { style: s.genFooter },
+        React.createElement(Text, null, "This is a computer-generated document. No signature required."),
+        React.createElement(Text, { style: { marginTop: 3 } }, `Generated on: ${format(new Date(), "MMMM dd, yyyy hh:mm a")}`),
+      ),
+    ),
+  );
+};
 
+export async function generatePayslipPdf(params: GeneratePayslipPdfParams): Promise<void> {
+  const { employee, payroll } = params;
   const periodStart = new Date(payroll.period_start);
   const periodEnd = new Date(payroll.period_end);
 
-  y += 5;
-  const periodLabel = `Pay Period: ${format(periodStart, "MMM d")} - ${format(periodEnd, "MMM d, yyyy")}`;
-  doc.text(periodLabel, pageWidth / 2 + 10, y, { align: "center" });
+  const doc = React.createElement(PayslipDocument, params);
+  const blob = await pdf(doc).toBlob();
 
-  // Greeting
-  y += 15;
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("Good day!", margin, y);
-
-  y += 8;
-  const periodText = `${format(periodStart, "MMMM d")}-${format(periodEnd, "d, yyyy")}`;
-  doc.text("Furnishing you with the details of your ", margin, y);
-  doc.setFont("helvetica", "bold");
-  const prefixWidth = doc.getTextWidth("Furnishing you with the details of your ");
-  doc.setTextColor(0, 0, 255);
-  doc.textWithLink("Payslips", margin + prefixWidth, y, { url: "#" });
-  doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "normal");
-  const payslipsWidth = doc.getTextWidth("Payslips");
-  doc.text(` for the Period: `, margin + prefixWidth + payslipsWidth, y);
-  const forWidth = doc.getTextWidth(` for the Period: `);
-  doc.setFont("helvetica", "bold");
-  doc.text(`${periodText}.`, margin + prefixWidth + payslipsWidth + forWidth, y);
-  doc.setFont("helvetica", "normal");
-
-  // Employee Info Table
-  y += 10;
-  const computedDailyRate = dailyRate || 0;
-
-  autoTable(doc, {
-    startY: y,
-    body: [
-      [
-        { content: "Employee Name", styles: { fontStyle: "bold" } },
-        `${employee.last_name}, ${employee.first_name}`,
-        { content: "Employee ID", styles: { fontStyle: "bold" } },
-        employee.employee_id,
-      ],
-      [
-        { content: "Position", styles: { fontStyle: "bold" } },
-        employee.position,
-        { content: "Pay Date", styles: { fontStyle: "bold" } },
-        format(new Date(payroll.pay_date), "MMMM d, yyyy"),
-      ],
-      [{ content: "Daily Rate", styles: { fontStyle: "bold" } }, fmtAmount(computedDailyRate), "", ""],
-    ],
-    styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
-    columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 50 },
-      2: { cellWidth: 40 },
-      3: { cellWidth: 40 },
-    },
-    theme: "grid",
-    margin: { left: margin, right: margin },
-  });
-
-  // Blank separator row (same 4-col total width = 160)
-  y = (doc as any).lastAutoTable.finalY;
-  autoTable(doc, {
-    startY: y,
-    body: [[{ content: "", colSpan: 4, styles: { minCellHeight: 4 } }]],
-    styles: { fontSize: 1, cellPadding: 0, lineColor: [0, 0, 0], lineWidth: 0.2 },
-    columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 50 },
-      2: { cellWidth: 40 },
-      3: { cellWidth: 40 },
-    },
-    theme: "grid",
-    margin: { left: margin, right: margin },
-  });
-
-  // Earnings Table
-  y = (doc as any).lastAutoTable.finalY;
-
-  const earningsBody: any[][] = [];
-  earningsBody.push(["", "No. of Days", `${payroll.days_worked} days`, fmtAmount(payroll.basic_pay)]);
-
-  if (payroll.allowances_breakdown) {
-    Object.entries(payroll.allowances_breakdown).forEach(([name, amount]) => {
-      if (Number(amount) > 0) {
-        earningsBody.push(["", name, "", fmtAmount(Number(amount))]);
-      }
-    });
-  } else if (payroll.total_allowances > 0) {
-    earningsBody.push(["", "Allowances", "", fmtAmount(payroll.total_allowances)]);
-  }
-
-  if (earningsBody.length > 0) {
-    earningsBody[0][0] = {
-      content: "Earnings",
-      rowSpan: earningsBody.length,
-      styles: { fontStyle: "bold", valign: "middle", halign: "center" },
-    };
-  }
-
-  autoTable(doc, {
-    startY: y,
-    head: [
-      [
-        "",
-        { content: "Descriptions", styles: { halign: "left" } },
-        { content: "Details", styles: { halign: "left" } },
-        { content: "Amount", styles: { halign: "right" } },
-      ],
-    ],
-    body: earningsBody,
-    foot: [
-      [
-        { content: "Total Earnings", colSpan: 4, styles: { fontStyle: "bold" } },
-        { content: fmtAmount(payroll.gross_pay), styles: { fontStyle: "bold", halign: "right" } },
-      ],
-    ],
-    styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
-    headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold" },
-    footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
-    columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 50 },
-      2: { cellWidth: 40, halign: "left" },
-      3: { cellWidth: 40, halign: "right" },
-    },
-    theme: "grid",
-    margin: { left: margin, right: margin },
-  });
-
-  // Blank separator row (same 4-col total width = 160)
-  y = (doc as any).lastAutoTable.finalY;
-  autoTable(doc, {
-    startY: y,
-    body: [[{ content: "", colSpan: 4, styles: { minCellHeight: 4 } }]],
-    styles: { fontSize: 1, cellPadding: 0, lineColor: [0, 0, 0], lineWidth: 0.2 },
-    columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 50 },
-      2: { cellWidth: 40 },
-      3: { cellWidth: 40 },
-    },
-    theme: "grid",
-    margin: { left: margin, right: margin },
-  });
-
-  // Deductions Table
-  y = (doc as any).lastAutoTable.finalY;
-
-  const deductionsBody: any[][] = [];
-  if (payroll.sss_contribution > 0) deductionsBody.push(["", "SSS Contribution", fmtAmount(payroll.sss_contribution)]);
-  if (payroll.philhealth_contribution > 0)
-    deductionsBody.push(["", "PhilHealth Contribution", fmtAmount(payroll.philhealth_contribution)]);
-  if (payroll.pagibig_contribution > 0)
-    deductionsBody.push(["", "Pag-IBIG Contribution", fmtAmount(payroll.pagibig_contribution)]);
-  if (payroll.withholding_tax > 0) deductionsBody.push(["", "Withholding Tax", fmtAmount(payroll.withholding_tax)]);
-
-  if (payroll.deductions_breakdown) {
-    Object.entries(payroll.deductions_breakdown).forEach(([name, amount]) => {
-      if (Number(amount) > 0) {
-        deductionsBody.push(["", name, fmtAmount(Number(amount))]);
-      }
-    });
-  } else if (payroll.other_deductions > 0) {
-    deductionsBody.push(["", "Other Deductions", fmtAmount(payroll.other_deductions)]);
-  }
-
-  if (deductionsBody.length === 0) {
-    deductionsBody.push(["", "No deductions", "0.00"]);
-  }
-
-  if (deductionsBody.length > 0) {
-    deductionsBody[0][0] = {
-      content: "Deductions",
-      rowSpan: deductionsBody.length,
-      styles: { fontStyle: "bold", valign: "middle", halign: "center" },
-    };
-  }
-
-  autoTable(doc, {
-    startY: y,
-    head: [
-      ["", { content: "Descriptions", styles: { halign: "left" } }, { content: "Amount", styles: { halign: "right" } }],
-    ],
-    body: deductionsBody,
-    foot: [
-      [
-        { content: "Total Deductions", colSpan: 2, styles: { fontStyle: "bold" } },
-        { content: fmtAmount(payroll.total_deductions), styles: { fontStyle: "bold", halign: "right" } },
-      ],
-    ],
-    styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
-    headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold" },
-    footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
-    columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 90 },
-      2: { cellWidth: 40, halign: "right" },
-    },
-    theme: "grid",
-    margin: { left: margin, right: margin },
-  });
-
-  // Net Monthly Earnings
-  y = (doc as any).lastAutoTable.finalY;
-  autoTable(doc, {
-    startY: y,
-    body: [
-      [
-        { content: "Net Monthly Earnings", styles: { fontStyle: "bold" } },
-        { content: fmtAmount(payroll.net_pay), styles: { fontStyle: "bold", halign: "right" } },
-      ],
-    ],
-    styles: { fontSize: 9, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2 },
-    columnStyles: {
-      0: { cellWidth: 120 },
-      1: { cellWidth: 40, halign: "right" },
-    },
-    theme: "grid",
-    margin: { left: margin, right: margin },
-  });
-
-  // Footer
-  y = (doc as any).lastAutoTable.finalY + 15;
-  doc.setFontSize(7);
-  doc.setTextColor(128, 128, 128);
-  doc.text("This is a computer-generated document. No signature required.", pageWidth / 2, y, { align: "center" });
-  y += 4;
-  doc.text(`Generated on: ${format(new Date(), "MMMM dd, yyyy hh:mm a")}`, pageWidth / 2, y, { align: "center" });
-
-  // Download
   const periodStr = format(periodStart, "MMMdd") + "-" + format(periodEnd, "MMMdd_yyyy");
   const fileName = `Payslip_${employee.last_name}_${employee.first_name}_${periodStr}.pdf`;
-  doc.save(fileName);
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
 }

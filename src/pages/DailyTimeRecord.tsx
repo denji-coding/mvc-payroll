@@ -492,7 +492,15 @@ export default function DailyTimeRecord() {
                           ) : isFuture ? (
                             <Badge variant="outline">-</Badge>
                           ) : record ? (
-                            getStatusBadge(record.status)
+                            (() => {
+                              // Detect half-day: has morning but no afternoon (or vice versa), and day has passed
+                              const hasMorning = !!(record.morning_in || record.morning_out);
+                              const hasAfternoon = !!(record.afternoon_in || record.afternoon_out);
+                              if (record.status === 'half_day' || (record.status === 'present' && (hasMorning !== hasAfternoon))) {
+                                return <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-300">Half Day</Badge>;
+                              }
+                              return getStatusBadge(record.status);
+                            })()
                           ) : (
                             <Badge variant="destructive">Absent</Badge>
                           )}

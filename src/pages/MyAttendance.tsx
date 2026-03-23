@@ -152,7 +152,7 @@ export default function MyAttendance() {
             <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg">
                 <p className="text-xs md:text-sm text-muted-foreground">Status</p>
-                <div className="mt-1">{getStatusBadge(attendance.status)}</div>
+                <div className="mt-1">{getStatusBadge(attendance.status, attendance)}</div>
               </div>
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg">
                 <p className="text-xs md:text-sm text-muted-foreground">AM In</p>

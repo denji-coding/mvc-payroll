@@ -120,7 +120,7 @@ export default function MyAttendance() {
     { id: 'pm_in', header: 'PM In', accessorFn: (row) => row.afternoon_in, cell: ({ getValue }) => formatTime(getValue() as string) },
     { id: 'pm_out', header: 'PM Out', accessorFn: (row) => row.afternoon_out || row.time_out, cell: ({ getValue }) => formatTime(getValue() as string) },
     { accessorKey: 'hours_worked', header: 'Hours', cell: ({ getValue }) => getValue() || '-' },
-    { accessorKey: 'status', header: 'Status', cell: ({ getValue }) => getStatusBadge(getValue() as string) },
+    { accessorKey: 'status', header: 'Status', cell: ({ row }) => getStatusBadge(row.original.status, row.original) },
   ];
 
   return (

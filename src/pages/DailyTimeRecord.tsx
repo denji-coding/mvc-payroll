@@ -136,7 +136,7 @@ export default function DailyTimeRecord() {
     if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, absentDays: 0 };
     
     const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
-    const daysWorked = attendance.filter(a => a.status === 'present' || a.status === 'late').length;
+    const daysWorked = attendance.filter(a => a.status === 'present' || a.status === 'late' || a.status === 'half_day').length;
     const totalHours = attendance.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
     const lateDays = attendance.filter(a => (a.late_minutes || 0) > 0).length;
     const attendedDates = new Set(attendance.map(a => a.date));
@@ -177,6 +177,8 @@ export default function DailyTimeRecord() {
         return <Badge variant="destructive">Absent</Badge>;
       case 'on_leave':
         return <Badge variant="outline">On Leave</Badge>;
+      case 'half_day':
+        return <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-300">Half Day</Badge>;
       default:
         return <Badge variant="outline">-</Badge>;
     }

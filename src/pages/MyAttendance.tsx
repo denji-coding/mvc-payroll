@@ -59,7 +59,18 @@ export default function MyAttendance() {
     return format(new Date(dateString), 'hh:mm a');
   };
 
-  const getStatusBadge = (status: string | null) => {
+  const isHalfDayRecord = (record: any) => {
+    if (record.status === 'half_day') return true;
+    if (record.status !== 'present') return false;
+    const hasMorning = !!(record.morning_in || record.morning_out);
+    const hasAfternoon = !!(record.afternoon_in || record.afternoon_out);
+    return hasMorning !== hasAfternoon;
+  };
+
+  const getStatusBadge = (status: string | null, record?: any) => {
+    if (record && isHalfDayRecord(record)) {
+      return <Badge className="bg-orange-100 text-orange-700 border-orange-300">Half Day</Badge>;
+    }
     switch (status) {
       case 'present':
         return <Badge className="bg-success/10 text-success border-success/20">Present</Badge>;
@@ -69,6 +80,8 @@ export default function MyAttendance() {
         return <Badge className="bg-destructive/10 text-destructive border-destructive/20">Absent</Badge>;
       case 'on_leave':
         return <Badge className="bg-info/10 text-info border-info/20">On Leave</Badge>;
+      case 'half_day':
+        return <Badge className="bg-orange-100 text-orange-700 border-orange-300">Half Day</Badge>;
       default:
         return <Badge variant="secondary">{status || 'Unknown'}</Badge>;
     }
@@ -107,7 +120,7 @@ export default function MyAttendance() {
     { id: 'pm_in', header: 'PM In', accessorFn: (row) => row.afternoon_in, cell: ({ getValue }) => formatTime(getValue() as string) },
     { id: 'pm_out', header: 'PM Out', accessorFn: (row) => row.afternoon_out || row.time_out, cell: ({ getValue }) => formatTime(getValue() as string) },
     { accessorKey: 'hours_worked', header: 'Hours', cell: ({ getValue }) => getValue() || '-' },
-    { accessorKey: 'status', header: 'Status', cell: ({ getValue }) => getStatusBadge(getValue() as string) },
+    { accessorKey: 'status', header: 'Status', cell: ({ row }) => getStatusBadge(row.original.status, row.original) },
   ];
 
   return (
@@ -139,7 +152,7 @@ export default function MyAttendance() {
             <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg">
                 <p className="text-xs md:text-sm text-muted-foreground">Status</p>
-                <div className="mt-1">{getStatusBadge(attendance.status)}</div>
+                <div className="mt-1">{getStatusBadge(attendance.status, attendance)}</div>
               </div>
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg">
                 <p className="text-xs md:text-sm text-muted-foreground">AM In</p>

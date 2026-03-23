@@ -177,6 +177,8 @@ export default function DailyTimeRecord() {
         return <Badge variant="destructive">Absent</Badge>;
       case 'on_leave':
         return <Badge variant="outline">On Leave</Badge>;
+      case 'half_day':
+        return <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-300">Half Day</Badge>;
       default:
         return <Badge variant="outline">-</Badge>;
     }

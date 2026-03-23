@@ -59,7 +59,18 @@ export default function MyAttendance() {
     return format(new Date(dateString), 'hh:mm a');
   };
 
-  const getStatusBadge = (status: string | null) => {
+  const isHalfDayRecord = (record: any) => {
+    if (record.status === 'half_day') return true;
+    if (record.status !== 'present') return false;
+    const hasMorning = !!(record.morning_in || record.morning_out);
+    const hasAfternoon = !!(record.afternoon_in || record.afternoon_out);
+    return hasMorning !== hasAfternoon;
+  };
+
+  const getStatusBadge = (status: string | null, record?: any) => {
+    if (record && isHalfDayRecord(record)) {
+      return <Badge className="bg-orange-100 text-orange-700 border-orange-300">Half Day</Badge>;
+    }
     switch (status) {
       case 'present':
         return <Badge className="bg-success/10 text-success border-success/20">Present</Badge>;
@@ -69,6 +80,8 @@ export default function MyAttendance() {
         return <Badge className="bg-destructive/10 text-destructive border-destructive/20">Absent</Badge>;
       case 'on_leave':
         return <Badge className="bg-info/10 text-info border-info/20">On Leave</Badge>;
+      case 'half_day':
+        return <Badge className="bg-orange-100 text-orange-700 border-orange-300">Half Day</Badge>;
       default:
         return <Badge variant="secondary">{status || 'Unknown'}</Badge>;
     }

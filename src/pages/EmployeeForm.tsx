@@ -586,7 +586,15 @@ export default function EmployeeForm() {
               <Label>SSS Number</Label>
               <Input
                 value={form.sss_number}
-                onChange={(e) => updateField("sss_number", e.target.value.replace(/[^0-9-]/g, "").slice(0, 12))}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                  const formatted = digits.length > 2 && digits.length <= 9
+                    ? `${digits.slice(0, 2)}-${digits.slice(2)}`
+                    : digits.length > 9
+                    ? `${digits.slice(0, 2)}-${digits.slice(2, 9)}-${digits.slice(9)}`
+                    : digits;
+                  updateField("sss_number", formatted);
+                }}
                 placeholder="XX-XXXXXXX-X"
                 maxLength={12}
               />
@@ -595,7 +603,15 @@ export default function EmployeeForm() {
               <Label>PhilHealth Number</Label>
               <Input
                 value={form.philhealth_number}
-                onChange={(e) => updateField("philhealth_number", e.target.value.replace(/[^0-9-]/g, "").slice(0, 14))}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 12);
+                  const formatted = digits.length > 2 && digits.length <= 11
+                    ? `${digits.slice(0, 2)}-${digits.slice(2)}`
+                    : digits.length > 11
+                    ? `${digits.slice(0, 2)}-${digits.slice(2, 11)}-${digits.slice(11)}`
+                    : digits;
+                  updateField("philhealth_number", formatted);
+                }}
                 placeholder="XX-XXXXXXXXX-X"
                 maxLength={14}
               />
@@ -604,7 +620,15 @@ export default function EmployeeForm() {
               <Label>Pag-IBIG Number</Label>
               <Input
                 value={form.pagibig_number}
-                onChange={(e) => updateField("pagibig_number", e.target.value.replace(/[^0-9-]/g, "").slice(0, 14))}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 12);
+                  const formatted = digits.length > 4 && digits.length <= 8
+                    ? `${digits.slice(0, 4)}-${digits.slice(4)}`
+                    : digits.length > 8
+                    ? `${digits.slice(0, 4)}-${digits.slice(4, 8)}-${digits.slice(8)}`
+                    : digits;
+                  updateField("pagibig_number", formatted);
+                }}
                 placeholder="XXXX-XXXX-XXXX"
                 maxLength={14}
               />

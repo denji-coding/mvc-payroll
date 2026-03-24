@@ -30,6 +30,26 @@ serve(async (req) => {
   }
 
   try {
+    // Validate caller: accept terminal secret header OR valid Supabase API key
+    const terminalSecret = req.headers.get('x-terminal-secret');
+    const expectedSecret = Deno.env.get('RFID_TERMINAL_SECRET');
+    const authHeader = req.headers.get('Authorization');
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    const hasValidTerminalSecret = expectedSecret && terminalSecret === expectedSecret;
+    const hasValidApiKey = authHeader && (
+      (anonKey && authHeader.includes(anonKey)) ||
+      (serviceKey && authHeader.includes(serviceKey))
+    );
+    
+    if (!hasValidTerminalSecret && !hasValidApiKey) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);

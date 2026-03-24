@@ -550,7 +550,9 @@ export default function EmployeeForm() {
                   <SelectContent>
                     <SelectItem value="employee">Employee</SelectItem>
                     <SelectItem value="branch_manager">Branch Manager</SelectItem>
-                    <SelectItem value="hr_admin">HR Admin</SelectItem>
+                    {isHrAdminPosition && (
+                      <SelectItem value="hr_admin">HR Admin</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
                 {isHrAdminPosition && (

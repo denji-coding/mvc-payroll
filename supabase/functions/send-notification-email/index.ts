@@ -147,6 +147,16 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Validate that the caller is an internal service (using service role key)
+    const authHeader = req.headers.get('Authorization');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!authHeader || !supabaseServiceKey || !authHeader.includes(supabaseServiceKey)) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const gmailUser = Deno.env.get("GMAIL_USER");
     const gmailPassword = Deno.env.get("GMAIL_APP_PASSWORD");
 

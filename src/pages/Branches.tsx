@@ -144,10 +144,10 @@ export default function Branches() {
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? 'Edit Branch' : 'Add New Branch'}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div><Label>Branch Name <span className="text-destructive">*</span></Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
-              <div><Label>Branch Code <span className="text-destructive">*</span></Label><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} required /></div>
-              <div><Label>Address</Label><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
-              <div><Label>Contact Number</Label><Input value={form.contact_number} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} /></div>
+              <div><Label>Branch Name <span className="text-destructive">*</span></Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Main Branch" required /></div>
+              <div><Label>Branch Code <span className="text-destructive">*</span></Label><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="e.g. MB-001" required /></div>
+              <div><Label>Address</Label><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="e.g. 123 Main St, City" /></div>
+              <div><Label>Contact Number</Label><Input value={form.contact_number} onChange={(e) => handleContactNumberChange(e.target.value)} placeholder="e.g. 09123456789" maxLength={11} /></div>
               {editing && <div className="flex items-center gap-2"><Switch checked={form.is_active} onCheckedChange={(checked) => setForm({ ...form, is_active: checked })} /><Label>Active</Label></div>}
               <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>{editing ? 'Update' : 'Create'} Branch</Button>
             </form>

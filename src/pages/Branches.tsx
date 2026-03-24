@@ -60,8 +60,28 @@ export default function Branches() {
     return branchesWithCounts.filter(b => b.is_active === false);
   }, [branchesWithCounts, statusFilter]);
 
+  const handleContactNumberChange = (value: string) => {
+    const digits = value.replace(/[^0-9]/g, '').slice(0, 11);
+    setForm({ ...form, contact_number: digits });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validate contact number length
+    if (form.contact_number && form.contact_number.length > 0 && form.contact_number.length !== 11) {
+      toast({ variant: 'destructive', title: 'Invalid Contact Number', description: 'Contact number must be exactly 11 digits.' });
+      return;
+    }
+    // Check duplicate contact number
+    if (form.contact_number && form.contact_number.length === 11) {
+      const duplicate = branchesWithCounts.find(
+        b => b.contact_number === form.contact_number && (!editing || b.id !== editing.id)
+      );
+      if (duplicate) {
+        toast({ variant: 'destructive', title: 'Duplicate Contact Number', description: `This contact number is already used by branch "${duplicate.name}".` });
+        return;
+      }
+    }
     if (editing) await updateMutation.mutateAsync({ id: editing.id, ...form });
     else await createMutation.mutateAsync(form);
     setOpen(false); setEditing(null); setForm({ name: '', code: '', address: '', contact_number: '', is_active: true });

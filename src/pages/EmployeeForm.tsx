@@ -543,7 +543,7 @@ export default function EmployeeForm() {
             <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
               <div>
                 <RequiredLabel>Role</RequiredLabel>
-                <Select value={form.role} onValueChange={(v) => updateField("role", v)}>
+                <Select value={form.role} onValueChange={(v) => updateField("role", v)} disabled={isHrAdminPosition}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
@@ -553,6 +553,11 @@ export default function EmployeeForm() {
                     <SelectItem value="hr_admin">HR Admin</SelectItem>
                   </SelectContent>
                 </Select>
+                {isHrAdminPosition && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Role is automatically set to HR Admin based on position.
+                  </p>
+                )}
               </div>
               <div>
                 <RequiredLabel>Password</RequiredLabel>

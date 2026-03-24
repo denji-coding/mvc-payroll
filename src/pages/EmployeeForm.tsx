@@ -303,7 +303,20 @@ export default function EmployeeForm() {
     }
   };
 
-  const updateField = (field: string, value: string) => setForm({ ...form, [field]: value });
+  const isHrAdminPosition = form.position.toLowerCase() === 'hr admin';
+
+  const updateField = (field: string, value: string) => {
+    if (field === 'position') {
+      const isHrAdmin = value.toLowerCase() === 'hr admin';
+      setForm((prev) => ({
+        ...prev,
+        position: value,
+        role: isHrAdmin ? 'hr_admin' : prev.role === 'hr_admin' ? 'employee' : prev.role,
+      }));
+      return;
+    }
+    setForm({ ...form, [field]: value });
+  };
 
   const [passwordManuallyEdited, setPasswordManuallyEdited] = useState(false);
 

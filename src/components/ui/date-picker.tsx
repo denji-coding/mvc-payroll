@@ -23,7 +23,7 @@ const MONTHS = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
-const YEARS = Array.from({ length: 51 }, (_, i) => 2000 + i);
+const YEARS = Array.from({ length: 81 }, (_, i) => 1960 + i);
 
 interface DatePickerProps {
   date: Date | undefined;

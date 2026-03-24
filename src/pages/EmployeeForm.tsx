@@ -303,7 +303,20 @@ export default function EmployeeForm() {
     }
   };
 
-  const updateField = (field: string, value: string) => setForm({ ...form, [field]: value });
+  const isHrAdminPosition = form.position.toLowerCase() === 'hr admin';
+
+  const updateField = (field: string, value: string) => {
+    if (field === 'position') {
+      const isHrAdmin = value.toLowerCase() === 'hr admin';
+      setForm((prev) => ({
+        ...prev,
+        position: value,
+        role: isHrAdmin ? 'hr_admin' : prev.role === 'hr_admin' ? 'employee' : prev.role,
+      }));
+      return;
+    }
+    setForm({ ...form, [field]: value });
+  };
 
   const [passwordManuallyEdited, setPasswordManuallyEdited] = useState(false);
 
@@ -530,7 +543,7 @@ export default function EmployeeForm() {
             <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
               <div>
                 <RequiredLabel>Role</RequiredLabel>
-                <Select value={form.role} onValueChange={(v) => updateField("role", v)}>
+                <Select value={form.role} onValueChange={(v) => updateField("role", v)} disabled={isHrAdminPosition}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
@@ -540,6 +553,11 @@ export default function EmployeeForm() {
                     <SelectItem value="hr_admin">HR Admin</SelectItem>
                   </SelectContent>
                 </Select>
+                {isHrAdminPosition && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Role is automatically set to HR Admin based on position.
+                  </p>
+                )}
               </div>
               <div>
                 <RequiredLabel>Password</RequiredLabel>

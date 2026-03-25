@@ -43,8 +43,6 @@ export default function Auth() {
       setShowExpiredBanner(true);
     }
   }, [sessionExpired]);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -138,6 +138,15 @@ export default function Auth() {
           <p className="text-muted-foreground mt-1">HR & Payroll Management System</p>
         </div>
 
+        {showExpiredBanner && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Your session has expired due to inactivity. Please sign in again.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Card className="shadow-xl border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Welcome Back</CardTitle>

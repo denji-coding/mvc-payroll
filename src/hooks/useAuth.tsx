@@ -1,9 +1,13 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
 type AppRole = 'hr_admin' | 'branch_manager' | 'employee';
+
+const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
+const LAST_ACTIVITY_KEY = 'mvc_last_activity';
+const SESSION_EXPIRED_KEY = 'mvc_session_expired';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +21,8 @@ interface AuthContextType {
     mustChangePassword?: boolean;
   } | null;
   loading: boolean;
+  sessionExpired: boolean;
+  clearSessionExpired: () => void;
   refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: Error | null }>;

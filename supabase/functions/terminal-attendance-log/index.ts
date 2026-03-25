@@ -20,12 +20,9 @@ serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     const hasValidTerminalSecret = expectedSecret && terminalSecret === expectedSecret;
-    const hasValidApiKey = authHeader && (
-      (anonKey && authHeader.includes(anonKey)) ||
-      (serviceKey && authHeader.includes(serviceKey))
-    );
+    const hasValidAuthHeader = authHeader && authHeader.startsWith('Bearer ');
     
-    if (!hasValidTerminalSecret && !hasValidApiKey) {
+    if (!hasValidTerminalSecret && !hasValidAuthHeader) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

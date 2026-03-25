@@ -67,6 +67,8 @@ export default function Auth() {
       return;
     }
 
+    setShowExpiredBanner(false);
+    clearSessionExpired();
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);

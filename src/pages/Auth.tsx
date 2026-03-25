@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,13 +21,14 @@ import {
 import companyLogoDefault from '@/assets/company-logo.png';
 import { useCompanyInfo } from '@/hooks/useCompanyInfo';
 
+const SESSION_EXPIRED_KEY = 'mvc_session_expired';
+
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 export default function Auth() {
-  const navigate = useNavigate();
   const { signIn, sessionExpired, clearSessionExpired } = useAuth();
   const { toast } = useToast();
   const { data: companyInfo } = useCompanyInfo();
@@ -39,9 +39,21 @@ export default function Auth() {
   const [showExpiredBanner, setShowExpiredBanner] = useState(sessionExpired);
 
   useEffect(() => {
-    if (sessionExpired) {
-      setShowExpiredBanner(true);
-    }
+    const syncExpiredBanner = () => {
+      const expiredInStorage = localStorage.getItem(SESSION_EXPIRED_KEY) === 'true';
+      if (sessionExpired || expiredInStorage) {
+        setShowExpiredBanner(true);
+      }
+    };
+
+    syncExpiredBanner();
+    window.addEventListener('focus', syncExpiredBanner);
+    document.addEventListener('visibilitychange', syncExpiredBanner);
+
+    return () => {
+      window.removeEventListener('focus', syncExpiredBanner);
+      document.removeEventListener('visibilitychange', syncExpiredBanner);
+    };
   }, [sessionExpired]);
 
   const [email, setEmail] = useState('');

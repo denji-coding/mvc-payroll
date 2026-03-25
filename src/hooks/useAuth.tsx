@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 
 type AppRole = 'hr_admin' | 'branch_manager' | 'employee';
 
@@ -54,20 +53,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check session expiration on load and periodically
   useEffect(() => {
     const checkExpiration = async () => {
+      const hasExpiredFlag = localStorage.getItem(SESSION_EXPIRED_KEY) === 'true';
+      if (hasExpiredFlag) {
+        setSessionExpired(true);
+      }
+
       const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
-      if (lastActivity) {
-        const elapsed = Date.now() - parseInt(lastActivity, 10);
-        if (elapsed >= SESSION_TIMEOUT_MS) {
-          // Session expired due to inactivity
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          if (currentSession) {
-            localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
-            localStorage.removeItem(LAST_ACTIVITY_KEY);
-            await supabase.auth.signOut();
-            setSessionExpired(true);
-            return;
-          }
-        }
+      if (!lastActivity) return;
+
+      const lastActivityTs = Number.parseInt(lastActivity, 10);
+      if (Number.isNaN(lastActivityTs)) return;
+
+      const elapsed = Date.now() - lastActivityTs;
+      if (elapsed < SESSION_TIMEOUT_MS) return;
+
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
+      localStorage.removeItem(LAST_ACTIVITY_KEY);
+      setSessionExpired(true);
+
+      if (currentSession) {
+        await supabase.auth.signOut();
       }
     };
 

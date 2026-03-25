@@ -1,9 +1,13 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
 type AppRole = 'hr_admin' | 'branch_manager' | 'employee';
+
+const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
+const LAST_ACTIVITY_KEY = 'mvc_last_activity';
+const SESSION_EXPIRED_KEY = 'mvc_session_expired';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +21,8 @@ interface AuthContextType {
     mustChangePassword?: boolean;
   } | null;
   loading: boolean;
+  sessionExpired: boolean;
+  clearSessionExpired: () => void;
   refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: Error | null }>;
@@ -31,6 +37,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [profile, setProfile] = useState<AuthContextType['profile']>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(() => {
+    return localStorage.getItem(SESSION_EXPIRED_KEY) === 'true';
+  });
+
+  const clearSessionExpired = useCallback(() => {
+    setSessionExpired(false);
+    localStorage.removeItem(SESSION_EXPIRED_KEY);
+  }, []);
+
+  // Track user activity
+  const updateLastActivity = useCallback(() => {
+    localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+  }, []);
+
+  // Check session expiration on load and periodically
+  useEffect(() => {
+    const checkExpiration = async () => {
+      const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
+      if (lastActivity) {
+        const elapsed = Date.now() - parseInt(lastActivity, 10);
+        if (elapsed >= SESSION_TIMEOUT_MS) {
+          // Session expired due to inactivity
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (currentSession) {
+            localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
+            localStorage.removeItem(LAST_ACTIVITY_KEY);
+            await supabase.auth.signOut();
+            setSessionExpired(true);
+            return;
+          }
+        }
+      }
+    };
+
+    checkExpiration();
+
+    // Check every minute
+    const interval = setInterval(checkExpiration, 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for user activity events to update last activity timestamp
+  useEffect(() => {
+    if (!user) return;
+
+    updateLastActivity();
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    // Throttle activity updates to once per minute
+    let lastUpdate = Date.now();
+    const throttledUpdate = () => {
+      if (Date.now() - lastUpdate > 60000) {
+        lastUpdate = Date.now();
+        updateLastActivity();
+      }
+    };
+
+    events.forEach(event => window.addEventListener(event, throttledUpdate, { passive: true }));
+    return () => {
+      events.forEach(event => window.removeEventListener(event, throttledUpdate));
+    };
+  }, [user, updateLastActivity]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -39,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          updateLastActivity();
           setTimeout(() => {
             fetchUserData(session.user.id);
           }, 0);
@@ -113,9 +182,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    // Clear expired flag on new login attempt
+    clearSessionExpired();
+
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     
     if (!error && data.user) {
+      updateLastActivity();
+
       // Check if user must change password
       const { data: profileData } = await supabase
         .from('profiles')
@@ -124,12 +198,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
       
       if (profileData?.must_change_password) {
-        // Redirect to change password page
         window.location.href = '/change-password';
         return { error: null };
       }
       
-      // Normal login - redirect to dashboard
       window.location.href = '/';
     }
     
@@ -152,6 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
     await supabase.auth.signOut();
   };
 
@@ -160,7 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, profile, loading, refreshProfile, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, profile, loading, sessionExpired, clearSessionExpired, refreshProfile, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

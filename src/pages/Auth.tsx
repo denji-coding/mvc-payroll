@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, Mail } from 'lucide-react';
+import { Loader2, ArrowLeft, Mail, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import loginBg from '@/assets/login-bg.jpg';
@@ -28,13 +29,20 @@ const loginSchema = z.object({
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, sessionExpired, clearSessionExpired } = useAuth();
   const { toast } = useToast();
   const { data: companyInfo } = useCompanyInfo();
   const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;
   const companyName = companyInfo?.company_name || 'Migrants Venture Corporation';
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showExpiredBanner, setShowExpiredBanner] = useState(sessionExpired);
+
+  useEffect(() => {
+    if (sessionExpired) {
+      setShowExpiredBanner(true);
+    }
+  }, [sessionExpired]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,6 +67,8 @@ export default function Auth() {
       return;
     }
 
+    setShowExpiredBanner(false);
+    clearSessionExpired();
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
@@ -129,6 +139,15 @@ export default function Auth() {
           <h1 className="text-2xl font-bold text-foreground">{companyName}</h1>
           <p className="text-muted-foreground mt-1">HR & Payroll Management System</p>
         </div>
+
+        {showExpiredBanner && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Your session has expired due to inactivity. Please sign in again.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Card className="shadow-xl border-border/50">
           <CardHeader>

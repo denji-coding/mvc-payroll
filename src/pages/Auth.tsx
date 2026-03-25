@@ -29,11 +29,20 @@ const loginSchema = z.object({
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, sessionExpired, clearSessionExpired } = useAuth();
   const { toast } = useToast();
   const { data: companyInfo } = useCompanyInfo();
   const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;
   const companyName = companyInfo?.company_name || 'Migrants Venture Corporation';
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showExpiredBanner, setShowExpiredBanner] = useState(sessionExpired);
+
+  useEffect(() => {
+    if (sessionExpired) {
+      setShowExpiredBanner(true);
+    }
+  }, [sessionExpired]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 

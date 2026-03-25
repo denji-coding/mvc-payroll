@@ -39,9 +39,21 @@ export default function Auth() {
   const [showExpiredBanner, setShowExpiredBanner] = useState(sessionExpired);
 
   useEffect(() => {
-    if (sessionExpired) {
-      setShowExpiredBanner(true);
-    }
+    const syncExpiredBanner = () => {
+      const expiredInStorage = localStorage.getItem(SESSION_EXPIRED_KEY) === 'true';
+      if (sessionExpired || expiredInStorage) {
+        setShowExpiredBanner(true);
+      }
+    };
+
+    syncExpiredBanner();
+    window.addEventListener('focus', syncExpiredBanner);
+    document.addEventListener('visibilitychange', syncExpiredBanner);
+
+    return () => {
+      window.removeEventListener('focus', syncExpiredBanner);
+      document.removeEventListener('visibilitychange', syncExpiredBanner);
+    };
   }, [sessionExpired]);
 
   const [email, setEmail] = useState('');

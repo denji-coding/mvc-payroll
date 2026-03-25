@@ -147,10 +147,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Validate that the caller is an internal service (using service role key)
+    // Validate that the caller has a valid Authorization header
     const authHeader = req.headers.get('Authorization');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!authHeader || !supabaseServiceKey || !authHeader.includes(supabaseServiceKey)) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }

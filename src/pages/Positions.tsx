@@ -19,7 +19,7 @@ export default function Positions() {
   const updatePosition = useUpdatePosition();
   const deletePosition = useDeletePosition();
 
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('active');
   const [createOpen, setCreateOpen] = useState(false);
   const [editPosition, setEditPosition] = useState<any>(null);
   const [form, setForm] = useState({ name: '', description: '', is_active: true });

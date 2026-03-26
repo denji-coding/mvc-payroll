@@ -39,7 +39,7 @@ function AttendanceStatCard({ label, value, colorClass, loading, showBorderL = f
 
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('present');
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
   const { data: attendance, isLoading } = useAttendanceByDate(dateStr);
   const { data: stats, isLoading: statsLoading } = useAttendanceStats(dateStr);

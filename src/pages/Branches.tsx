@@ -27,7 +27,7 @@ export default function Branches() {
   const deleteMutation = useDeleteBranch();
   
   const [branchesWithCounts, setBranchesWithCounts] = useState<BranchWithCounts[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('active');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState({ name: '', code: '', address: '', contact_number: '', is_active: true });

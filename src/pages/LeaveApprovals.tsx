@@ -18,7 +18,7 @@ export default function LeaveApprovals() {
   const { data: leaves, isLoading } = useLeaveRequests();
   const approveLeave = useApproveLeaveRequest();
 
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('pending');
   const [reviewLeave, setReviewLeave] = useState<any>(null);
   const [remarks, setRemarks] = useState('');
 
@@ -86,10 +86,10 @@ export default function LeaveApprovals() {
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <div className="overflow-x-auto">
               <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
-                <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
                 <TabsTrigger value="approved">Approved</TabsTrigger>
                 <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>

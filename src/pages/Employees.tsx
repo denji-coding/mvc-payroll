@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, RotateCcw, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, RotateCcw, Eye, Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,7 +17,7 @@ export default function Employees() {
   const { role } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'all' | 'active' | 'inactive' | 'deleted'>('all');
+  const [viewMode, setViewMode] = useState<'all' | 'active' | 'inactive' | 'deleted'>('active');
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -149,8 +149,8 @@ export default function Employees() {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={deletingId === emp.id}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                       {deletingId === emp.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -161,9 +161,9 @@ export default function Employees() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, formatFullName(emp.first_name, emp.last_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Delete Permanently
-                      </AlertDialogAction>
+                       <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, formatFullName(emp.first_name, emp.last_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={deletingId === emp.id}>
+                         {deletingId === emp.id ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...</> : 'Delete Permanently'}
+                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -201,10 +201,10 @@ export default function Employees() {
         <CardHeader>
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="inactive">Inactive</TabsTrigger>
               <TabsTrigger value="deleted">Deleted</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>

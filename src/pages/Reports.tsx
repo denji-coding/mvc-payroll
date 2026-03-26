@@ -11,12 +11,12 @@ import { DateInput } from '@/components/ui/date-picker';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
-type ReportType = 'employee-masterlist' | 'attendance-summary' | 'leave-balance' | 'payroll-summary' | 'gov-contributions';
+type ReportType = 'employee-masterlist' | 'attendance-summary' | 'payroll-summary' | 'gov-contributions';
 
 const reports = [
   { id: 'employee-masterlist' as ReportType, title: 'Employee Masterlist', description: 'Complete list of all employees with details', icon: Users, category: 'HR' },
   { id: 'attendance-summary' as ReportType, title: 'Attendance Summary', description: 'Daily, weekly, or monthly attendance reports', icon: FileText, category: 'HR' },
-  { id: 'leave-balance' as ReportType, title: 'Leave Balance Report', description: 'Leave credits and usage per employee', icon: FileText, category: 'HR' },
+  
   { id: 'payroll-summary' as ReportType, title: 'Payroll Summary', description: 'Payroll totals per period', icon: PhilippinePeso, category: 'Payroll' },
   { id: 'gov-contributions' as ReportType, title: 'Government Contributions', description: 'SSS, PhilHealth, Pag-IBIG reports', icon: HandCoins, category: 'Payroll' },
 ];
@@ -148,25 +148,6 @@ export default function Reports() {
           ]);
           await downloadExcel('Attendance Summary', headers, rows, 'attendance-summary');
           toast.success('Attendance Summary report generated successfully');
-          break;
-        }
-        case 'leave-balance': {
-          const { data, error } = await supabase.from('leave_credits')
-            .select('*, employees(employee_id, first_name, last_name)')
-            .eq('year', new Date().getFullYear());
-          if (error) throw error;
-          const headers = ['Employee ID', 'Name', 'Leave Type', 'Total Credits', 'Used Credits', 'Remaining Credits', 'Year'];
-          const rows = (data || []).map(c => [
-            (c.employees as any)?.employee_id || '',
-            `${(c.employees as any)?.first_name || ''} ${(c.employees as any)?.last_name || ''}`.trim(),
-            c.leave_type,
-            Number(c.total_credits || 0),
-            Number(c.used_credits || 0),
-            Number((c.total_credits || 0) - (c.used_credits || 0)),
-            c.year,
-          ]);
-          await downloadExcel('Leave Balance', headers, rows, 'leave-balance');
-          toast.success('Leave Balance report generated successfully');
           break;
         }
         case 'payroll-summary': {

@@ -19,7 +19,7 @@ export default function Positions() {
   const updatePosition = useUpdatePosition();
   const deletePosition = useDeletePosition();
 
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('active');
   const [createOpen, setCreateOpen] = useState(false);
   const [editPosition, setEditPosition] = useState<any>(null);
   const [form, setForm] = useState({ name: '', description: '', is_active: true });
@@ -106,9 +106,9 @@ export default function Positions() {
           <CardTitle>All Positions</CardTitle>
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="inactive">Inactive</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>

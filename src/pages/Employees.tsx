@@ -17,7 +17,7 @@ export default function Employees() {
   const { role } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'all' | 'active' | 'inactive' | 'deleted'>('all');
+  const [viewMode, setViewMode] = useState<'all' | 'active' | 'inactive' | 'deleted'>('active');
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 

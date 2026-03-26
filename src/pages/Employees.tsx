@@ -201,10 +201,10 @@ export default function Employees() {
         <CardHeader>
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="inactive">Inactive</TabsTrigger>
               <TabsTrigger value="deleted">Deleted</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>

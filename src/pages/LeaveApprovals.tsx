@@ -86,10 +86,10 @@ export default function LeaveApprovals() {
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <div className="overflow-x-auto">
               <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
-                <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
                 <TabsTrigger value="approved">Approved</TabsTrigger>
                 <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>

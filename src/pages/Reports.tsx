@@ -150,25 +150,6 @@ export default function Reports() {
           toast.success('Attendance Summary report generated successfully');
           break;
         }
-        case 'leave-balance': {
-          const { data, error } = await supabase.from('leave_credits')
-            .select('*, employees(employee_id, first_name, last_name)')
-            .eq('year', new Date().getFullYear());
-          if (error) throw error;
-          const headers = ['Employee ID', 'Name', 'Leave Type', 'Total Credits', 'Used Credits', 'Remaining Credits', 'Year'];
-          const rows = (data || []).map(c => [
-            (c.employees as any)?.employee_id || '',
-            `${(c.employees as any)?.first_name || ''} ${(c.employees as any)?.last_name || ''}`.trim(),
-            c.leave_type,
-            Number(c.total_credits || 0),
-            Number(c.used_credits || 0),
-            Number((c.total_credits || 0) - (c.used_credits || 0)),
-            c.year,
-          ]);
-          await downloadExcel('Leave Balance', headers, rows, 'leave-balance');
-          toast.success('Leave Balance report generated successfully');
-          break;
-        }
         case 'payroll-summary': {
           const { data, error } = await supabase.from('payroll_records')
             .select('*, employees(employee_id, first_name, last_name), payroll_periods(period_start, period_end, pay_date)')

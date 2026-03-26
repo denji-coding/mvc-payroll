@@ -106,9 +106,9 @@ export default function Positions() {
           <CardTitle>All Positions</CardTitle>
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="inactive">Inactive</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>

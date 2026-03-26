@@ -111,11 +111,11 @@ export default function Attendance() {
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <div className="overflow-x-auto">
               <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
-                <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="present">Present</TabsTrigger>
                 <TabsTrigger value="late">Late</TabsTrigger>
                 <TabsTrigger value="absent">Absent</TabsTrigger>
                 <TabsTrigger value="on_leave">On Leave</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
             </div>
           </Tabs>

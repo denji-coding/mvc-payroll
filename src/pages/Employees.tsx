@@ -149,8 +149,8 @@ export default function Employees() {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={deletingId === emp.id}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                       {deletingId === emp.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>

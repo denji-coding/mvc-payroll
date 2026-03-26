@@ -11,7 +11,7 @@ import { DateInput } from '@/components/ui/date-picker';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
-type ReportType = 'employee-masterlist' | 'attendance-summary' | 'leave-balance' | 'payroll-summary' | 'gov-contributions';
+type ReportType = 'employee-masterlist' | 'attendance-summary' | 'payroll-summary' | 'gov-contributions';
 
 const reports = [
   { id: 'employee-masterlist' as ReportType, title: 'Employee Masterlist', description: 'Complete list of all employees with details', icon: Users, category: 'HR' },

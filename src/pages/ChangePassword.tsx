@@ -26,6 +26,8 @@ const passwordSchema = z.object({
 
 export default function ChangePassword() {
   const navigate = useNavigate();
+  const { companyInfo } = useCompanyInfo();
+  const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);

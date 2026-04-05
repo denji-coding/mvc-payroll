@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Loader2, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { z } from 'zod';
 import { useCompanyInfo } from '@/hooks/useCompanyInfo';
@@ -29,7 +29,7 @@ export default function ChangePassword() {
   const { data: companyInfo } = useCompanyInfo();
   const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;
   const { user, profile } = useAuth();
-  const { toast } = useToast();
+  
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newPassword, setNewPassword] = useState('');
@@ -66,16 +66,13 @@ export default function ChangePassword() {
           .eq('id', user.id);
       }
 
-      toast({
-        title: 'Password Changed',
+      toast.success('Password Changed', {
         description: 'Your password has been updated successfully.',
       });
 
       navigate('/');
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
+      toast.error('Error', {
         description: error.message || 'Failed to change password',
       });
     } finally {

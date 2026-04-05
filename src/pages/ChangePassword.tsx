@@ -87,9 +87,7 @@ export default function ChangePassword() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/20 p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mb-4 shadow-lg">
-            <Building2 className="w-8 h-8 text-primary-foreground" />
-          </div>
+          <img src={companyLogo} alt="Company Logo" className="w-16 h-16 rounded-xl shadow-lg object-contain" />
           <h1 className="text-2xl font-bold text-foreground">Migrants Venture Corporation</h1>
           <p className="text-muted-foreground mt-1">HR & Payroll Management System</p>
         </div>

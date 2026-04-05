@@ -19,59 +19,52 @@ function generateTemporaryPassword(): string {
 }
 
 function getPasswordResetHtml(name: string, tempPassword: string, portalUrl: string): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
-    .header { background: #0066cc; color: white; padding: 20px; text-align: center; }
-    .content { padding: 30px; background: #f9f9f9; }
-    .credentials { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }
-    .credentials p { margin: 8px 0; }
-    .temp-password { font-size: 24px; font-weight: bold; color: #0066cc; letter-spacing: 2px; }
-    .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0; }
-    .button { display: inline-block; background: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
-    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Password Reset</h1>
-  </div>
-  <div class="content">
-    <p>Dear ${name},</p>
-    <p>We received a request to reset your password. Here is your temporary password:</p>
-    
-    <div class="credentials">
-      <p><strong>Temporary Password:</strong></p>
-      <p class="temp-password">${tempPassword}</p>
-    </div>
-    
-    <div class="warning">
-      <strong>⚠️ Important:</strong>
-      <ul style="margin: 10px 0;">
-        <li>This temporary password expires in <strong>24 hours</strong></li>
-        <li>You will be required to change your password immediately after logging in</li>
-        <li>If you did not request this password reset, please contact HR immediately</li>
-      </ul>
-    </div>
-    
-    <p style="text-align: center;">
-      <a href="${portalUrl}" class="button">Login to Portal</a>
-    </p>
-    
-    <p style="margin-top: 30px;">If you have any questions, please contact the HR department.</p>
-    
-    <p>Best regards,<br>MVC Corporation HR Team</p>
-  </div>
-  <div class="footer">
-    <p>This is an automated message. Please do not reply to this email.</p>
-    <p>© ${new Date().getFullYear()} MVC Corporation. All rights reserved.</p>
-  </div>
-</body>
-</html>`;
+  const year = new Date().getFullYear();
+  const parts = [
+    '<!DOCTYPE html>',
+    '<html><head><meta charset="UTF-8">',
+    '<style>',
+    'body{font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:0;}',
+    '.header{background:#165C26;color:white;padding:24px;text-align:center;border-radius:8px 8px 0 0;}',
+    '.header h1{margin:0;font-size:22px;font-weight:700;letter-spacing:0.5px;}',
+    '.content{padding:30px;background:#f9f9f9;}',
+    '.credentials{background:white;padding:20px;border-radius:8px;margin:20px 0;border-left:4px solid #f59e0b;}',
+    '.credentials p{margin:8px 0;}',
+    '.temp-password{font-size:24px;font-weight:bold;color:#165C26;letter-spacing:2px;}',
+    '.warning{background:#fef3c7;border:1px solid #f59e0b;padding:15px;border-radius:8px;margin:20px 0;}',
+    '.warning ul{margin:10px 0;padding-left:20px;}',
+    '.btn-wrap{text-align:center;margin:28px 0 12px 0;}',
+    '.btn{display:inline-block;background:#165C26;color:white;padding:14px 36px;',
+    'text-decoration:none;border-radius:8px;font-size:16px;font-weight:700;letter-spacing:0.3px;}',
+    '.footer{text-align:center;padding:20px;color:#666;font-size:12px;}',
+    '</style></head><body>',
+    '<div class="header"><h1>Password Reset</h1></div>',
+    '<div class="content">',
+    '<p>Dear ' + name + ',</p>',
+    '<p>We received a request to reset your password. Here is your temporary password:</p>',
+    '<div class="credentials">',
+    '<p><strong>Temporary Password:</strong></p>',
+    '<p class="temp-password">' + tempPassword + '</p>',
+    '</div>',
+    '<div class="warning">',
+    '<strong>&#9888;&#65039; Important:</strong>',
+    '<ul>',
+    '<li>This temporary password expires in <strong>24 hours</strong></li>',
+    '<li>You will be required to change your password immediately after logging in</li>',
+    '<li>If you did not request this password reset, please contact HR immediately</li>',
+    '</ul></div>',
+    '<div class="btn-wrap">',
+    '<a href="' + portalUrl + '" class="btn">Login to Employee Portal</a>',
+    '</div>',
+    '<p style="margin-top:30px;">If you have any questions, please contact the HR department.</p>',
+    '<p>Best regards,<br>Migrants Venture Corporation HR Team</p>',
+    '</div>',
+    '<div class="footer">',
+    '<p>This is an automated message. Please do not reply to this email.</p>',
+    '<p>&copy; ' + year + ' Migrants Venture Corporation. All rights reserved.</p>',
+    '</div></body></html>',
+  ];
+  return parts.join('');
 }
 
 Deno.serve(async (req) => {
@@ -113,7 +106,6 @@ Deno.serve(async (req) => {
 
     console.log("Processing forgot password for:", email);
 
-    // Find the user by email in profiles
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, email')
@@ -122,7 +114,6 @@ Deno.serve(async (req) => {
 
     if (profileError) {
       console.error("Error finding profile:", profileError);
-      // Don't reveal if email exists
       return new Response(
         JSON.stringify({ success: true, message: "If an account exists with this email, a password reset email will be sent." }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -131,18 +122,15 @@ Deno.serve(async (req) => {
 
     if (!profile) {
       console.log("No profile found for email:", email);
-      // Don't reveal if email exists
       return new Response(
         JSON.stringify({ success: true, message: "If an account exists with this email, a password reset email will be sent." }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Generate temporary password
     const tempPassword = generateTemporaryPassword();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    // Update user's password using admin API
     const { error: updateError } = await supabase.auth.admin.updateUserById(
       profile.id,
       { password: tempPassword }
@@ -156,29 +144,25 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Mark old tokens as used
     await supabase
       .from('password_reset_tokens')
       .update({ is_used: true })
       .eq('user_id', profile.id)
       .eq('is_used', false);
 
-    // Store the token record (we store a hash representation for audit, not the actual password)
     const { error: tokenError } = await supabase
       .from('password_reset_tokens')
       .insert({
         user_id: profile.id,
-        temp_password_hash: 'reset_' + Date.now(), // Audit trail only
+        temp_password_hash: 'reset_' + Date.now(),
         expires_at: expiresAt.toISOString(),
         is_used: false,
       });
 
     if (tokenError) {
       console.error("Error storing token:", tokenError);
-      // Continue anyway - the password was already reset
     }
 
-    // Set must_change_password flag
     const { error: flagError } = await supabase
       .from('profiles')
       .update({ must_change_password: true })
@@ -188,7 +172,6 @@ Deno.serve(async (req) => {
       console.error("Error setting must_change_password flag:", flagError);
     }
 
-    // Send email with temporary password
     const client = new SMTPClient({
       connection: {
         hostname: "smtp.gmail.com",
@@ -205,9 +188,9 @@ Deno.serve(async (req) => {
     const fullName = `${profile.first_name} ${profile.last_name}`;
 
     await client.send({
-      from: `MVC Corporation <${gmailUser}>`,
+      from: `Migrants Venture Corporation <${gmailUser}>`,
       to: profile.email,
-      subject: "Password Reset - MVC Corporation HR Portal",
+      subject: "Password Reset",
       content: "Please view this email in an HTML-capable email client.",
       html: getPasswordResetHtml(fullName, tempPassword, portalUrl),
     });

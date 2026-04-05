@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Loader2, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { z } from 'zod';
+import { useCompanyInfo } from '@/hooks/useCompanyInfo';
+import companyLogoDefault from '@/assets/company-logo.png';
 
 const passwordSchema = z.object({
   newPassword: z.string()
@@ -24,6 +26,8 @@ const passwordSchema = z.object({
 
 export default function ChangePassword() {
   const navigate = useNavigate();
+  const { data: companyInfo } = useCompanyInfo();
+  const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -83,9 +87,7 @@ export default function ChangePassword() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/20 p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mb-4 shadow-lg">
-            <Building2 className="w-8 h-8 text-primary-foreground" />
-          </div>
+          <img src={companyLogo} alt="Company Logo" className="w-16 h-16 rounded-xl shadow-lg object-contain" />
           <h1 className="text-2xl font-bold text-foreground">Migrants Venture Corporation</h1>
           <p className="text-muted-foreground mt-1">HR & Payroll Management System</p>
         </div>

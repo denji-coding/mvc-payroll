@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Loader2, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { z } from 'zod';
+import { useCompanyInfo } from '@/hooks/useCompanyInfo';
+import companyLogoDefault from '@/assets/company-logo.png';
 
 const passwordSchema = z.object({
   newPassword: z.string()

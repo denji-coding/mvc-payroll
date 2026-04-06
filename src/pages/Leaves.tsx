@@ -65,6 +65,7 @@ export default function Leaves() {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [filterMonth, setFilterMonth] = useState<string>(format(new Date(), "yyyy-MM"));
 
   const today = startOfToday();
   const selectedLeaveType: LeaveType | undefined = activeLeaveTypes.find((lt) => lt.name === form.leave_type);
@@ -231,6 +232,29 @@ export default function Leaves() {
     { accessorKey: "total_days", header: "Days" },
     { accessorKey: "status", header: "Status", cell: ({ getValue }) => getStatusBadge(getValue() as string) },
   ];
+
+  const filteredLeaves = useMemo(() => {
+    if (!myLeaves) return [];
+    if (!filterMonth || filterMonth === "all") return myLeaves;
+    const [year, month] = filterMonth.split("-").map(Number);
+    return myLeaves.filter((l: any) => {
+      const d = new Date(l.start_date);
+      return d.getFullYear() === year && d.getMonth() + 1 === month;
+    });
+  }, [myLeaves, filterMonth]);
+
+  const monthOptions = useMemo(() => {
+    const options: { value: string; label: string }[] = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      options.push({
+        value: format(d, "yyyy-MM"),
+        label: format(d, "MMMM yyyy"),
+      });
+    }
+    return options;
+  }, []);
 
   return (
     <div className="page-container">
@@ -432,8 +456,23 @@ export default function Leaves() {
 
       <Card>
         <CardHeader>
-          <CardTitle>My Leave Requests</CardTitle>
-          <CardDescription>View the status of your leave applications</CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <CardTitle>My Leave Requests</CardTitle>
+              <CardDescription>View the status of your leave applications</CardDescription>
+            </div>
+            <Select value={filterMonth} onValueChange={setFilterMonth}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Months</SelectItem>
+                {monthOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -441,7 +480,7 @@ export default function Leaves() {
           ) : (
             <DataTable
               columns={columns}
-              data={myLeaves || []}
+              data={filteredLeaves}
               searchPlaceholder="Search my leaves..."
               emptyMessage="No leave requests found"
             />

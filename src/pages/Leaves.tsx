@@ -250,7 +250,7 @@ export default function Leaves() {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       options.push({
         value: format(d, "yyyy-MM"),
-        label: format(d, "MMMM yyyy"),
+        label: format(d, "MMMM"),
       });
     }
     return options;

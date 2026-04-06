@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, XCircle } from 'lucide-react';
@@ -13,22 +14,54 @@ import { format } from 'date-fns';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { formatFullName } from '@/lib/formatName';
 
+const MONTHS = [
+  { value: 'all', label: 'All Months' },
+  { value: '1', label: 'January' },
+  { value: '2', label: 'February' },
+  { value: '3', label: 'March' },
+  { value: '4', label: 'April' },
+  { value: '5', label: 'May' },
+  { value: '6', label: 'June' },
+  { value: '7', label: 'July' },
+  { value: '8', label: 'August' },
+  { value: '9', label: 'September' },
+  { value: '10', label: 'October' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' },
+];
+
 export default function LeaveApprovals() {
   const { role } = useAuth();
   const { data: leaves, isLoading } = useLeaveRequests();
   const approveLeave = useApproveLeaveRequest();
 
   const [statusFilter, setStatusFilter] = useState<string>('pending');
+  const [monthFilter, setMonthFilter] = useState<string>(() => String(new Date().getMonth() + 1));
   const [reviewLeave, setReviewLeave] = useState<any>(null);
   const [remarks, setRemarks] = useState('');
 
   const filteredLeaves = useMemo(() => {
     if (!leaves) return [];
-    if (statusFilter === 'all') return leaves;
-    if (statusFilter === 'approved') return leaves.filter((l: any) => l.status === 'manager_approved' || l.status === 'hr_approved');
-    if (statusFilter === 'rejected') return leaves.filter((l: any) => l.status === 'rejected');
-    return leaves.filter((l: any) => l.status === statusFilter);
-  }, [leaves, statusFilter]);
+    let filtered = leaves;
+
+    // Status filter
+    if (statusFilter === 'approved') {
+      filtered = filtered.filter((l: any) => l.status === 'manager_approved' || l.status === 'hr_approved');
+    } else if (statusFilter !== 'all') {
+      filtered = filtered.filter((l: any) => l.status === statusFilter);
+    }
+
+    // Month filter
+    if (monthFilter !== 'all') {
+      const month = parseInt(monthFilter);
+      filtered = filtered.filter((l: any) => {
+        const startMonth = new Date(l.start_date).getMonth() + 1;
+        return startMonth === month;
+      });
+    }
+
+    return filtered;
+  }, [leaves, statusFilter, monthFilter]);
 
   const handleApprove = (action: 'approve' | 'reject') => {
     if (!reviewLeave) return;
@@ -83,16 +116,28 @@ export default function LeaveApprovals() {
         <CardHeader>
           <CardTitle>Leave Requests</CardTitle>
           <CardDescription>Review and approve/reject employee leave requests</CardDescription>
-          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-            <div className="overflow-x-auto">
-              <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
-                <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="approved">Approved</TabsTrigger>
-                <TabsTrigger value="rejected">Rejected</TabsTrigger>
-                <TabsTrigger value="all">All</TabsTrigger>
-              </TabsList>
-            </div>
-          </Tabs>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+              <div className="overflow-x-auto">
+                <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+                  <TabsTrigger value="pending">Pending</TabsTrigger>
+                  <TabsTrigger value="approved">Approved</TabsTrigger>
+                  <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                  <TabsTrigger value="all">All</TabsTrigger>
+                </TabsList>
+              </div>
+            </Tabs>
+            <Select value={monthFilter} onValueChange={setMonthFilter}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Filter by month" />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTHS.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

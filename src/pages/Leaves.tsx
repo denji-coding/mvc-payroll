@@ -235,7 +235,7 @@ export default function Leaves() {
 
   const filteredLeaves = useMemo(() => {
     if (!myLeaves) return [];
-    if (!filterMonth) return myLeaves;
+    if (!filterMonth || filterMonth === "all") return myLeaves;
     const [year, month] = filterMonth.split("-").map(Number);
     return myLeaves.filter((l: any) => {
       const d = new Date(l.start_date);

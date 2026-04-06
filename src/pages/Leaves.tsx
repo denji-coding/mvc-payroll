@@ -456,8 +456,23 @@ export default function Leaves() {
 
       <Card>
         <CardHeader>
-          <CardTitle>My Leave Requests</CardTitle>
-          <CardDescription>View the status of your leave applications</CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <CardTitle>My Leave Requests</CardTitle>
+              <CardDescription>View the status of your leave applications</CardDescription>
+            </div>
+            <Select value={filterMonth} onValueChange={setFilterMonth}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Months</SelectItem>
+                {monthOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -465,7 +480,7 @@ export default function Leaves() {
           ) : (
             <DataTable
               columns={columns}
-              data={myLeaves || []}
+              data={filteredLeaves}
               searchPlaceholder="Search my leaves..."
               emptyMessage="No leave requests found"
             />

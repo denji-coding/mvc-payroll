@@ -233,6 +233,29 @@ export default function Leaves() {
     { accessorKey: "status", header: "Status", cell: ({ getValue }) => getStatusBadge(getValue() as string) },
   ];
 
+  const filteredLeaves = useMemo(() => {
+    if (!myLeaves) return [];
+    if (!filterMonth) return myLeaves;
+    const [year, month] = filterMonth.split("-").map(Number);
+    return myLeaves.filter((l: any) => {
+      const d = new Date(l.start_date);
+      return d.getFullYear() === year && d.getMonth() + 1 === month;
+    });
+  }, [myLeaves, filterMonth]);
+
+  const monthOptions = useMemo(() => {
+    const options: { value: string; label: string }[] = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      options.push({
+        value: format(d, "yyyy-MM"),
+        label: format(d, "MMMM yyyy"),
+      });
+    }
+    return options;
+  }, []);
+
   return (
     <div className="page-container">
       <div className="page-header">

@@ -70,7 +70,6 @@ export function DataTable<TData, TValue>({
           )}
           <div className="sm:ml-auto">{headerExtra}</div>
         </div>
-        </div>
       )}
 
       <div className="overflow-x-auto rounded-md border">

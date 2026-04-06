@@ -56,7 +56,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {(searchable || headerExtra) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
           {searchable && (
             <div className="relative max-w-sm flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -68,7 +68,8 @@ export function DataTable<TData, TValue>({
               />
             </div>
           )}
-          {headerExtra}
+          <div className="sm:ml-auto">{headerExtra}</div>
+        </div>
         </div>
       )}
 

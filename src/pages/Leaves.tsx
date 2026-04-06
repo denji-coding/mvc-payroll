@@ -244,16 +244,15 @@ export default function Leaves() {
   }, [myLeaves, filterMonth]);
 
   const monthOptions = useMemo(() => {
-    const options: { value: string; label: string }[] = [];
     const now = new Date();
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      options.push({
+    const year = now.getFullYear();
+    return Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(year, i, 1);
+      return {
         value: format(d, "yyyy-MM"),
         label: format(d, "MMMM"),
-      });
-    }
-    return options;
+      };
+    });
   }, []);
 
   return (

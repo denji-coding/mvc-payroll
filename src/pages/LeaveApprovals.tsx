@@ -15,7 +15,6 @@ import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { formatFullName } from '@/lib/formatName';
 
 const MONTHS = [
-  { value: 'all', label: 'All Months' },
   { value: '1', label: 'January' },
   { value: '2', label: 'February' },
   { value: '3', label: 'March' },
@@ -28,6 +27,7 @@ const MONTHS = [
   { value: '10', label: 'October' },
   { value: '11', label: 'November' },
   { value: '12', label: 'December' },
+  { value: 'all', label: 'All Months' },
 ];
 
 export default function LeaveApprovals() {
@@ -116,34 +116,39 @@ export default function LeaveApprovals() {
         <CardHeader>
           <CardTitle>Leave Requests</CardTitle>
           <CardDescription>Review and approve/reject employee leave requests</CardDescription>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-              <div className="overflow-x-auto">
-                <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
-                  <TabsTrigger value="pending">Pending</TabsTrigger>
-                  <TabsTrigger value="approved">Approved</TabsTrigger>
-                  <TabsTrigger value="rejected">Rejected</TabsTrigger>
-                  <TabsTrigger value="all">All</TabsTrigger>
-                </TabsList>
-              </div>
-            </Tabs>
-            <Select value={monthFilter} onValueChange={setMonthFilter}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Filter by month" />
-              </SelectTrigger>
-              <SelectContent>
-                {MONTHS.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+            <div className="overflow-x-auto">
+              <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+                <TabsTrigger value="pending">Pending</TabsTrigger>
+                <TabsTrigger value="approved">Approved</TabsTrigger>
+                <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
+              </TabsList>
+            </div>
+          </Tabs>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
           ) : (
-            <DataTable columns={columns} data={filteredLeaves} searchPlaceholder="Search leave requests..." emptyMessage="No leave requests found" />
+            <DataTable
+              columns={columns}
+              data={filteredLeaves}
+              searchPlaceholder="Search leave requests..."
+              emptyMessage="No leave requests found"
+              headerExtra={
+                <Select value={monthFilter} onValueChange={setMonthFilter}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Filter by month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              }
+            />
           )}
         </CardContent>
       </Card>

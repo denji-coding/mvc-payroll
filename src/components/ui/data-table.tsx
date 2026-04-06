@@ -22,6 +22,7 @@ interface DataTableProps<TData, TValue> {
   searchable?: boolean;
   pageSize?: number;
   emptyMessage?: string;
+  headerExtra?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -31,6 +32,7 @@ export function DataTable<TData, TValue>({
   searchable = true,
   pageSize = 5,
   emptyMessage = "No results found.",
+  headerExtra,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -53,15 +55,20 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {searchable && (
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={searchPlaceholder}
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="pl-9"
-          />
+      {(searchable || headerExtra) && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          {searchable && (
+            <div className="relative max-w-sm flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={searchPlaceholder}
+                value={globalFilter}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          )}
+          {headerExtra}
         </div>
       )}
 

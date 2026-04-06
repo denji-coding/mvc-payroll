@@ -65,6 +65,7 @@ export default function Leaves() {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [filterMonth, setFilterMonth] = useState<string>(format(new Date(), "yyyy-MM"));
 
   const today = startOfToday();
   const selectedLeaveType: LeaveType | undefined = activeLeaveTypes.find((lt) => lt.name === form.leave_type);

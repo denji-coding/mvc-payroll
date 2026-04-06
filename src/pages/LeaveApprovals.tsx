@@ -15,7 +15,6 @@ import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { formatFullName } from '@/lib/formatName';
 
 const MONTHS = [
-  { value: 'all', label: 'All Months' },
   { value: '1', label: 'January' },
   { value: '2', label: 'February' },
   { value: '3', label: 'March' },
@@ -28,6 +27,7 @@ const MONTHS = [
   { value: '10', label: 'October' },
   { value: '11', label: 'November' },
   { value: '12', label: 'December' },
+  { value: 'all', label: 'All Months' },
 ];
 
 export default function LeaveApprovals() {

@@ -116,34 +116,39 @@ export default function LeaveApprovals() {
         <CardHeader>
           <CardTitle>Leave Requests</CardTitle>
           <CardDescription>Review and approve/reject employee leave requests</CardDescription>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-              <div className="overflow-x-auto">
-                <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
-                  <TabsTrigger value="pending">Pending</TabsTrigger>
-                  <TabsTrigger value="approved">Approved</TabsTrigger>
-                  <TabsTrigger value="rejected">Rejected</TabsTrigger>
-                  <TabsTrigger value="all">All</TabsTrigger>
-                </TabsList>
-              </div>
-            </Tabs>
-            <Select value={monthFilter} onValueChange={setMonthFilter}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Filter by month" />
-              </SelectTrigger>
-              <SelectContent>
-                {MONTHS.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+            <div className="overflow-x-auto">
+              <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+                <TabsTrigger value="pending">Pending</TabsTrigger>
+                <TabsTrigger value="approved">Approved</TabsTrigger>
+                <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
+              </TabsList>
+            </div>
+          </Tabs>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
           ) : (
-            <DataTable columns={columns} data={filteredLeaves} searchPlaceholder="Search leave requests..." emptyMessage="No leave requests found" />
+            <DataTable
+              columns={columns}
+              data={filteredLeaves}
+              searchPlaceholder="Search leave requests..."
+              emptyMessage="No leave requests found"
+              headerExtra={
+                <Select value={monthFilter} onValueChange={setMonthFilter}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Filter by month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              }
+            />
           )}
         </CardContent>
       </Card>

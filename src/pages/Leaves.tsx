@@ -85,9 +85,15 @@ export default function Leaves() {
   // LWP (Leave With Pay) credits check
   const lwpCreditsUsed = useMemo(() => {
     if (!myLeaves) return 0;
-    // Count total days of approved or pending "with_pay" leaves
+    const currentYear = new Date().getFullYear();
+    // Count total days of approved or pending "with_pay" leaves in the current year
     return myLeaves
-      .filter((l: any) => l.pay_type === 'with_pay' && ['pending', 'manager_approved', 'hr_approved'].includes(l.status))
+      .filter((l: any) => {
+        if (l.pay_type !== 'with_pay') return false;
+        if (!['pending', 'manager_approved', 'hr_approved'].includes(l.status)) return false;
+        const leaveYear = new Date(l.start_date).getFullYear();
+        return leaveYear === currentYear;
+      })
       .reduce((sum: number, l: any) => sum + (l.total_days || 0), 0);
   }, [myLeaves]);
 

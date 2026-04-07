@@ -371,6 +371,32 @@ export function useApproveLeaveRequest() {
   });
 }
 
+export function useCancelLeaveRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .update({ status: 'cancelled' as any })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['my-leave-requests'] });
+      toast.success('Leave request cancelled');
+    },
+    onError: (error) => {
+      toast.error(getSafeErrorMessage(error, 'Failed to cancel leave request'));
+    },
+  });
+}
+
 // Calculate working days between two dates
 export function calculateWorkingDays(startDate: Date, endDate: Date): number {
   let count = 0;

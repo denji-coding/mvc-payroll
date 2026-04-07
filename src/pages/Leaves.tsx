@@ -300,7 +300,7 @@ export default function Leaves() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">My Leaves</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(o) => { if (createLeave.isPending || uploading) return; setOpen(o); }}>
           <DialogTrigger asChild>
             <Button disabled={hasPendingLeave} title={hasPendingLeave ? "You have a pending leave request" : undefined}>
               <Plus className="mr-2 h-4 w-4" /> Request Leave

@@ -102,6 +102,12 @@ export default function Leaves() {
   const lwpRemaining = Math.max(0, lwpMaxCredits - lwpCreditsUsed);
   const lwpExhausted = lwpRemaining <= 0;
 
+  // Check if employee has a pending leave request
+  const hasPendingLeave = useMemo(() => {
+    if (!myLeaves) return false;
+    return myLeaves.some((l: any) => l.status === 'pending');
+  }, [myLeaves]);
+
   // Max days limit check
   const maxDays = selectedLeaveType?.max_days_per_application || selectedLeaveType?.default_credits;
   const exceedsLimit = maxDays && calculatedDays > maxDays;

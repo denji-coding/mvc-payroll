@@ -4,6 +4,7 @@ import { useMyLeaveRequests, useCreateLeaveRequest, useCancelLeaveRequest, useLe
 import { useLwpConfig } from "@/hooks/useSettings";
 import { useLeaveTypes, LeaveType } from "@/hooks/useLeaveTypes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2 } from "lucide-react";
+import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, startOfToday, isBefore, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -311,11 +312,6 @@ export default function Leaves() {
               <DialogTitle>New Leave Request</DialogTitle>
             </DialogHeader>
             <div className="max-h-[75vh] overflow-y-auto overflow-x-visible px-1 pb-1">
-              {hasPendingLeave && (
-                <div className="rounded-md border border-warning/50 bg-warning/5 p-3 text-sm text-warning mb-4">
-                  You have a pending leave request. Please wait for it to be processed before submitting a new one.
-                </div>
-              )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label>Leave Type</Label>
@@ -450,6 +446,15 @@ export default function Leaves() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {hasPendingLeave && (
+        <Alert variant="destructive" className="border-warning/50 bg-warning/10 text-warning [&>svg]:text-warning">
+          <Clock className="h-4 w-4" />
+          <AlertDescription>
+            You have a pending leave request awaiting HR processing. You cannot submit a new leave request until your pending request has been approved, rejected, or cancelled.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Leave Credits Card */}
       <Card className="mb-6">

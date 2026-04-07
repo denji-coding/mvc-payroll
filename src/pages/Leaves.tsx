@@ -57,6 +57,7 @@ export default function Leaves() {
   const { data: leaveTypes } = useLeaveTypes();
   const { data: lwpConfig } = useLwpConfig();
   const createLeave = useCreateLeaveRequest();
+  const cancelLeave = useCancelLeaveRequest();
 
   const activeLeaveTypes = (leaveTypes || []).filter((lt) => lt.is_active);
 
@@ -238,6 +239,39 @@ export default function Leaves() {
     },
     { accessorKey: "total_days", header: "Days" },
     { accessorKey: "status", header: "Status", cell: ({ getValue }) => getStatusBadge(getValue() as string) },
+    {
+      id: "actions",
+      header: "Action",
+      enableSorting: false,
+      cell: ({ row }) => {
+        const leave = row.original;
+        const canCancel = leave.status === "pending";
+        if (!canCancel) return null;
+        return (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={cancelLeave.isPending}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancel Leave Request?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will cancel your {leave.leave_type} leave request ({format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}). This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep Request</AlertDialogCancel>
+                <AlertDialogAction onClick={() => cancelLeave.mutate(leave.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  {cancelLeave.isPending ? "Cancelling..." : "Cancel Request"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        );
+      },
+    },
   ];
 
   const filteredLeaves = useMemo(() => {

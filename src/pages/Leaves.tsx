@@ -307,16 +307,6 @@ export default function Leaves() {
               <Plus className="mr-2 h-4 w-4" /> Request Leave
             </Button>
           </DialogTrigger>
-      </div>
-
-      {hasPendingLeave && (
-        <Alert variant="destructive" className="border-warning/50 bg-warning/10 text-warning [&>svg]:text-warning">
-          <Clock className="h-4 w-4" />
-          <AlertDescription>
-            You have a pending leave request awaiting HR processing. You cannot submit a new leave request until your pending request has been approved, rejected, or cancelled.
-          </AlertDescription>
-        </Alert>
-      )}
           <DialogContent className="max-w-lg max-h-[100vh] overflow-visible">
             <DialogHeader>
               <DialogTitle>New Leave Request</DialogTitle>

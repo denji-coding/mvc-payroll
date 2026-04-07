@@ -4,6 +4,7 @@ import { useMyLeaveRequests, useCreateLeaveRequest, useCancelLeaveRequest, useLe
 import { useLwpConfig } from "@/hooks/useSettings";
 import { useLeaveTypes, LeaveType } from "@/hooks/useLeaveTypes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

@@ -139,7 +139,7 @@ export default function Branches() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">Branches</h1>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ name: '', code: '', address: '', contact_number: '', is_active: true }); } }}>
+        <Dialog open={open} onOpenChange={(o) => { if (createMutation.isPending || updateMutation.isPending) return; setOpen(o); if (!o) { setEditing(null); setForm({ name: '', code: '', address: '', contact_number: '', is_active: true }); } }}>
           <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Add Branch</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? 'Edit Branch' : 'Add New Branch'}</DialogTitle></DialogHeader>

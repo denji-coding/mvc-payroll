@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useMyLeaveRequests, useCreateLeaveRequest, useLeaveCredits, calculateWorkingDays } from "@/hooks/useLeaves";
+import { useMyLeaveRequests, useCreateLeaveRequest, useCancelLeaveRequest, useLeaveCredits, calculateWorkingDays } from "@/hooks/useLeaves";
 import { useLwpConfig } from "@/hooks/useSettings";
 import { useLeaveTypes, LeaveType } from "@/hooks/useLeaveTypes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,7 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays } from "lucide-react";
+import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, startOfToday, isBefore, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +57,7 @@ export default function Leaves() {
   const { data: leaveTypes } = useLeaveTypes();
   const { data: lwpConfig } = useLwpConfig();
   const createLeave = useCreateLeaveRequest();
+  const cancelLeave = useCancelLeaveRequest();
 
   const activeLeaveTypes = (leaveTypes || []).filter((lt) => lt.is_active);
 
@@ -237,6 +239,39 @@ export default function Leaves() {
     },
     { accessorKey: "total_days", header: "Days" },
     { accessorKey: "status", header: "Status", cell: ({ getValue }) => getStatusBadge(getValue() as string) },
+    {
+      id: "actions",
+      header: "Action",
+      enableSorting: false,
+      cell: ({ row }) => {
+        const leave = row.original;
+        const canCancel = leave.status === "pending";
+        if (!canCancel) return null;
+        return (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={cancelLeave.isPending}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancel Leave Request?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will cancel your {leave.leave_type} leave request ({format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}). This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep Request</AlertDialogCancel>
+                <AlertDialogAction onClick={() => cancelLeave.mutate(leave.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  {cancelLeave.isPending ? "Cancelling..." : "Cancel Request"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        );
+      },
+    },
   ];
 
   const filteredLeaves = useMemo(() => {
@@ -265,7 +300,7 @@ export default function Leaves() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">My Leaves</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(o) => { if (createLeave.isPending || uploading) return; setOpen(o); }}>
           <DialogTrigger asChild>
             <Button disabled={hasPendingLeave} title={hasPendingLeave ? "You have a pending leave request" : undefined}>
               <Plus className="mr-2 h-4 w-4" /> Request Leave

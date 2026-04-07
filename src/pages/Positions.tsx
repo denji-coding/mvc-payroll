@@ -84,7 +84,7 @@ export default function Positions() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">Positions</h1>
-        <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) setForm({ name: '', description: '', is_active: true }); }}>
+        <Dialog open={createOpen} onOpenChange={(open) => { if (createPosition.isPending) return; setCreateOpen(open); if (!open) setForm({ name: '', description: '', is_active: true }); }}>
           <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Add Position</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Create Position</DialogTitle></DialogHeader>
@@ -121,7 +121,7 @@ export default function Positions() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!editPosition} onOpenChange={(open) => { if (!open) { setEditPosition(null); setForm({ name: '', description: '', is_active: true }); } }}>
+      <Dialog open={!!editPosition} onOpenChange={(open) => { if (updatePosition.isPending) return; if (!open) { setEditPosition(null); setForm({ name: '', description: '', is_active: true }); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Edit Position</DialogTitle></DialogHeader>
           <form onSubmit={handleEdit} className="space-y-4">

@@ -312,11 +312,6 @@ export default function Leaves() {
               <DialogTitle>New Leave Request</DialogTitle>
             </DialogHeader>
             <div className="max-h-[75vh] overflow-y-auto overflow-x-visible px-1 pb-1">
-              {hasPendingLeave && (
-                <div className="rounded-md border border-warning/50 bg-warning/5 p-3 text-sm text-warning mb-4">
-                  You have a pending leave request. Please wait for it to be processed before submitting a new one.
-                </div>
-              )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label>Leave Type</Label>

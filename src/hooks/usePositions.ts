@@ -29,7 +29,7 @@ export function useAllPositions() {
       const { data, error } = await supabase
         .from('positions')
         .select('*')
-        .order('name');
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },

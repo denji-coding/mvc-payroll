@@ -3,7 +3,7 @@ import { useCountUp } from '@/hooks/useCountUp';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download } from 'lucide-react';
+
 import { useAttendanceByDate, useAttendanceStats } from '@/hooks/useAttendance';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO } from 'date-fns';
@@ -90,10 +90,7 @@ export default function Attendance() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">Attendance</h1>
-        <div className="flex gap-2">
-          <DatePicker date={selectedDate} onDateChange={(d) => d && setSelectedDate(d)} className="w-[200px]" />
-          <Button variant="outline" onClick={exportCSV} disabled={!attendance?.length}><Download className="mr-2 h-4 w-4" /> Export</Button>
-        </div>
+        <DatePicker date={selectedDate} onDateChange={(d) => d && setSelectedDate(d)} className="w-[200px]" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">

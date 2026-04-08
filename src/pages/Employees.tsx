@@ -127,11 +127,11 @@ export default function Employees() {
         const isDeleted = emp.employment_status === 'terminated';
         return (
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" title="View" onClick={() => setSelectedEmployee(emp)}>
+            <Button variant="ghost" size="icon" title="View" onClick={() => setSelectedEmployee(emp)} disabled={!!deletingId}>
               <Eye className="h-4 w-4" />
             </Button>
             {role === 'hr_admin' && (
-              <Button variant="ghost" size="icon" asChild>
+              <Button variant="ghost" size="icon" asChild disabled={!!deletingId}>
                 <Link to={`/employees/${emp.id}`}><Edit className="h-4 w-4" /></Link>
               </Button>
             )}
@@ -139,7 +139,7 @@ export default function Employees() {
               <>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-success hover:text-success"><RotateCcw className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="text-success hover:text-success" disabled={!!deletingId}><RotateCcw className="h-4 w-4" /></Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {formatFullName(emp.first_name, emp.last_name)} to active status.</AlertDialogDescription></AlertDialogHeader>
@@ -172,7 +172,7 @@ export default function Employees() {
             {role === 'hr_admin' && !isDeleted && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={!!deletingId}><Trash2 className="h-4 w-4" /></Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader><AlertDialogTitle>Delete Employee?</AlertDialogTitle><AlertDialogDescription>This will set {formatFullName(emp.first_name, emp.last_name)}'s status to terminated.</AlertDialogDescription></AlertDialogHeader>

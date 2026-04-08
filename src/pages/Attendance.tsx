@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useCountUp } from '@/hooks/useCountUp';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download } from 'lucide-react';
+
 import { useAttendanceByDate, useAttendanceStats } from '@/hooks/useAttendance';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO } from 'date-fns';
@@ -55,19 +54,6 @@ export default function Attendance() {
     try { return format(parseISO(timestamp), 'hh:mm a'); } catch { return timestamp; }
   };
 
-  const exportCSV = () => {
-    if (!attendance || attendance.length === 0) return;
-    const headers = ['Employee ID', 'Name', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Hours Worked', 'Late (min)', 'Status'];
-    const rows = attendance.map((a: any) => [
-      a.employees?.employee_id || '', `${a.employees?.first_name || ''} ${a.employees?.last_name || ''}`,
-      formatTime(a.morning_in || a.time_in), formatTime(a.morning_out), formatTime(a.afternoon_in), formatTime(a.afternoon_out || a.time_out),
-      a.hours_worked?.toFixed(2) || '0', a.late_minutes || '0', a.status || 'present'
-    ]);
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `attendance-${dateStr}.csv`; a.click(); URL.revokeObjectURL(url);
-  };
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = { present: 'bg-success/20 text-success', late: 'bg-warning/20 text-warning', absent: 'bg-destructive/20 text-destructive', on_leave: 'bg-info/20 text-info' };
@@ -90,10 +76,7 @@ export default function Attendance() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">Attendance</h1>
-        <div className="flex gap-2">
-          <DatePicker date={selectedDate} onDateChange={(d) => d && setSelectedDate(d)} className="w-[200px]" />
-          <Button variant="outline" onClick={exportCSV} disabled={!attendance?.length}><Download className="mr-2 h-4 w-4" /> Export</Button>
-        </div>
+        <DatePicker date={selectedDate} onDateChange={(d) => d && setSelectedDate(d)} className="w-[200px]" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">

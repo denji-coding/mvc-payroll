@@ -1081,7 +1081,7 @@ function UserRoleManagement() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="employee">Employee</SelectItem>
-                            <SelectItem value="branch_manager">Branch Manager</SelectItem>
+                            {/* Branch Manager temporarily removed */}
                             <SelectItem value="hr_admin">HR Admin</SelectItem>
                           </SelectContent>
                         </Select>
@@ -1213,7 +1213,7 @@ function UserRoleManagement() {
 }
 
 function PermissionsManagement() {
-  const [selectedRole, setSelectedRole] = useState<AppRole>('branch_manager');
+  const [selectedRole, setSelectedRole] = useState<AppRole>('employee');
   const { data: permissions, isLoading } = useRolePermissions();
   const updatePermission = useUpdatePermission();
 
@@ -1226,7 +1226,7 @@ function PermissionsManagement() {
     updatePermission.mutate({ role, permissionKey, enabled });
   };
 
-  const roles: AppRole[] = ['branch_manager', 'employee'];
+  const roles: AppRole[] = ['employee'];
 
   return (
     <Card>
@@ -1250,7 +1250,6 @@ function PermissionsManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-48">Permission</TableHead>
-                  <TableHead className="w-40">Branch Manager</TableHead>
                   <TableHead className="w-40">Employee</TableHead>
                 </TableRow>
               </TableHeader>

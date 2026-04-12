@@ -102,7 +102,7 @@ export default function Branches() {
   const columns: ColumnDef<BranchWithCounts, any>[] = [
     { accessorKey: 'code', header: 'Code' },
     { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'manager_name', header: 'Manager', cell: ({ getValue }) => getValue() || <span className="text-muted-foreground">Not assigned</span> },
+    
     { accessorKey: 'employee_count', header: 'Employees', cell: ({ getValue }) => <div className="flex items-center gap-1"><Users className="h-4 w-4 text-muted-foreground" />{getValue() as number}</div> },
     { accessorKey: 'contact_number', header: 'Contact', cell: ({ getValue }) => getValue() || '-' },
     { accessorKey: 'is_active', header: 'Status', cell: ({ getValue }) => <Badge variant={getValue() ? 'default' : 'secondary'}>{getValue() ? 'Active' : 'Inactive'}</Badge> },

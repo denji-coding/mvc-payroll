@@ -547,9 +547,9 @@ export default function EmployeeForm() {
                   <SelectTrigger>
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
-                  <SelectContent>
+                    <SelectContent>
                     <SelectItem value="employee">Employee</SelectItem>
-                    <SelectItem value="branch_manager">Branch Manager</SelectItem>
+                    {/* Branch Manager temporarily removed */}
                     <SelectItem value="hr_admin" disabled={!isHrAdminPosition}>HR Admin</SelectItem>
                   </SelectContent>
                 </Select>

@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { CreditCard, User, CheckCircle2, XCircle, Clock, Loader2, AlertTriangle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAttendanceTerminal } from '@/hooks/useAttendanceTerminal';
@@ -203,7 +204,7 @@ export default function AttendanceTerminal() {
   }
 
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="h-screen overflow-hidden flex bg-white">
       {/* Left Sidebar - Dark Panel */}
       <div className="w-72 bg-[#1a3d2b] text-white flex flex-col">
         {/* Logo and Company Name */}
@@ -343,9 +344,9 @@ export default function AttendanceTerminal() {
         </div>
 
         {/* Attendance Records Table */}
-        <div className="flex-1 min-h-0 p-6">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-full flex flex-col">
-            <div className="flex-1 overflow-auto">
+        <div className="flex-1 min-h-0 p-6 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm h-full overflow-hidden">
+            <ScrollArea className="h-full w-full">
             <Table>
               <TableHeader className="sticky top-0 z-10">
                 <TableRow className="bg-gradient-to-r from-[#1a3d2b] to-[#2d5a40] border-0 hover:bg-transparent">
@@ -465,7 +466,7 @@ export default function AttendanceTerminal() {
                 )}
               </TableBody>
             </Table>
-            </div>
+            </ScrollArea>
           </div>
         </div>
       </div>

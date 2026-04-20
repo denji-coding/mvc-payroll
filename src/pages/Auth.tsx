@@ -204,7 +204,7 @@ export default function Auth() {
         </Card>
 
         <p className="text-center text-muted-foreground text-sm mt-6">
-          © 2024 Migrants Venture Corporation. All rights reserved.
+          © 2026 Migrants Venture Corporation. All rights reserved.
         </p>
       </div>
 

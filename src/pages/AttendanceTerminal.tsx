@@ -204,7 +204,7 @@ export default function AttendanceTerminal() {
   }
 
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="h-screen overflow-hidden flex bg-white">
       {/* Left Sidebar - Dark Panel */}
       <div className="w-72 bg-[#1a3d2b] text-white flex flex-col">
         {/* Logo and Company Name */}

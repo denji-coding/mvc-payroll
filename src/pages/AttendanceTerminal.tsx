@@ -343,11 +343,12 @@ export default function AttendanceTerminal() {
         </div>
 
         {/* Attendance Records Table */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="flex-1 min-h-0 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-full flex flex-col">
+            <div className="flex-1 overflow-auto">
             <Table>
-              <TableHeader>
-                <TableRow className="bg-gradient-to-r from-[#1a3d2b] to-[#2d5a40] border-0">
+              <TableHeader className="sticky top-0 z-10">
+                <TableRow className="bg-gradient-to-r from-[#1a3d2b] to-[#2d5a40] border-0 hover:bg-transparent">
                   
                   <TableHead className="w-20 text-white font-semibold text-xs uppercase tracking-wider py-4">Photo</TableHead>
                   <TableHead className="text-white font-semibold text-xs uppercase tracking-wider py-4">Employee ID</TableHead>

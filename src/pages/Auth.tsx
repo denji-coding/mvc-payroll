@@ -1,31 +1,25 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PasswordInput } from '@/components/ui/password-input';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, Mail, AlertTriangle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
-import loginBg from '@/assets/login-bg.jpg';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import companyLogoDefault from '@/assets/company-logo.png';
-import { useCompanyInfo } from '@/hooks/useCompanyInfo';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PasswordInput } from "@/components/ui/password-input";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, ArrowLeft, Mail, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+import loginBg from "@/assets/login-bg.jpg";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import companyLogoDefault from "@/assets/company-logo.png";
+import { useCompanyInfo } from "@/hooks/useCompanyInfo";
 
-const SESSION_EXPIRED_KEY = 'mvc_session_expired';
+const SESSION_EXPIRED_KEY = "mvc_session_expired";
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export default function Auth() {
@@ -33,35 +27,35 @@ export default function Auth() {
   const { toast } = useToast();
   const { data: companyInfo } = useCompanyInfo();
   const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;
-  const companyName = companyInfo?.company_name || 'Migrants Venture Corporation';
+  const companyName = companyInfo?.company_name || "Migrants Venture Corporation";
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showExpiredBanner, setShowExpiredBanner] = useState(sessionExpired);
 
   useEffect(() => {
     const syncExpiredBanner = () => {
-      const expiredInStorage = localStorage.getItem(SESSION_EXPIRED_KEY) === 'true';
+      const expiredInStorage = localStorage.getItem(SESSION_EXPIRED_KEY) === "true";
       if (sessionExpired || expiredInStorage) {
         setShowExpiredBanner(true);
       }
     };
 
     syncExpiredBanner();
-    window.addEventListener('focus', syncExpiredBanner);
-    document.addEventListener('visibilitychange', syncExpiredBanner);
+    window.addEventListener("focus", syncExpiredBanner);
+    document.addEventListener("visibilitychange", syncExpiredBanner);
 
     return () => {
-      window.removeEventListener('focus', syncExpiredBanner);
-      document.removeEventListener('visibilitychange', syncExpiredBanner);
+      window.removeEventListener("focus", syncExpiredBanner);
+      document.removeEventListener("visibilitychange", syncExpiredBanner);
     };
   }, [sessionExpired]);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // Forgot Password State
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
@@ -87,8 +81,8 @@ export default function Auth() {
 
     if (error) {
       toast({
-        variant: 'destructive',
-        title: 'Login Failed',
+        variant: "destructive",
+        title: "Login Failed",
         description: error.message,
       });
     }
@@ -100,16 +94,16 @@ export default function Auth() {
 
     if (!forgotEmail || !z.string().email().safeParse(forgotEmail).success) {
       toast({
-        variant: 'destructive',
-        title: 'Invalid Email',
-        description: 'Please enter a valid email address.',
+        variant: "destructive",
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
       });
       return;
     }
 
     setForgotLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('forgot-password', {
+      const { data, error } = await supabase.functions.invoke("forgot-password", {
         body: { email: forgotEmail },
       });
 
@@ -118,9 +112,9 @@ export default function Auth() {
       setForgotSuccess(true);
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'An error occurred. Please try again.',
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred. Please try again.",
       });
     } finally {
       setForgotLoading(false);
@@ -129,25 +123,21 @@ export default function Auth() {
 
   const closeForgotPassword = () => {
     setShowForgotPassword(false);
-    setForgotEmail('');
+    setForgotEmail("");
     setForgotSuccess(false);
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${loginBg})` }}
     >
       {/* Overlay for better readability */}
       <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
-      
+
       <div className="w-full max-w-md animate-fade-in relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <img 
-            src={companyLogo} 
-            alt={companyName} 
-            className="w-20 h-20 object-contain mb-4"
-          />
+          <img src={companyLogo} alt={companyName} className="w-20 h-20 object-contain mb-4" />
           <h1 className="text-2xl font-bold text-foreground">{companyName}</h1>
           <p className="text-muted-foreground mt-1">HR & Payroll Management System</p>
         </div>
@@ -155,15 +145,10 @@ export default function Auth() {
         <Card className="shadow-xl border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Welcome Back</CardTitle>
-            <CardDescription>
-              Enter your credentials to access your account
-            </CardDescription>
+            <CardDescription>Enter your credentials to access your account</CardDescription>
             {showExpiredBanner && (
               <Alert variant="destructive" className="mt-3">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  Your session has expired due to inactivity. Please sign in again.
-                </AlertDescription>
+                <AlertDescription>Your session has expired due to inactivity. Please sign in again.</AlertDescription>
               </Alert>
             )}
           </CardHeader>
@@ -211,7 +196,7 @@ export default function Auth() {
                     Signing in...
                   </>
                 ) : (
-                  'Sign In'
+                  "Sign In"
                 )}
               </Button>
             </form>
@@ -233,17 +218,15 @@ export default function Auth() {
             </DialogTitle>
             <DialogDescription>
               {forgotSuccess
-                ? 'Check your email for further instructions.'
-                : 'Enter your email address and we\'ll send you a temporary password.'}
+                ? "Check your email for further instructions."
+                : "Enter your email address and we'll send you a temporary password."}
             </DialogDescription>
           </DialogHeader>
 
           {forgotSuccess ? (
             <div className="space-y-4">
               <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
-                <p className="text-green-700 dark:text-green-400 font-medium">
-                  Password Reset Email Sent!
-                </p>
+                <p className="text-green-700 dark:text-green-400 font-medium">Password Reset Email Sent!</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   If an account exists with this email, you will receive a temporary password shortly.
                 </p>
@@ -284,7 +267,7 @@ export default function Auth() {
                       Sending...
                     </>
                   ) : (
-                    'Send Reset Email'
+                    "Send Reset Email"
                   )}
                 </Button>
               </div>

@@ -383,9 +383,7 @@ export default function AttendanceTerminal() {
                     attendanceRecords.map((record: any, index: number) => (
                       <tr
                         key={record.id}
-                        className={`border-b border-gray-100 transition-colors hover:bg-green-50/50 ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                        }`}
+                        className="border-b border-gray-100 bg-white"
                       >
                         <td className="border-b border-gray-100 px-4 py-4 align-middle">
                           <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">

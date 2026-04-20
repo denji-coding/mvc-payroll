@@ -345,11 +345,10 @@ export default function AttendanceTerminal() {
 
         {/* Attendance Records Table */}
         <div className="flex-1 min-h-0 p-6 overflow-hidden">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm h-full overflow-hidden">
-            <div className="h-full w-full overflow-auto">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm h-full overflow-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-0 hover:bg-transparent [&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-[#1a3d2b]">
+                <TableRow className="border-0 hover:bg-transparent [&>th]:sticky [&>th]:top-0 [&>th]:z-20 [&>th]:bg-[#1a3d2b]">
                   
                   <TableHead className="w-20 text-white font-semibold text-xs uppercase tracking-wider py-4">Photo</TableHead>
                   <TableHead className="text-white font-semibold text-xs uppercase tracking-wider py-4">Employee ID</TableHead>
@@ -466,7 +465,6 @@ export default function AttendanceTerminal() {
                 )}
               </TableBody>
             </Table>
-            </div>
           </div>
         </div>
       </div>

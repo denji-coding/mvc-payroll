@@ -465,7 +465,6 @@ export default function AttendanceTerminal() {
                 )}
               </TableBody>
             </Table>
-            </div>
           </div>
         </div>
       </div>

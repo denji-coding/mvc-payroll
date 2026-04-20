@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { CreditCard, User, CheckCircle2, XCircle, Clock, Loader2, AlertTriangle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAttendanceTerminal } from '@/hooks/useAttendanceTerminal';

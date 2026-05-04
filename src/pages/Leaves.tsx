@@ -231,12 +231,12 @@ export default function Leaves() {
     {
       accessorKey: "start_date",
       header: "Start",
-      cell: ({ getValue }) => format(new Date(getValue() as string), "MMM d, yyyy"),
+      cell: ({ getValue }) => format(new Date((getValue() as string) + "T00:00:00"), "MMM d, yyyy"),
     },
     {
       accessorKey: "end_date",
       header: "End",
-      cell: ({ getValue }) => format(new Date(getValue() as string), "MMM d, yyyy"),
+      cell: ({ getValue }) => format(new Date((getValue() as string) + "T00:00:00"), "MMM d, yyyy"),
     },
     { accessorKey: "total_days", header: "Days" },
     { accessorKey: "status", header: "Status", cell: ({ getValue }) => getStatusBadge(getValue() as string) },

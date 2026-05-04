@@ -476,18 +476,18 @@ export default function DailyTimeRecord() {
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[600px] overflow-y-auto relative">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">Date</TableHead>
-                    <TableHead className="w-[80px]">Day</TableHead>
-                    <TableHead>AM In</TableHead>
-                    <TableHead>AM Out</TableHead>
-                    <TableHead>PM In</TableHead>
-                    <TableHead>PM Out</TableHead>
-                    <TableHead className="text-right">Hours</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
+                <TableHeader className="sticky top-0 z-20 bg-card [&_tr]:border-b">
+                  <TableRow className="bg-card hover:bg-card">
+                    <TableHead className="w-[100px] bg-card">Date</TableHead>
+                    <TableHead className="w-[80px] bg-card">Day</TableHead>
+                    <TableHead className="bg-card">AM In</TableHead>
+                    <TableHead className="bg-card">AM Out</TableHead>
+                    <TableHead className="bg-card">PM In</TableHead>
+                    <TableHead className="bg-card">PM Out</TableHead>
+                    <TableHead className="text-right bg-card">Hours</TableHead>
+                    <TableHead className="text-center bg-card">Remarks</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -500,6 +500,7 @@ export default function DailyTimeRecord() {
                     const isFuture = day > new Date();
                     const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
                     const isBeforeCreation = employeeStart ? day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate()) : false;
+                    const leave = !isBeforeCreation && !isRestDay && !isFuture ? getLeaveForDate(dateStr) : null;
 
                     return (
                       <TableRow 
@@ -526,9 +527,17 @@ export default function DailyTimeRecord() {
                             <Badge variant="outline">Weekend</Badge>
                           ) : isFuture ? (
                             <Badge variant="outline">-</Badge>
+                          ) : leave ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                {formatLeaveTypeLabel(leave.leave_type)}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {leave.pay_type === 'with_pay' ? 'Leave with Pay' : 'Leave without Pay'}
+                              </span>
+                            </div>
                           ) : record ? (
                             (() => {
-                              // Detect half-day: has morning but no afternoon (or vice versa), and day has passed
                               const hasMorning = !!(record.morning_in || record.morning_out);
                               const hasAfternoon = !!(record.afternoon_in || record.afternoon_out);
                               if (record.status === 'half_day' || (record.status === 'present' && (hasMorning !== hasAfternoon))) {

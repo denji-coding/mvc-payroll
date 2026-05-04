@@ -103,6 +103,41 @@ export default function DailyTimeRecord() {
   // Fetch employee schedule to know weekend duty days
   const { data: schedules } = useEmployeeScheduleByEmployee(employee?.id || null);
 
+  // Fetch approved leave requests overlapping selected month
+  const { data: leaveRequests } = useQuery({
+    queryKey: ['employee-leaves-month', employee?.id, startDate, endDate],
+    queryFn: async () => {
+      if (!employee?.id) return [];
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select('leave_type, start_date, end_date, pay_type, status')
+        .eq('employee_id', employee.id)
+        .eq('status', 'hr_approved')
+        .lte('start_date', endDate)
+        .gte('end_date', startDate);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!employee?.id,
+  });
+
+  const formatLeaveTypeLabel = (raw: string) => {
+    const map: Record<string, string> = {
+      sick: 'Sick Leave', vacation: 'Vacation Leave', emergency: 'Emergency Leave',
+      maternity: 'Maternity Leave', paternity: 'Paternity Leave',
+      bereavement: 'Bereavement Leave', unpaid: 'Unpaid Leave',
+    };
+    if (map[raw]) return map[raw];
+    // capitalize words and append "Leave" if not present
+    const titled = raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return /leave$/i.test(titled) ? titled : `${titled} Leave`;
+  };
+
+  const getLeaveForDate = (dateStr: string) => {
+    if (!leaveRequests) return null;
+    return leaveRequests.find((l) => dateStr >= l.start_date && dateStr <= l.end_date) || null;
+  };
+
   // Set of day_of_week numbers (0=Sun, 6=Sat) where employee has duty
   const weekendDutyDays = useMemo(() => {
     const dutySet = new Set<number>();
@@ -441,18 +476,18 @@ export default function DailyTimeRecord() {
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[600px] overflow-y-auto relative">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">Date</TableHead>
-                    <TableHead className="w-[80px]">Day</TableHead>
-                    <TableHead>AM In</TableHead>
-                    <TableHead>AM Out</TableHead>
-                    <TableHead>PM In</TableHead>
-                    <TableHead>PM Out</TableHead>
-                    <TableHead className="text-right">Hours</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
+                <TableHeader className="sticky top-0 z-20 bg-card [&_tr]:border-b">
+                  <TableRow className="bg-card hover:bg-card">
+                    <TableHead className="w-[100px] bg-card">Date</TableHead>
+                    <TableHead className="w-[80px] bg-card">Day</TableHead>
+                    <TableHead className="bg-card">AM In</TableHead>
+                    <TableHead className="bg-card">AM Out</TableHead>
+                    <TableHead className="bg-card">PM In</TableHead>
+                    <TableHead className="bg-card">PM Out</TableHead>
+                    <TableHead className="text-right bg-card">Hours</TableHead>
+                    <TableHead className="text-center bg-card">Remarks</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -465,6 +500,7 @@ export default function DailyTimeRecord() {
                     const isFuture = day > new Date();
                     const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
                     const isBeforeCreation = employeeStart ? day < new Date(employeeStart.getFullYear(), employeeStart.getMonth(), employeeStart.getDate()) : false;
+                    const leave = !isBeforeCreation && !isRestDay && !isFuture ? getLeaveForDate(dateStr) : null;
 
                     return (
                       <TableRow 
@@ -491,9 +527,17 @@ export default function DailyTimeRecord() {
                             <Badge variant="outline">Weekend</Badge>
                           ) : isFuture ? (
                             <Badge variant="outline">-</Badge>
+                          ) : leave ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                {formatLeaveTypeLabel(leave.leave_type)}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {leave.pay_type === 'with_pay' ? 'Leave with Pay' : 'Leave without Pay'}
+                              </span>
+                            </div>
                           ) : record ? (
                             (() => {
-                              // Detect half-day: has morning but no afternoon (or vice versa), and day has passed
                               const hasMorning = !!(record.morning_in || record.morning_out);
                               const hasAfternoon = !!(record.afternoon_in || record.afternoon_out);
                               if (record.status === 'half_day' || (record.status === 'present' && (hasMorning !== hasAfternoon))) {

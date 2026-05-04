@@ -231,12 +231,12 @@ export default function Leaves() {
     {
       accessorKey: "start_date",
       header: "Start",
-      cell: ({ getValue }) => format(new Date(getValue() as string), "MMM d, yyyy"),
+      cell: ({ getValue }) => format(new Date((getValue() as string) + "T00:00:00"), "MMM d, yyyy"),
     },
     {
       accessorKey: "end_date",
       header: "End",
-      cell: ({ getValue }) => format(new Date(getValue() as string), "MMM d, yyyy"),
+      cell: ({ getValue }) => format(new Date((getValue() as string) + "T00:00:00"), "MMM d, yyyy"),
     },
     { accessorKey: "total_days", header: "Days" },
     { accessorKey: "status", header: "Status", cell: ({ getValue }) => getStatusBadge(getValue() as string) },
@@ -259,7 +259,7 @@ export default function Leaves() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Cancel Leave Request?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will cancel your {leave.leave_type} leave request ({format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}). This action cannot be undone.
+                  This will cancel your {leave.leave_type} leave request ({format(new Date(leave.start_date + "T00:00:00"), "MMM d")} - {format(new Date(leave.end_date + "T00:00:00"), "MMM d, yyyy")}). This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -337,21 +337,21 @@ export default function Leaves() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Start Date</Label>
+                    <Label>From</Label>
                     <DatePicker
                       date={startDate}
                       onDateChange={setStartDate}
-                      placeholder="Pick date"
+                      placeholder="Select a Date"
                       disabled={!form.leave_type}
                       disabledDates={getDateDisabledFn()}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>End Date</Label>
+                    <Label>To</Label>
                     <DatePicker
                       date={endDate}
                       onDateChange={setEndDate}
-                      placeholder="Pick date"
+                      placeholder="Select a Date"
                       disabled={!form.leave_type}
                       disabledDates={(date) => {
                         const typeDisabled = getDateDisabledFn()(date);

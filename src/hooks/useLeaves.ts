@@ -337,10 +337,11 @@ export function useApproveLeaveRequest() {
           }
           
           if (creditRecord) {
+            const daysToDeduct = Number(leaveRequest.total_days) || 1;
             const { error: creditUpdateError } = await supabase
               .from('leave_credits')
               .update({ 
-                used_credits: (creditRecord.used_credits || 0) + 1
+                used_credits: Number(creditRecord.used_credits || 0) + daysToDeduct
               })
               .eq('id', creditRecord.id);
 

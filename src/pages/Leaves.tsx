@@ -337,21 +337,21 @@ export default function Leaves() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Start Date</Label>
+                    <Label>From</Label>
                     <DatePicker
                       date={startDate}
                       onDateChange={setStartDate}
-                      placeholder="Pick date"
+                      placeholder="Select a Date"
                       disabled={!form.leave_type}
                       disabledDates={getDateDisabledFn()}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>End Date</Label>
+                    <Label>To</Label>
                     <DatePicker
                       date={endDate}
                       onDateChange={setEndDate}
-                      placeholder="Pick date"
+                      placeholder="Select a Date"
                       disabled={!form.leave_type}
                       disabledDates={(date) => {
                         const typeDisabled = getDateDisabledFn()(date);

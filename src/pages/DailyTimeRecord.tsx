@@ -103,6 +103,41 @@ export default function DailyTimeRecord() {
   // Fetch employee schedule to know weekend duty days
   const { data: schedules } = useEmployeeScheduleByEmployee(employee?.id || null);
 
+  // Fetch approved leave requests overlapping selected month
+  const { data: leaveRequests } = useQuery({
+    queryKey: ['employee-leaves-month', employee?.id, startDate, endDate],
+    queryFn: async () => {
+      if (!employee?.id) return [];
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select('leave_type, start_date, end_date, pay_type, status')
+        .eq('employee_id', employee.id)
+        .eq('status', 'hr_approved')
+        .lte('start_date', endDate)
+        .gte('end_date', startDate);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!employee?.id,
+  });
+
+  const formatLeaveTypeLabel = (raw: string) => {
+    const map: Record<string, string> = {
+      sick: 'Sick Leave', vacation: 'Vacation Leave', emergency: 'Emergency Leave',
+      maternity: 'Maternity Leave', paternity: 'Paternity Leave',
+      bereavement: 'Bereavement Leave', unpaid: 'Unpaid Leave',
+    };
+    if (map[raw]) return map[raw];
+    // capitalize words and append "Leave" if not present
+    const titled = raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return /leave$/i.test(titled) ? titled : `${titled} Leave`;
+  };
+
+  const getLeaveForDate = (dateStr: string) => {
+    if (!leaveRequests) return null;
+    return leaveRequests.find((l) => dateStr >= l.start_date && dateStr <= l.end_date) || null;
+  };
+
   // Set of day_of_week numbers (0=Sun, 6=Sat) where employee has duty
   const weekendDutyDays = useMemo(() => {
     const dutySet = new Set<number>();

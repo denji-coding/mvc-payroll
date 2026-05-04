@@ -259,7 +259,7 @@ export default function Leaves() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Cancel Leave Request?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will cancel your {leave.leave_type} leave request ({format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}). This action cannot be undone.
+                  This will cancel your {leave.leave_type} leave request ({format(new Date(leave.start_date + "T00:00:00"), "MMM d")} - {format(new Date(leave.end_date + "T00:00:00"), "MMM d, yyyy")}). This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

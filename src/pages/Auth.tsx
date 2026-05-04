@@ -193,10 +193,10 @@ export default function Auth() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    Logging in...
                   </>
                 ) : (
-                  "Sign In"
+                  "Log in"
                 )}
               </Button>
             </form>

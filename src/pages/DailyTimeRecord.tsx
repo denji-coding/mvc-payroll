@@ -476,20 +476,21 @@ export default function DailyTimeRecord() {
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto max-h-[600px] overflow-y-auto relative">
-              <Table>
-                <TableHeader className="sticky top-0 z-20 bg-card [&_tr]:border-b">
-                  <TableRow className="bg-card hover:bg-card">
-                    <TableHead className="w-[100px] bg-card">Date</TableHead>
-                    <TableHead className="w-[80px] bg-card">Day</TableHead>
-                    <TableHead className="bg-card">AM In</TableHead>
-                    <TableHead className="bg-card">AM Out</TableHead>
-                    <TableHead className="bg-card">PM In</TableHead>
-                    <TableHead className="bg-card">PM Out</TableHead>
-                    <TableHead className="text-right bg-card">Hours</TableHead>
-                    <TableHead className="text-center bg-card">Remarks</TableHead>
-                  </TableRow>
-                </TableHeader>
+            <div className="overflow-auto max-h-[600px] relative rounded-md border">
+              <table className="w-full caption-bottom text-sm">
+                <thead className="sticky top-0 z-30 bg-card [&_tr]:border-b shadow-sm">
+                  <tr className="border-b bg-card">
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px] bg-card">Date</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[80px] bg-card">Day</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">AM In</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">AM Out</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">PM In</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">PM Out</th>
+                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground bg-card">Hours</th>
+                    <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground bg-card">Remarks</th>
+                  </tr>
+                </thead>
+
                 <TableBody>
                   {daysInMonth.map((day) => {
                     const dateStr = format(day, 'yyyy-MM-dd');

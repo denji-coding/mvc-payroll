@@ -10,6 +10,84 @@ export type LeaveRequest = Tables<'leave_requests'>;
 export type LeaveRequestInsert = TablesInsert<'leave_requests'>;
 export type LeaveCredit = Tables<'leave_credits'>;
 
+const normalizeLeaveTypeKey = (value?: string | null) =>
+  (value || '')
+    .toLowerCase()
+    .replace(/\s+leave$/i, '')
+    .replace(/\s+/g, '_')
+    .trim();
+
+const enumToLeaveTypeName: Record<string, string> = {
+  sick: 'Sick Leave',
+  vacation: 'Vacation Leave',
+  emergency: 'Emergency Leave',
+  maternity: 'Maternity/Paternity Leave',
+  paternity: 'Paternity Leave',
+  bereavement: 'Bereavement Leave',
+  unpaid: 'Unpaid Leave',
+};
+
+async function deductLeaveCreditsOnce(
+  employeeId: string,
+  leaveType: string,
+  totalDays: number | string | null,
+) {
+  const currentYear = new Date().getFullYear();
+  const rawLeaveType = leaveType;
+  const leaveTypeName = enumToLeaveTypeName[rawLeaveType];
+  let creditRecord: Pick<LeaveCredit, 'id' | 'used_credits' | 'leave_type'> | null = null;
+
+  const { data: rawMatch, error: rawMatchError } = await supabase
+    .from('leave_credits')
+    .select('id, used_credits, leave_type')
+    .eq('employee_id', employeeId)
+    .eq('leave_type', rawLeaveType)
+    .eq('year', currentYear)
+    .maybeSingle();
+
+  if (rawMatchError) throw rawMatchError;
+  creditRecord = rawMatch;
+
+  if (!creditRecord && leaveTypeName) {
+    const { data: nameMatch, error: nameMatchError } = await supabase
+      .from('leave_credits')
+      .select('id, used_credits, leave_type')
+      .eq('employee_id', employeeId)
+      .eq('leave_type', leaveTypeName)
+      .eq('year', currentYear)
+      .maybeSingle();
+
+    if (nameMatchError) throw nameMatchError;
+    creditRecord = nameMatch;
+  }
+
+  if (!creditRecord) {
+    const { data: allCredits, error: allCreditsError } = await supabase
+      .from('leave_credits')
+      .select('id, used_credits, leave_type')
+      .eq('employee_id', employeeId)
+      .eq('year', currentYear);
+
+    if (allCreditsError) throw allCreditsError;
+
+    const normalizedRawLeaveType = normalizeLeaveTypeKey(rawLeaveType);
+    creditRecord =
+      allCredits?.find((credit) => normalizeLeaveTypeKey(credit.leave_type) === normalizedRawLeaveType) || null;
+  }
+
+  if (!creditRecord) return;
+
+  const daysToDeduct = Number(totalDays) || 1;
+  const { error: creditUpdateError } = await supabase
+    .from('leave_credits')
+    .update({
+      used_credits: Number(creditRecord.used_credits || 0) + daysToDeduct,
+    })
+    .eq('id', creditRecord.id);
+
+  if (creditUpdateError) throw creditUpdateError;
+}
+
 export function useLeaveRequests(status?: 'pending' | 'manager_approved' | 'hr_approved' | 'rejected' | 'cancelled') {
   const queryClient = useQueryClient();
 
@@ -262,11 +340,13 @@ export function useApproveLeaveRequest() {
       // First get the leave request details
       const { data: leaveRequest, error: fetchError } = await supabase
         .from('leave_requests')
-        .select('employee_id, leave_type, total_days')
+        .select('employee_id, leave_type, total_days, status')
         .eq('id', id)
         .single();
       
       if (fetchError) throw fetchError;
+
+      const wasAlreadyApproved = leaveRequest?.status === 'manager_approved' || leaveRequest?.status === 'hr_approved';
       
       const updates: TablesUpdate<'leave_requests'> = {};
       
@@ -275,78 +355,18 @@ export function useApproveLeaveRequest() {
         updates.manager_action_at = new Date().toISOString();
         updates.manager_remarks = remarks;
         updates.status = action === 'approve' ? 'manager_approved' : 'rejected';
+
+        if (action === 'approve' && leaveRequest && !wasAlreadyApproved) {
+          await deductLeaveCreditsOnce(leaveRequest.employee_id, leaveRequest.leave_type, leaveRequest.total_days);
+        }
       } else if (role === 'hr_admin') {
         updates.hr_id = user?.id;
         updates.hr_action_at = new Date().toISOString();
         updates.hr_remarks = remarks;
         updates.status = action === 'approve' ? 'hr_approved' : 'rejected';
         
-        // Deduct leave credits when HR approves
-        if (action === 'approve' && leaveRequest) {
-          const currentYear = new Date().getFullYear();
-          const rawLeaveType = leaveRequest.leave_type;
-          
-          // leave_credits may store the type as either the raw value ("sick") 
-          // or the full name ("Sick Leave"). Try both formats.
-          const enumToName: Record<string, string> = {
-            'sick': 'Sick Leave', 'vacation': 'Vacation Leave', 'emergency': 'Emergency Leave',
-            'maternity': 'Maternity/Paternity Leave', 'paternity': 'Paternity Leave',
-            'bereavement': 'Bereavement Leave', 'unpaid': 'Unpaid Leave',
-          };
-          const leaveTypeName = enumToName[rawLeaveType];
-          
-          // Try finding credit record with raw value first, then mapped name
-          let creditRecord = null;
-          const { data: rawMatch } = await supabase
-            .from('leave_credits')
-            .select('id, used_credits, leave_type')
-            .eq('employee_id', leaveRequest.employee_id)
-            .eq('leave_type', rawLeaveType)
-            .eq('year', currentYear)
-            .maybeSingle();
-          
-          creditRecord = rawMatch;
-          
-          if (!creditRecord && leaveTypeName) {
-            const { data: nameMatch } = await supabase
-              .from('leave_credits')
-              .select('id, used_credits, leave_type')
-              .eq('employee_id', leaveRequest.employee_id)
-              .eq('leave_type', leaveTypeName)
-              .eq('year', currentYear)
-              .maybeSingle();
-            creditRecord = nameMatch;
-          }
-          
-          // Also try case-insensitive match for custom leave types (e.g. "personal" vs "Personal Leave")
-          if (!creditRecord) {
-            const { data: allCredits } = await supabase
-              .from('leave_credits')
-              .select('id, used_credits, leave_type')
-              .eq('employee_id', leaveRequest.employee_id)
-              .eq('year', currentYear);
-
-            const normalizedRawLeaveType = rawLeaveType
-              .toLowerCase()
-              .replace(/\s+leave$/i, '')
-              .replace(/\s+/g, '_');
-
-            creditRecord = allCredits?.find(c => 
-              c.leave_type.toLowerCase().replace(/\s+leave$/i, '').replace(/\s+/g, '_') === normalizedRawLeaveType
-            ) || null;
-          }
-          
-          if (creditRecord) {
-            const daysToDeduct = Number(leaveRequest.total_days) || 1;
-            const { error: creditUpdateError } = await supabase
-              .from('leave_credits')
-              .update({ 
-                used_credits: Number(creditRecord.used_credits || 0) + daysToDeduct
-              })
-              .eq('id', creditRecord.id);
-
-            if (creditUpdateError) throw creditUpdateError;
-          }
+        if (action === 'approve' && leaveRequest && !wasAlreadyApproved) {
+          await deductLeaveCreditsOnce(leaveRequest.employee_id, leaveRequest.leave_type, leaveRequest.total_days);
         }
       }
 

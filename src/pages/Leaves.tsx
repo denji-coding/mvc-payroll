@@ -82,7 +82,7 @@ export default function Leaves() {
 
   // Credits check
   const credit = findCreditForLeaveType(form.leave_type, credits);
-  const totalCredits = selectedLeaveType?.credits_per_application || credit?.total_credits || 0;
+  const totalCredits = credit?.total_credits || 0;
   const availableCredits = totalCredits - (credit?.used_credits || 0);
   const hasCredits = !selectedLeaveType || availableCredits > 0;
 
@@ -466,7 +466,7 @@ export default function Leaves() {
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {activeLeaveTypes.map((leaveType) => {
                 const credit = findCreditForLeaveType(leaveType.name, credits);
-                const total = leaveType.credits_per_application || credit?.total_credits || 0;
+                const total = credit?.total_credits || 0;
                 const used = credit?.used_credits || 0;
                 const available = total - used;
                 const visuals = getLeaveTypeVisuals(leaveType.name);

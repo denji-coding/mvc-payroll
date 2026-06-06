@@ -466,9 +466,10 @@ export default function Leaves() {
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {activeLeaveTypes.map((leaveType) => {
                 const credit = findCreditForLeaveType(leaveType.name, credits);
-                const total = credit?.total_credits || 0;
+                // Source of truth: Credits per Application from leave type config
+                const total = Number(leaveType.credits_per_application) || 0;
                 const used = credit?.used_credits || 0;
-                const available = total - used;
+                const available = Math.max(total - used, 0);
                 const visuals = getLeaveTypeVisuals(leaveType.name);
                 const Icon = visuals.icon;
                 const isLow = total > 0 && available <= 0;

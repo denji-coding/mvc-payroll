@@ -167,6 +167,18 @@ export default function Leaves() {
       toast.error(`Cannot exceed ${maxDays} days limit for ${form.leave_type}.`);
       return;
     }
+
+    // Overlap validation against existing approved leaves (same employee)
+    const newStart = format(startDate, "yyyy-MM-dd");
+    const newEnd = format(endDate, "yyyy-MM-dd");
+    const hasOverlap = (myLeaves || []).some((l: any) => {
+      if (!['manager_approved', 'hr_approved'].includes(l.status)) return false;
+      return l.start_date <= newEnd && l.end_date >= newStart;
+    });
+    if (hasOverlap) {
+      toast.error("The selected date range overlaps with an existing approved leave request.");
+      return;
+    }
     try {
       setUploading(true);
       let attachmentUrl: string | null = null;

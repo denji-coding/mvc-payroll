@@ -80,10 +80,10 @@ export default function Leaves() {
   const showUploadField = hasUploadRequired && uploadConditionDays && calculatedDays >= uploadConditionDays;
   const showReasonField = !showUploadField;
 
-  // Credits check
+  // Credits check — use credits_per_application from leave type config as source of truth
   const credit = findCreditForLeaveType(form.leave_type, credits);
-  const totalCredits = credit?.total_credits || 0;
-  const availableCredits = totalCredits - (credit?.used_credits || 0);
+  const totalCredits = Number(selectedLeaveType?.credits_per_application) || 0;
+  const availableCredits = Math.max(totalCredits - (credit?.used_credits || 0), 0);
   const hasCredits = !selectedLeaveType || availableCredits > 0;
 
   // LWP (Leave With Pay) credits check

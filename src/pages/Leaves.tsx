@@ -468,8 +468,10 @@ export default function Leaves() {
                 const credit = findCreditForLeaveType(leaveType.name, credits);
                 // Source of truth: Credits per Application from leave type config
                 const total = Number(leaveType.credits_per_application) || 0;
-                const used = credit?.used_credits || 0;
-                const available = Math.max(total - used, 0);
+                // Cap displayed used credits at total to avoid showing more used than the configured limit
+                const rawUsed = credit?.used_credits || 0;
+                const used = Math.min(rawUsed, total);
+                const available = Math.max(total - rawUsed, 0);
                 const visuals = getLeaveTypeVisuals(leaveType.name);
                 const Icon = visuals.icon;
                 const isLow = total > 0 && available <= 0;

@@ -130,12 +130,12 @@ export default function Employees() {
             <Button variant="ghost" size="icon" title="View" onClick={() => setSelectedEmployee(emp)} disabled={!!deletingId}>
               <Eye className="h-4 w-4" />
             </Button>
-            {role === 'hr_admin' && (
+            {(role === 'hr_admin' || role === 'super_admin') && (
               <Button variant="ghost" size="icon" asChild disabled={!!deletingId}>
                 <Link to={`/employees/${emp.id}`}><Edit className="h-4 w-4" /></Link>
               </Button>
             )}
-            {role === 'hr_admin' && isDeleted && (
+            {(role === 'hr_admin' || role === 'super_admin') && isDeleted && (
               <>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -169,7 +169,7 @@ export default function Employees() {
                 </AlertDialog>
               </>
             )}
-            {role === 'hr_admin' && !isDeleted && (
+            {(role === 'hr_admin' || role === 'super_admin') && !isDeleted && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={!!deletingId}><Trash2 className="h-4 w-4" /></Button>
@@ -190,7 +190,7 @@ export default function Employees() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">Employees</h1>
-        {role === 'hr_admin' && (
+        {(role === 'hr_admin' || role === 'super_admin') && (
           <Button asChild>
             <Link to="/employees/new"><Plus className="mr-2 h-4 w-4" /> Add Employee</Link>
           </Button>

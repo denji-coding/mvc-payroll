@@ -38,7 +38,7 @@ type AppRole = Database['public']['Enums']['app_role'];
 
 export default function Settings() {
   const { role } = useAuth();
-  const isHR = role === 'hr_admin';
+  const isHR = (role === 'hr_admin' || role === 'super_admin');
 
   return (
     <div className="page-container">
@@ -123,7 +123,7 @@ export default function Settings() {
 function GeneralSettings() {
   const { theme, setTheme } = useTheme();
   const { role } = useAuth();
-  const isHR = role === 'hr_admin';
+  const isHR = (role === 'hr_admin' || role === 'super_admin');
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo();
   const updateCompanyInfo = useUpdateCompanyInfo();
   const [editingCompany, setEditingCompany] = useState(false);

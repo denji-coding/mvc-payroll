@@ -26,7 +26,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 export default function Payroll() {
   const { role } = useAuth();
-  const isHR = role === 'hr_admin';
+  const isHR = (role === 'hr_admin' || role === 'super_admin');
   const { data: periods, isLoading: periodsLoading } = usePayrollPeriods();
   const { data: components, isLoading: componentsLoading } = useSalaryComponents();
   const createPeriod = useCreatePayrollPeriod();

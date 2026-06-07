@@ -373,7 +373,7 @@ export function useApproveLeaveRequest() {
         if (action === 'approve' && leaveRequest && !wasAlreadyApproved) {
           await deductLeaveCreditsOnce(leaveRequest.employee_id, leaveRequest.leave_type, leaveRequest.start_date);
         }
-      } else if (role === 'hr_admin') {
+      } else if ((role === 'hr_admin' || role === 'super_admin')) {
         updates.hr_id = user?.id;
         updates.hr_action_at = new Date().toISOString();
         updates.hr_remarks = remarks;

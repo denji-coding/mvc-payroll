@@ -84,7 +84,7 @@ export default function LeaveApprovals() {
 
   const canReview = (leave: any) => {
     if (role === 'branch_manager' && leave.status === 'pending') return true;
-    if (role === 'hr_admin' && (leave.status === 'pending' || leave.status === 'manager_approved')) return true;
+    if ((role === 'hr_admin' || role === 'super_admin') && (leave.status === 'pending' || leave.status === 'manager_approved')) return true;
     return false;
   };
 

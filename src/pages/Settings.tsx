@@ -38,7 +38,7 @@ type AppRole = Database['public']['Enums']['app_role'];
 
 export default function Settings() {
   const { role } = useAuth();
-  const isHR = role === 'hr_admin';
+  const isHR = (role === 'hr_admin' || role === 'super_admin');
 
   return (
     <div className="page-container">
@@ -123,7 +123,7 @@ export default function Settings() {
 function GeneralSettings() {
   const { theme, setTheme } = useTheme();
   const { role } = useAuth();
-  const isHR = role === 'hr_admin';
+  const isHR = (role === 'hr_admin' || role === 'super_admin');
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo();
   const updateCompanyInfo = useUpdateCompanyInfo();
   const [editingCompany, setEditingCompany] = useState(false);
@@ -1014,9 +1014,20 @@ function UserRoleManagement() {
 
   const getRoleBadgeVariant = (role: AppRole | null) => {
     switch (role) {
+      case 'super_admin': return 'destructive';
       case 'hr_admin': return 'default';
       case 'branch_manager': return 'secondary';
       default: return 'outline';
+    }
+  };
+
+  const getRoleLabel = (role: AppRole | null) => {
+    switch (role) {
+      case 'super_admin': return 'Super Admin';
+      case 'hr_admin': return 'HR Admin';
+      case 'branch_manager': return 'Branch Manager';
+      case 'employee': return 'Employee';
+      default: return 'No Role';
     }
   };
 
@@ -1068,23 +1079,27 @@ function UserRoleManagement() {
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <Badge variant={getRoleBadgeVariant(user.role)}>
-                          {user.role || 'No Role'}
+                          {getRoleLabel(user.role)}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Select
-                          value={user.role || ''}
-                          onValueChange={(v) => handleRoleChange(user, v as AppRole)}
-                        >
-                          <SelectTrigger className="w-32 sm:w-40">
-                            <SelectValue placeholder="Select role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="employee">Employee</SelectItem>
-                            {/* Branch Manager temporarily removed */}
-                            <SelectItem value="hr_admin">HR Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {user.role === 'super_admin' ? (
+                          <span className="text-xs text-muted-foreground italic">Protected account</span>
+                        ) : (
+                          <Select
+                            value={user.role || ''}
+                            onValueChange={(v) => handleRoleChange(user, v as AppRole)}
+                          >
+                            <SelectTrigger className="w-32 sm:w-40">
+                              <SelectValue placeholder="Select role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="employee">Employee</SelectItem>
+                              {/* Branch Manager temporarily removed */}
+                              <SelectItem value="hr_admin">HR Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

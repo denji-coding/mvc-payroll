@@ -118,7 +118,7 @@ export default function LeaveCredits() {
     return allCredits.filter((c: any) => c.leave_type === leaveTypeName).reduce((sum: number, c: any) => sum + (c.used_credits || 0), 0);
   };
 
-  if (role !== 'hr_admin') {
+  if ((role !== 'hr_admin' && role !== 'super_admin')) {
     return <div className="page-container"><Card><CardContent className="py-12 text-center"><p className="text-muted-foreground">You don't have permission to access this page.</p></CardContent></Card></div>;
   }
 

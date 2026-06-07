@@ -1014,9 +1014,20 @@ function UserRoleManagement() {
 
   const getRoleBadgeVariant = (role: AppRole | null) => {
     switch (role) {
+      case 'super_admin': return 'destructive';
       case 'hr_admin': return 'default';
       case 'branch_manager': return 'secondary';
       default: return 'outline';
+    }
+  };
+
+  const getRoleLabel = (role: AppRole | null) => {
+    switch (role) {
+      case 'super_admin': return 'Super Admin';
+      case 'hr_admin': return 'HR Admin';
+      case 'branch_manager': return 'Branch Manager';
+      case 'employee': return 'Employee';
+      default: return 'No Role';
     }
   };
 

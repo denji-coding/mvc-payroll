@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, createContext, useContext, ReactNode 
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-type AppRole = 'hr_admin' | 'branch_manager' | 'employee';
+type AppRole = 'super_admin' | 'hr_admin' | 'branch_manager' | 'employee';
 
 const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
 const LAST_ACTIVITY_KEY = 'mvc_last_activity';

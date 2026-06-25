@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -23,6 +23,21 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number;
   emptyMessage?: string;
   headerExtra?: React.ReactNode;
+  /** Optional explicit storage key; defaults to the current pathname. */
+  storageKey?: string;
+}
+
+const ALLOWED_PAGE_SIZES = [5, 10, 20, 50];
+
+function getStoredPageSize(key: string, fallback: number): number {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw ? Number(raw) : NaN;
+    return ALLOWED_PAGE_SIZES.includes(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export function DataTable<TData, TValue>({
@@ -33,9 +48,17 @@ export function DataTable<TData, TValue>({
   pageSize = 5,
   emptyMessage = "No results found.",
   headerExtra,
+  storageKey,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+
+  const resolvedKey =
+    "dt-page-size:" +
+    (storageKey ??
+      (typeof window !== "undefined" ? window.location.pathname : "default"));
+
+  const [initialPageSize] = useState(() => getStoredPageSize(resolvedKey, pageSize));
 
   const table = useReactTable({
     data,
@@ -47,8 +70,17 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     state: { sorting, globalFilter },
-    initialState: { pagination: { pageSize } },
+    initialState: { pagination: { pageSize: initialPageSize } },
   });
+
+  const currentPageSize = table.getState().pagination.pageSize;
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(resolvedKey, String(currentPageSize));
+    } catch {
+      /* ignore */
+    }
+  }, [resolvedKey, currentPageSize]);
 
   const currentPage = table.getState().pagination.pageIndex + 1;
   const totalPages = table.getPageCount();

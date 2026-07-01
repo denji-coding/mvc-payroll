@@ -284,7 +284,7 @@ export default function Reports() {
               {needsDateRange(report.id) ? (
                 <Dialog open={pickerOpen === report.id} onOpenChange={(open) => setPickerOpen(open ? report.id : null)}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
                       <Eye className="mr-2 h-4 w-4" /> Generate PDF Report
                     </Button>
                   </DialogTrigger>
@@ -295,7 +295,7 @@ export default function Reports() {
                         <div><Label>Start Date</Label><DateInput value={dateRange.start} onChange={(v) => setDateRange({ ...dateRange, start: v })} /></div>
                         <div><Label>End Date</Label><DateInput value={dateRange.end} onChange={(v) => setDateRange({ ...dateRange, end: v })} /></div>
                       </div>
-                      <Button className="w-full" onClick={() => generateReport(report.id)} disabled={loadingReport === report.id}>
+                      <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => generateReport(report.id)} disabled={loadingReport === report.id}>
                         {loadingReport === report.id
                           ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
                           : <><Eye className="mr-2 h-4 w-4" /> Preview Report</>}
@@ -304,7 +304,7 @@ export default function Reports() {
                   </DialogContent>
                 </Dialog>
               ) : (
-                <Button variant="outline" className="w-full" onClick={() => generateReport(report.id)} disabled={loadingReport === report.id}>
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => generateReport(report.id)} disabled={loadingReport === report.id}>
                   {loadingReport === report.id
                     ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
                     : <><Eye className="mr-2 h-4 w-4" /> Generate PDF Report</>}

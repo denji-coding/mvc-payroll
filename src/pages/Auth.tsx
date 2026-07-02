@@ -32,6 +32,33 @@ export default function Auth() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showExpiredBanner, setShowExpiredBanner] = useState(sessionExpired);
 
+  // First-time setup state
+  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
+  const [setupForm, setSetupForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    confirm_password: "",
+  });
+  const [setupLoading, setSetupLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.rpc("has_any_admin");
+      if (cancelled) return;
+      if (error) {
+        setNeedsSetup(false);
+        return;
+      }
+      setNeedsSetup(data === false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     const syncExpiredBanner = () => {
       const expiredInStorage = localStorage.getItem(SESSION_EXPIRED_KEY) === "true";

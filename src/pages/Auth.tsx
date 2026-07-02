@@ -32,6 +32,33 @@ export default function Auth() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showExpiredBanner, setShowExpiredBanner] = useState(sessionExpired);
 
+  // First-time setup state
+  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
+  const [setupForm, setSetupForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    confirm_password: "",
+  });
+  const [setupLoading, setSetupLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.rpc("has_any_admin");
+      if (cancelled) return;
+      if (error) {
+        setNeedsSetup(false);
+        return;
+      }
+      setNeedsSetup(data === false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     const syncExpiredBanner = () => {
       const expiredInStorage = localStorage.getItem(SESSION_EXPIRED_KEY) === "true";
@@ -127,6 +154,45 @@ export default function Auth() {
     setForgotSuccess(false);
   };
 
+  const handleSetup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { first_name, last_name, email: setupEmail, password: setupPassword, confirm_password } = setupForm;
+    if (!first_name.trim() || !last_name.trim()) {
+      toast({ variant: "destructive", title: "Missing information", description: "Please enter your first and last name." });
+      return;
+    }
+    if (!z.string().email().safeParse(setupEmail).success) {
+      toast({ variant: "destructive", title: "Invalid email", description: "Please enter a valid email address." });
+      return;
+    }
+    if (setupPassword.length < 8) {
+      toast({ variant: "destructive", title: "Weak password", description: "Password must be at least 8 characters." });
+      return;
+    }
+    if (setupPassword !== confirm_password) {
+      toast({ variant: "destructive", title: "Passwords do not match", description: "Please retype your password." });
+      return;
+    }
+
+    setSetupLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("setup-first-admin", {
+        body: { first_name, last_name, email: setupEmail, password: setupPassword },
+      });
+      if (error || (data && (data as any).error)) {
+        throw new Error(((data as any)?.error) || error?.message || "Setup failed");
+      }
+      toast({ title: "Setup complete", description: "Your HR account has been created. Please sign in." });
+      setNeedsSetup(false);
+      setEmail(setupEmail);
+      setPassword("");
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Setup failed", description: err.message ?? "Please try again." });
+    } finally {
+      setSetupLoading(false);
+    }
+  };
+
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
@@ -143,64 +209,146 @@ export default function Auth() {
         </div>
 
         <Card className="shadow-xl border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">Welcome Back</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
-            {showExpiredBanner && (
-              <Alert variant="destructive" className="mt-3">
-                <AlertDescription>Your session has expired due to inactivity. Please sign in again.</AlertDescription>
-              </Alert>
-            )}
-          </CardHeader>
-
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                />
-                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
-                <PasswordInput
-                  id="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                />
-                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-              </div>
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  "Log in"
+          {needsSetup === null ? (
+            <CardContent className="py-12 flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </CardContent>
+          ) : needsSetup ? (
+            <>
+              <CardHeader>
+                <CardTitle className="text-lg">First-Time Setup</CardTitle>
+                <CardDescription>
+                  No admin account exists yet. Create the first HR account to get started. This form appears only once.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSetup} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="setup-first">First Name</Label>
+                      <Input
+                        id="setup-first"
+                        value={setupForm.first_name}
+                        onChange={(e) => setSetupForm((f) => ({ ...f, first_name: e.target.value }))}
+                        disabled={setupLoading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="setup-last">Last Name</Label>
+                      <Input
+                        id="setup-last"
+                        value={setupForm.last_name}
+                        onChange={(e) => setSetupForm((f) => ({ ...f, last_name: e.target.value }))}
+                        disabled={setupLoading}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="setup-email">Email</Label>
+                    <Input
+                      id="setup-email"
+                      type="email"
+                      placeholder="hr@company.com"
+                      value={setupForm.email}
+                      onChange={(e) => setSetupForm((f) => ({ ...f, email: e.target.value }))}
+                      disabled={setupLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="setup-password">Password</Label>
+                    <PasswordInput
+                      id="setup-password"
+                      placeholder="At least 8 characters"
+                      value={setupForm.password}
+                      onChange={(e) => setSetupForm((f) => ({ ...f, password: e.target.value }))}
+                      disabled={setupLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="setup-confirm">Confirm Password</Label>
+                    <PasswordInput
+                      id="setup-confirm"
+                      placeholder="Retype password"
+                      value={setupForm.confirm_password}
+                      onChange={(e) => setSetupForm((f) => ({ ...f, confirm_password: e.target.value }))}
+                      disabled={setupLoading}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={setupLoading}>
+                    {setupLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
+                      </>
+                    ) : (
+                      "Create HR Account"
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </>
+          ) : (
+            <>
+              <CardHeader>
+                <CardTitle className="text-lg">Welcome Back</CardTitle>
+                <CardDescription>Enter your credentials to access your account</CardDescription>
+                {showExpiredBanner && (
+                  <Alert variant="destructive" className="mt-3">
+                    <AlertDescription>Your session has expired due to inactivity. Please sign in again.</AlertDescription>
+                  </Alert>
                 )}
-              </Button>
-            </form>
-          </CardContent>
+              </CardHeader>
+
+              <CardContent>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@company.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={loading}
+                    />
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                    <PasswordInput
+                      id="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
+                    />
+                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Logging in...
+                      </>
+                    ) : (
+                      "Log in"
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </>
+          )}
         </Card>
 
         <p className="text-center text-muted-foreground text-sm mt-6">

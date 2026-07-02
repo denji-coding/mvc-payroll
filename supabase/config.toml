@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-payslip-emails]
 verify_jwt = false
+
+[functions.setup-first-admin]
+verify_jwt = false

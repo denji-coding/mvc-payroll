@@ -36,6 +36,7 @@ export default function EmployeeForm() {
     first_name: "",
     last_name: "",
     middle_name: "",
+    suffix_name: "",
     email: "",
     phone: "",
     date_of_birth: "",
@@ -78,6 +79,7 @@ export default function EmployeeForm() {
       first_name: employeeData.first_name || "",
       last_name: employeeData.last_name || "",
       middle_name: employeeData.middle_name || "",
+      suffix_name: employeeData.suffix_name || "",
       email: employeeData.email || "",
       phone: employeeData.phone || "",
       date_of_birth: employeeData.date_of_birth || "",
@@ -405,6 +407,14 @@ export default function EmployeeForm() {
                     value={form.middle_name}
                     onChange={(e) => updateField("middle_name", e.target.value)}
                     placeholder="e.g. Santos"
+                  />
+                </div>
+                <div>
+                  <Label>Suffix Name <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+                  <Input
+                    value={form.suffix_name}
+                    onChange={(e) => updateField("suffix_name", e.target.value)}
+                    placeholder="e.g. Jr., Sr., III"
                   />
                 </div>
                 <div>

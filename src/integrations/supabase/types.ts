@@ -326,6 +326,7 @@ export type Database = {
           position: string
           rfid_card_number: string | null
           sss_number: string | null
+          suffix_name: string | null
           tin_number: string | null
           updated_at: string | null
           user_id: string | null
@@ -360,6 +361,7 @@ export type Database = {
           position: string
           rfid_card_number?: string | null
           sss_number?: string | null
+          suffix_name?: string | null
           tin_number?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -394,6 +396,7 @@ export type Database = {
           position?: string
           rfid_card_number?: string | null
           sss_number?: string | null
+          suffix_name?: string | null
           tin_number?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -1012,6 +1015,7 @@ export type Database = {
     Functions: {
       get_employee_by_user: { Args: { _user_id: string }; Returns: string }
       get_user_branch_id: { Args: { _user_id: string }; Returns: string }
+      has_any_admin: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

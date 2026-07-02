@@ -154,6 +154,45 @@ export default function Auth() {
     setForgotSuccess(false);
   };
 
+  const handleSetup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { first_name, last_name, email: setupEmail, password: setupPassword, confirm_password } = setupForm;
+    if (!first_name.trim() || !last_name.trim()) {
+      toast({ variant: "destructive", title: "Missing information", description: "Please enter your first and last name." });
+      return;
+    }
+    if (!z.string().email().safeParse(setupEmail).success) {
+      toast({ variant: "destructive", title: "Invalid email", description: "Please enter a valid email address." });
+      return;
+    }
+    if (setupPassword.length < 8) {
+      toast({ variant: "destructive", title: "Weak password", description: "Password must be at least 8 characters." });
+      return;
+    }
+    if (setupPassword !== confirm_password) {
+      toast({ variant: "destructive", title: "Passwords do not match", description: "Please retype your password." });
+      return;
+    }
+
+    setSetupLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("setup-first-admin", {
+        body: { first_name, last_name, email: setupEmail, password: setupPassword },
+      });
+      if (error || (data && (data as any).error)) {
+        throw new Error(((data as any)?.error) || error?.message || "Setup failed");
+      }
+      toast({ title: "Setup complete", description: "Your HR account has been created. Please sign in." });
+      setNeedsSetup(false);
+      setEmail(setupEmail);
+      setPassword("");
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Setup failed", description: err.message ?? "Please try again." });
+    } finally {
+      setSetupLoading(false);
+    }
+  };
+
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"

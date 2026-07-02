@@ -79,6 +79,7 @@ export default function EmployeeForm() {
       first_name: employeeData.first_name || "",
       last_name: employeeData.last_name || "",
       middle_name: employeeData.middle_name || "",
+      suffix_name: employeeData.suffix_name || "",
       email: employeeData.email || "",
       phone: employeeData.phone || "",
       date_of_birth: employeeData.date_of_birth || "",

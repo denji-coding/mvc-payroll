@@ -36,6 +36,7 @@ export default function EmployeeForm() {
     first_name: "",
     last_name: "",
     middle_name: "",
+    suffix_name: "",
     email: "",
     phone: "",
     date_of_birth: "",

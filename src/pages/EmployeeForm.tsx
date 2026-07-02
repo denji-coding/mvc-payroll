@@ -410,6 +410,14 @@ export default function EmployeeForm() {
                   />
                 </div>
                 <div>
+                  <Label>Suffix Name <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+                  <Input
+                    value={form.suffix_name}
+                    onChange={(e) => updateField("suffix_name", e.target.value)}
+                    placeholder="e.g. Jr., Sr., III"
+                  />
+                </div>
+                <div>
                   <RequiredLabel>Email</RequiredLabel>
                   <Input
                     type="email"

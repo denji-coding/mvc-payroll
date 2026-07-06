@@ -1,6 +1,15 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format, isWeekend, getDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { formatSuffix } from '@/lib/formatName';
+
+export interface DtrLeaveInfo {
+  label: string;
+  pay_type?: 'with_pay' | 'without_pay' | string | null;
+}
+
+export type LeaveLookup = (dateStr: string) => DtrLeaveInfo | null;
+
 
 interface AttendanceRecord {
   date: string;

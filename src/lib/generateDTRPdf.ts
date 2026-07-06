@@ -58,6 +58,7 @@ interface GenerateDTRPdfParams {
   year: number;
   employeeCreatedAt?: string;
   weekendDutyDays?: Set<number>;
+  getLeaveForDate?: LeaveLookup;
 }
 
 interface GenerateMultiMonthDTRPdfParams {
@@ -65,6 +66,7 @@ interface GenerateMultiMonthDTRPdfParams {
   monthsData: MonthData[];
   employeeCreatedAt?: string;
   weekendDutyDays?: Set<number>;
+  getLeaveForDate?: LeaveLookup;
 }
 
 const months = [

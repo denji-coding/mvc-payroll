@@ -53,7 +53,8 @@ export function PrintableDTR({
   month, 
   year,
   employeeCreatedAt,
-  weekendDutyDays = new Set() 
+  weekendDutyDays = new Set(),
+  getLeaveForDate,
 }: PrintableDTRProps) {
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const isBeforeCreation = (day: Date) => {
@@ -66,8 +67,14 @@ export function PrintableDTR({
     return format(new Date(timestamp), 'hh:mm a');
   };
 
-  const getRemarks = (record: AttendanceRecord | undefined, restDay: boolean, isFuture: boolean) => {
+  const getRemarks = (record: AttendanceRecord | undefined, restDay: boolean, isFuture: boolean, leave: DtrLeaveInfo | null) => {
     if (restDay) return 'Weekend';
+    if (leave) {
+      const pay = leave.pay_type === 'with_pay' ? 'Leave with Pay'
+        : leave.pay_type === 'without_pay' ? 'Leave without Pay'
+        : leave.label || 'On Leave';
+      return pay;
+    }
     if (isFuture) return '';
     if (!record) return 'Absent';
     if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) {

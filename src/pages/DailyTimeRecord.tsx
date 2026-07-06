@@ -310,7 +310,8 @@ export default function DailyTimeRecord() {
         employee,
         monthsData,
         employeeCreatedAt: employee.created_at || undefined,
-        weekendDutyDays
+        weekendDutyDays,
+        getLeaveForDate,
       });
 
       toast.success('PDF exported successfully!');

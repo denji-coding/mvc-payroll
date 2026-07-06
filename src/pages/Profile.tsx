@@ -39,6 +39,12 @@ export default function Profile() {
       if (data) {
         setForm(prev => ({ ...prev, phone: data.phone || '' }));
       }
+      const { data: emp } = await supabase
+        .from('employees')
+        .select('suffix_name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (emp?.suffix_name) setSuffixName(emp.suffix_name);
     };
     loadProfile();
   }, [user?.id]);

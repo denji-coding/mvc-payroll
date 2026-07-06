@@ -25,6 +25,7 @@ interface AttendanceRecord {
 interface Employee {
   first_name: string;
   last_name: string;
+  suffix_name?: string | null;
   employee_id: string;
   position: string;
   department: string | null;

@@ -15,6 +15,7 @@ export default function Profile() {
   const { profile, user, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [suffixName, setSuffixName] = useState('');
   const [form, setForm] = useState({
     first_name: profile?.firstName || '',
     last_name: profile?.lastName || '',

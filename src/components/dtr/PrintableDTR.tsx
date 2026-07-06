@@ -15,6 +15,7 @@ interface AttendanceRecord {
 interface Employee {
   first_name: string;
   last_name: string;
+  suffix_name?: string | null;
   employee_id: string;
   position: string;
   department: string | null;
@@ -27,6 +28,11 @@ interface Summary {
   absentDays: number;
 }
 
+export interface DtrLeaveInfo {
+  label: string;
+  pay_type?: 'with_pay' | 'without_pay' | string | null;
+}
+
 interface PrintableDTRProps {
   employee: Employee;
   daysInMonth: Date[];
@@ -36,6 +42,7 @@ interface PrintableDTRProps {
   year: number;
   employeeCreatedAt?: string;
   weekendDutyDays?: Set<number>;
+  getLeaveForDate?: (dateStr: string) => DtrLeaveInfo | null;
 }
 
 export function PrintableDTR({ 

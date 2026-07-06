@@ -1328,7 +1328,7 @@ function MedicalCertificatesTab() {
     {
       id: 'employee',
       header: 'Employee',
-      accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name),
+      accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name, row.employees?.suffix_name),
     },
     {
       accessorKey: 'leave_type',

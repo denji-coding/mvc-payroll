@@ -159,7 +159,7 @@ export default function LeaveApprovals() {
             <DialogHeader><DialogTitle>Review Leave Request</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Employee:</span> <span className="font-medium">{reviewLeave.employees?.first_name} {reviewLeave.employees?.last_name}</span></div>
+                <div><span className="text-muted-foreground">Employee:</span> <span className="font-medium">{formatFullName(reviewLeave.employees?.first_name, reviewLeave.employees?.last_name, reviewLeave.employees?.suffix_name)}</span></div>
                 <div><span className="text-muted-foreground">Type:</span> <span className="font-medium capitalize">{reviewLeave.leave_type}</span></div>
                 <div><span className="text-muted-foreground">From:</span> <span className="font-medium">{reviewLeave.start_date}</span></div>
                 <div><span className="text-muted-foreground">To:</span> <span className="font-medium">{reviewLeave.end_date}</span></div>

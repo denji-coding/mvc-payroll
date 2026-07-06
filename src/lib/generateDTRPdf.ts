@@ -169,6 +169,7 @@ function addMonthPage(
     const rest = isRestDay(day);
     const isFuture = day > new Date();
     const beforeCreation = isBeforeCreation(day);
+    const leave = getLeaveForDate ? getLeaveForDate(dateStr) : null;
 
     if (beforeCreation) {
       return [format(day, 'dd'), format(day, 'EEE'), '', '', '', '', '', ''];
@@ -177,12 +178,12 @@ function addMonthPage(
     return [
       format(day, 'dd'),
       format(day, 'EEE'),
-      rest ? '-' : formatTime(record?.morning_in ?? null),
-      rest ? '-' : formatTime(record?.morning_out ?? null),
-      rest ? '-' : formatTime(record?.afternoon_in ?? null),
-      rest ? '-' : formatTime(record?.afternoon_out ?? null),
-      rest ? '-' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-'),
-      getRemarks(record, rest, isFuture)
+      rest || leave ? '-' : formatTime(record?.morning_in ?? null),
+      rest || leave ? '-' : formatTime(record?.morning_out ?? null),
+      rest || leave ? '-' : formatTime(record?.afternoon_in ?? null),
+      rest || leave ? '-' : formatTime(record?.afternoon_out ?? null),
+      rest || leave ? '-' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-'),
+      getRemarks(record, rest, isFuture, leave)
     ];
   });
 

@@ -79,8 +79,13 @@ const formatTime = (timestamp: string | null): string => {
   return format(new Date(timestamp), 'hh:mm a');
 };
 
-const getRemarks = (record: AttendanceRecord | undefined, isRestDay: boolean, isFuture: boolean): string => {
+const getRemarks = (record: AttendanceRecord | undefined, isRestDay: boolean, isFuture: boolean, leave: DtrLeaveInfo | null): string => {
   if (isRestDay) return 'Weekend';
+  if (leave) {
+    if (leave.pay_type === 'with_pay') return 'Leave with Pay';
+    if (leave.pay_type === 'without_pay') return 'Leave without Pay';
+    return leave.label || 'On Leave';
+  }
   if (isFuture) return '-';
   if (!record) return 'Absent';
   if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) return 'Late';

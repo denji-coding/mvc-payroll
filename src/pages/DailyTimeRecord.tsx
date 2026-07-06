@@ -533,7 +533,7 @@ export default function DailyTimeRecord() {
                           ) : leave ? (
                             <div className="flex flex-col items-center gap-1">
                               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                {formatLeaveTypeLabel(leave.leave_type)}
+                                {leave.label}
                               </Badge>
                               <span className="text-xs text-muted-foreground">
                                 {leave.pay_type === 'with_pay' ? 'Leave with Pay' : 'Leave without Pay'}

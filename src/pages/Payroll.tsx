@@ -56,7 +56,7 @@ export default function Payroll() {
     try {
       const { data: periodRecords, error } = await supabase
         .from('payroll_records')
-        .select('*, employees(employee_id, first_name, last_name)')
+        .select('*, employees(employee_id, first_name, last_name, suffix_name)')
         .eq('payroll_period_id', period.id)
         .order('employees(last_name)', { ascending: true });
       

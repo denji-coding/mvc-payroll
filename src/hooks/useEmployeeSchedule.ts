@@ -42,7 +42,7 @@ export function useEmployeeSchedules() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('employee_schedules')
-        .select('*, employees(first_name, last_name, employee_id)')
+        .select('*, employees(first_name, last_name, suffix_name, employee_id)')
         .order('employee_id', { ascending: true })
         .order('day_of_week', { ascending: true });
 

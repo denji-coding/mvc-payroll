@@ -65,7 +65,7 @@ export function useRecentActivity() {
     queryFn: async () => {
       const { data: leaveRequests } = await supabase
         .from('leave_requests')
-        .select('*, employees(first_name, last_name)')
+        .select('*, employees(first_name, last_name, suffix_name)')
         .order('created_at', { ascending: false })
         .limit(5);
 

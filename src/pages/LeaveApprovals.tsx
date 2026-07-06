@@ -89,7 +89,7 @@ export default function LeaveApprovals() {
   };
 
   const columns: ColumnDef<any, any>[] = [
-    { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name) },
+    { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name, row.employees?.suffix_name) },
     { accessorKey: 'leave_type', header: 'Type', cell: ({ getValue }) => <span className="capitalize">{getValue() as string}</span> },
     { accessorKey: 'pay_type', header: 'Pay Type', cell: ({ getValue }) => <span className="capitalize">{((getValue() as string) || 'with_pay').replace('_', ' ')}</span> },
     { accessorKey: 'start_date', header: 'Start', cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy') },

@@ -400,7 +400,7 @@ export default function AttendanceTerminal() {
                         </td>
                         <td className="border-b border-gray-100 px-4 py-4 align-middle">
                           <div className="font-medium text-gray-900">
-                            {formatFullName(record.employees?.first_name, record.employees?.last_name)}
+                            {formatFullName(record.employees?.first_name, record.employees?.last_name, record.employees?.suffix_name)}
                           </div>
                         </td>
                         <td className="border-b border-gray-100 px-4 py-4 align-middle">

@@ -104,7 +104,8 @@ function addMonthPage(
   month: string,
   year: number,
   employeeCreatedAt?: string,
-  weekendDutyDays: Set<number> = new Set()
+  weekendDutyDays: Set<number> = new Set(),
+  getLeaveForDate?: LeaveLookup,
 ): void {
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const isBeforeCreation = (day: Date) => {

@@ -137,7 +137,8 @@ function addMonthPage(
   doc.setFont('helvetica', 'bold');
   doc.text('Name:', leftCol, yPos);
   doc.setFont('helvetica', 'normal');
-  doc.text(`${employee.first_name} ${employee.last_name}`, leftCol + 20, yPos);
+  const suffix = formatSuffix(employee.suffix_name);
+  doc.text(`${employee.first_name} ${employee.last_name}${suffix ? ' ' + suffix : ''}`, leftCol + 20, yPos);
   
   doc.setFont('helvetica', 'bold');
   doc.text('Employee ID:', rightCol, yPos);

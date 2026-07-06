@@ -1,6 +1,15 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format, isWeekend, getDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { formatSuffix } from '@/lib/formatName';
+
+export interface DtrLeaveInfo {
+  label: string;
+  pay_type?: 'with_pay' | 'without_pay' | string | null;
+}
+
+export type LeaveLookup = (dateStr: string) => DtrLeaveInfo | null;
+
 
 interface AttendanceRecord {
   date: string;
@@ -16,6 +25,7 @@ interface AttendanceRecord {
 interface Employee {
   first_name: string;
   last_name: string;
+  suffix_name?: string | null;
   employee_id: string;
   position: string;
   department: string | null;
@@ -48,6 +58,7 @@ interface GenerateDTRPdfParams {
   year: number;
   employeeCreatedAt?: string;
   weekendDutyDays?: Set<number>;
+  getLeaveForDate?: LeaveLookup;
 }
 
 interface GenerateMultiMonthDTRPdfParams {
@@ -55,6 +66,7 @@ interface GenerateMultiMonthDTRPdfParams {
   monthsData: MonthData[];
   employeeCreatedAt?: string;
   weekendDutyDays?: Set<number>;
+  getLeaveForDate?: LeaveLookup;
 }
 
 const months = [
@@ -67,8 +79,13 @@ const formatTime = (timestamp: string | null): string => {
   return format(new Date(timestamp), 'hh:mm a');
 };
 
-const getRemarks = (record: AttendanceRecord | undefined, isRestDay: boolean, isFuture: boolean): string => {
+const getRemarks = (record: AttendanceRecord | undefined, isRestDay: boolean, isFuture: boolean, leave: DtrLeaveInfo | null): string => {
   if (isRestDay) return 'Weekend';
+  if (leave) {
+    if (leave.pay_type === 'with_pay') return 'Leave with Pay';
+    if (leave.pay_type === 'without_pay') return 'Leave without Pay';
+    return leave.label || 'On Leave';
+  }
   if (isFuture) return '-';
   if (!record) return 'Absent';
   if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) return 'Late';
@@ -87,7 +104,8 @@ function addMonthPage(
   month: string,
   year: number,
   employeeCreatedAt?: string,
-  weekendDutyDays: Set<number> = new Set()
+  weekendDutyDays: Set<number> = new Set(),
+  getLeaveForDate?: LeaveLookup,
 ): void {
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const isBeforeCreation = (day: Date) => {
@@ -119,7 +137,8 @@ function addMonthPage(
   doc.setFont('helvetica', 'bold');
   doc.text('Name:', leftCol, yPos);
   doc.setFont('helvetica', 'normal');
-  doc.text(`${employee.first_name} ${employee.last_name}`, leftCol + 20, yPos);
+  const suffix = formatSuffix(employee.suffix_name);
+  doc.text(`${employee.first_name} ${employee.last_name}${suffix ? ' ' + suffix : ''}`, leftCol + 20, yPos);
   
   doc.setFont('helvetica', 'bold');
   doc.text('Employee ID:', rightCol, yPos);
@@ -150,6 +169,7 @@ function addMonthPage(
     const rest = isRestDay(day);
     const isFuture = day > new Date();
     const beforeCreation = isBeforeCreation(day);
+    const leave = getLeaveForDate ? getLeaveForDate(dateStr) : null;
 
     if (beforeCreation) {
       return [format(day, 'dd'), format(day, 'EEE'), '', '', '', '', '', ''];
@@ -158,12 +178,12 @@ function addMonthPage(
     return [
       format(day, 'dd'),
       format(day, 'EEE'),
-      rest ? '-' : formatTime(record?.morning_in ?? null),
-      rest ? '-' : formatTime(record?.morning_out ?? null),
-      rest ? '-' : formatTime(record?.afternoon_in ?? null),
-      rest ? '-' : formatTime(record?.afternoon_out ?? null),
-      rest ? '-' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-'),
-      getRemarks(record, rest, isFuture)
+      rest || leave ? '-' : formatTime(record?.morning_in ?? null),
+      rest || leave ? '-' : formatTime(record?.morning_out ?? null),
+      rest || leave ? '-' : formatTime(record?.afternoon_in ?? null),
+      rest || leave ? '-' : formatTime(record?.afternoon_out ?? null),
+      rest || leave ? '-' : (record?.hours_worked ? record.hours_worked.toFixed(2) : '-'),
+      getRemarks(record, rest, isFuture, leave)
     ];
   });
 
@@ -199,7 +219,7 @@ function addMonthPage(
     margin: { left: margin, right: margin },
     didParseCell: function(data) {
       if (data.section === 'body') {
-        const remarks = data.row.raw?.[7];
+        const remarks = String(data.row.raw?.[7] ?? '');
         if (remarks === 'Weekend') {
           data.cell.styles.fillColor = [248, 248, 248];
           data.cell.styles.textColor = [128, 128, 128];
@@ -207,6 +227,8 @@ function addMonthPage(
           data.cell.styles.textColor = [220, 38, 38];
         } else if (remarks === 'Late') {
           data.cell.styles.textColor = [217, 119, 6];
+        } else if (remarks.startsWith('Leave')) {
+          data.cell.styles.textColor = [37, 99, 235];
         }
       }
     }
@@ -254,7 +276,7 @@ function addMonthPage(
 }
 
 export function generateDTRPdf(params: GenerateDTRPdfParams): void {
-  const { employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt, weekendDutyDays } = params;
+  const { employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt, weekendDutyDays, getLeaveForDate } = params;
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -262,14 +284,14 @@ export function generateDTRPdf(params: GenerateDTRPdfParams): void {
     format: 'a4'
   });
 
-  addMonthPage(doc, employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt, weekendDutyDays);
+  addMonthPage(doc, employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt, weekendDutyDays, getLeaveForDate);
 
   const fileName = `DTR_${employee.last_name}_${employee.first_name}_${month}_${year}.pdf`;
   doc.save(fileName);
 }
 
 export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams): void {
-  const { employee, monthsData, employeeCreatedAt, weekendDutyDays } = params;
+  const { employee, monthsData, employeeCreatedAt, weekendDutyDays, getLeaveForDate } = params;
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -292,7 +314,8 @@ export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams)
       monthName, 
       monthData.year,
       employeeCreatedAt,
-      weekendDutyDays
+      weekendDutyDays,
+      getLeaveForDate,
     );
   });
 

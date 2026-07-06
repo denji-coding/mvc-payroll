@@ -1,5 +1,5 @@
 import { format, isWeekend, getDay } from 'date-fns';
-import { capitalizeWords } from '@/lib/formatName';
+import { capitalizeWords, formatSuffix } from '@/lib/formatName';
 
 interface AttendanceRecord {
   date: string;
@@ -15,6 +15,7 @@ interface AttendanceRecord {
 interface Employee {
   first_name: string;
   last_name: string;
+  suffix_name?: string | null;
   employee_id: string;
   position: string;
   department: string | null;
@@ -27,6 +28,11 @@ interface Summary {
   absentDays: number;
 }
 
+export interface DtrLeaveInfo {
+  label: string;
+  pay_type?: 'with_pay' | 'without_pay' | string | null;
+}
+
 interface PrintableDTRProps {
   employee: Employee;
   daysInMonth: Date[];
@@ -36,6 +42,7 @@ interface PrintableDTRProps {
   year: number;
   employeeCreatedAt?: string;
   weekendDutyDays?: Set<number>;
+  getLeaveForDate?: (dateStr: string) => DtrLeaveInfo | null;
 }
 
 export function PrintableDTR({ 
@@ -46,7 +53,8 @@ export function PrintableDTR({
   month, 
   year,
   employeeCreatedAt,
-  weekendDutyDays = new Set() 
+  weekendDutyDays = new Set(),
+  getLeaveForDate,
 }: PrintableDTRProps) {
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const isBeforeCreation = (day: Date) => {
@@ -59,8 +67,14 @@ export function PrintableDTR({
     return format(new Date(timestamp), 'hh:mm a');
   };
 
-  const getRemarks = (record: AttendanceRecord | undefined, restDay: boolean, isFuture: boolean) => {
+  const getRemarks = (record: AttendanceRecord | undefined, restDay: boolean, isFuture: boolean, leave: DtrLeaveInfo | null) => {
     if (restDay) return 'Weekend';
+    if (leave) {
+      const pay = leave.pay_type === 'with_pay' ? 'Leave with Pay'
+        : leave.pay_type === 'without_pay' ? 'Leave without Pay'
+        : leave.label || 'On Leave';
+      return pay;
+    }
     if (isFuture) return '';
     if (!record) return 'Absent';
     if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) {
@@ -91,7 +105,7 @@ export function PrintableDTR({
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3 text-xs border-b pb-2">
         <div className="flex gap-1">
           <span className="font-semibold">Name:</span>
-          <span className="border-b border-black flex-1">{capitalizeWords(employee.first_name)} {capitalizeWords(employee.last_name)}</span>
+          <span className="border-b border-black flex-1">{capitalizeWords(employee.first_name)} {capitalizeWords(employee.last_name)}{formatSuffix(employee.suffix_name) ? ` ${formatSuffix(employee.suffix_name)}` : ''}</span>
         </div>
         <div className="flex gap-1">
           <span className="font-semibold">Employee ID:</span>
@@ -132,20 +146,21 @@ export function PrintableDTR({
             const rest = isRestDay(day);
             const isFuture = day > new Date();
             const beforeCreation = isBeforeCreation(day);
+            const leave = getLeaveForDate ? getLeaveForDate(dateStr) : null;
 
             return (
               <tr key={dateStr} style={{ backgroundColor: rest ? '#f9fafb' : 'white' }}>
                 <td className="border border-black px-1 py-0 text-center">{format(day, 'dd')}</td>
                 <td className="border border-black px-1 py-0 text-center">{format(day, 'EEE')}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.morning_in || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.morning_out || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.afternoon_in || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.afternoon_out || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest || leave ? '' : formatTime(record?.morning_in || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest || leave ? '' : formatTime(record?.morning_out || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest || leave ? '' : formatTime(record?.afternoon_in || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest || leave ? '' : formatTime(record?.afternoon_out || null)}</td>
                 <td className="border border-black px-1 py-0 text-center">
-                  {beforeCreation || rest ? '' : (record?.hours_worked ? record.hours_worked.toFixed(1) : '')}
+                  {beforeCreation || rest || leave ? '' : (record?.hours_worked ? record.hours_worked.toFixed(1) : '')}
                 </td>
                 <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>
-                  {beforeCreation ? '' : getRemarks(record, rest, isFuture)}
+                  {beforeCreation ? '' : getRemarks(record, rest, isFuture, leave)}
                 </td>
               </tr>
             );

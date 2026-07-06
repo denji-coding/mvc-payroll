@@ -104,8 +104,8 @@ export default function Employees() {
     {
       id: 'name',
       header: 'Name',
-      accessorFn: (row) => formatFullName(row.first_name, row.last_name),
-      cell: ({ row }) => formatFullName(row.original.first_name, row.original.last_name),
+      accessorFn: (row) => formatFullName(row.first_name, row.last_name, row.suffix_name),
+      cell: ({ row }) => formatFullName(row.original.first_name, row.original.last_name, row.original.suffix_name),
     },
     { accessorKey: 'position', header: 'Position' },
     {
@@ -142,8 +142,8 @@ export default function Employees() {
                     <Button variant="ghost" size="icon" className="text-success hover:text-success" disabled={!!deletingId}><RotateCcw className="h-4 w-4" /></Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
-                    <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {formatFullName(emp.first_name, emp.last_name)} to active status.</AlertDialogDescription></AlertDialogHeader>
-                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleRestore(emp.id, formatFullName(emp.first_name, emp.last_name))}>Restore</AlertDialogAction></AlertDialogFooter>
+                    <AlertDialogHeader><AlertDialogTitle>Restore Employee?</AlertDialogTitle><AlertDialogDescription>This will restore {formatFullName(emp.first_name, emp.last_name, emp.suffix_name)} to active status.</AlertDialogDescription></AlertDialogHeader>
+                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleRestore(emp.id, formatFullName(emp.first_name, emp.last_name, emp.suffix_name))}>Restore</AlertDialogAction></AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
                 <AlertDialog>
@@ -156,12 +156,12 @@ export default function Employees() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Permanently Delete Employee?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete {formatFullName(emp.first_name, emp.last_name)} and all associated records (attendance, payroll, leaves, etc.). This action cannot be undone.
+                        This will permanently delete {formatFullName(emp.first_name, emp.last_name, emp.suffix_name)} and all associated records (attendance, payroll, leaves, etc.). This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                       <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, formatFullName(emp.first_name, emp.last_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={deletingId === emp.id}>
+                       <AlertDialogAction onClick={() => handlePermanentDelete(emp.id, formatFullName(emp.first_name, emp.last_name, emp.suffix_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={deletingId === emp.id}>
                          {deletingId === emp.id ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...</> : 'Delete Permanently'}
                        </AlertDialogAction>
                     </AlertDialogFooter>
@@ -175,8 +175,8 @@ export default function Employees() {
                   <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={!!deletingId}><Trash2 className="h-4 w-4" /></Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
-                  <AlertDialogHeader><AlertDialogTitle>Delete Employee?</AlertDialogTitle><AlertDialogDescription>This will set {formatFullName(emp.first_name, emp.last_name)}'s status to terminated.</AlertDialogDescription></AlertDialogHeader>
-                  <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleSoftDelete(emp.id, formatFullName(emp.first_name, emp.last_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter>
+                  <AlertDialogHeader><AlertDialogTitle>Delete Employee?</AlertDialogTitle><AlertDialogDescription>This will set {formatFullName(emp.first_name, emp.last_name, emp.suffix_name)}'s status to terminated.</AlertDialogDescription></AlertDialogHeader>
+                  <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleSoftDelete(emp.id, formatFullName(emp.first_name, emp.last_name, emp.suffix_name))} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             )}

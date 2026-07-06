@@ -23,20 +23,29 @@ const normalizeRole = (role: ReturnType<typeof useAuth>['role']): EffectiveRole 
 };
 
 export function ViewModeProvider({ children }: { children: ReactNode }) {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const normalized = normalizeRole(role);
   const isSuperAdmin = role === 'super_admin';
-  const [viewMode, setViewMode] = useState<ViewMode>('admin');
+  const storageKey = user?.id ? `mvc_view_mode:${user.id}` : 'mvc_view_mode';
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window === 'undefined') return 'admin';
+    const stored = localStorage.getItem(storageKey);
+    return stored === 'employee' ? 'employee' : 'admin';
+  });
 
   const isViewingSwitched = normalized === 'hr_admin' && viewMode === 'employee';
   const effectiveRole: EffectiveRole = isViewingSwitched ? 'employee' : normalized;
 
   const switchToEmployee = () => {
-    if (normalized === 'hr_admin') setViewMode('employee');
+    if (normalized === 'hr_admin') {
+      setViewMode('employee');
+      try { localStorage.setItem(storageKey, 'employee'); } catch {}
+    }
   };
 
   const switchToAdmin = () => {
     setViewMode('admin');
+    try { localStorage.setItem(storageKey, 'admin'); } catch {}
   };
 
   return (

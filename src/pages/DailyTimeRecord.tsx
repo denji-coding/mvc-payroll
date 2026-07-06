@@ -64,7 +64,7 @@ export default function DailyTimeRecord() {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('employees')
-        .select('id, first_name, last_name, employee_id, position, department, created_at')
+        .select('id, first_name, last_name, suffix_name, employee_id, position, department, created_at')
         .eq('user_id', user.id)
         .single();
       if (error) throw error;
@@ -135,7 +135,9 @@ export default function DailyTimeRecord() {
 
   const getLeaveForDate = (dateStr: string) => {
     if (!leaveRequests) return null;
-    return leaveRequests.find((l) => dateStr >= l.start_date && dateStr <= l.end_date) || null;
+    const l = leaveRequests.find((l) => dateStr >= l.start_date && dateStr <= l.end_date);
+    if (!l) return null;
+    return { label: formatLeaveTypeLabel(l.leave_type), pay_type: l.pay_type };
   };
 
   // Set of day_of_week numbers (0=Sun, 6=Sat) where employee has duty
@@ -256,7 +258,8 @@ export default function DailyTimeRecord() {
         month: months[selectedMonth],
         year: selectedYear,
         employeeCreatedAt: employee.created_at || undefined,
-        weekendDutyDays
+        weekendDutyDays,
+        getLeaveForDate,
       });
     } else {
       // Multi-month export
@@ -307,7 +310,8 @@ export default function DailyTimeRecord() {
         employee,
         monthsData,
         employeeCreatedAt: employee.created_at || undefined,
-        weekendDutyDays
+        weekendDutyDays,
+        getLeaveForDate,
       });
 
       toast.success('PDF exported successfully!');
@@ -325,6 +329,7 @@ export default function DailyTimeRecord() {
         year={selectedYear}
         employeeCreatedAt={employee.created_at || undefined}
         weekendDutyDays={weekendDutyDays}
+        getLeaveForDate={getLeaveForDate}
       />
 
       <div className="page-header print-hide">
@@ -531,7 +536,7 @@ export default function DailyTimeRecord() {
                           ) : leave ? (
                             <div className="flex flex-col items-center gap-1">
                               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                {formatLeaveTypeLabel(leave.leave_type)}
+                                {leave.label}
                               </Badge>
                               <span className="text-xs text-muted-foreground">
                                 {leave.pay_type === 'with_pay' ? 'Leave with Pay' : 'Leave without Pay'}

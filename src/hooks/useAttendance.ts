@@ -39,7 +39,7 @@ export function useAttendanceByDate(date: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('attendance')
-        .select('*, employees(employee_id, first_name, last_name)')
+        .select('*, employees(employee_id, first_name, last_name, suffix_name)')
         .eq('date', date)
         .order('time_in', { ascending: true });
       

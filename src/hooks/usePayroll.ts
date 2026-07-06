@@ -79,7 +79,7 @@ export function usePayrollRecords(periodId?: string) {
       
       const { data, error } = await supabase
         .from('payroll_records')
-        .select('*, employees(employee_id, first_name, last_name)')
+        .select('*, employees(employee_id, first_name, last_name, suffix_name)')
         .eq('payroll_period_id', periodId)
         .order('employees(last_name)', { ascending: true });
       

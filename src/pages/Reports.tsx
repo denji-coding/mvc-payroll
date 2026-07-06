@@ -109,7 +109,7 @@ export default function Reports() {
           ];
           const rows = (data || []).map((e: any) => [
             e.employee_id,
-            `${e.last_name}, ${e.first_name}${e.middle_name ? ' ' + e.middle_name : ''}`,
+            `${e.last_name}, ${e.first_name}${e.middle_name ? ' ' + e.middle_name : ''}${e.suffix_name ? ', ' + e.suffix_name : ''}`,
             e.email,
             e.phone || '',
             e.position || '',
@@ -133,7 +133,7 @@ export default function Reports() {
             return;
           }
           const { data, error } = await supabase.from('attendance')
-            .select('*, employees(employee_id, first_name, last_name)')
+            .select('*, employees(employee_id, first_name, last_name, suffix_name)')
             .gte('date', dateRange.start).lte('date', dateRange.end).order('date');
           if (error) throw error;
           const columns: ReportColumn[] = [
@@ -151,7 +151,7 @@ export default function Reports() {
           const rows = (data || []).map((a: any) => [
             a.date,
             a.employees?.employee_id || '',
-            `${a.employees?.last_name || ''}, ${a.employees?.first_name || ''}`,
+            `${a.employees?.last_name || ''}, ${a.employees?.first_name || ''}${a.employees?.suffix_name ? ', ' + a.employees.suffix_name : ''}`,
             formatTs(a.morning_in || a.time_in),
             formatTs(a.morning_out),
             formatTs(a.afternoon_in),
@@ -173,7 +173,7 @@ export default function Reports() {
         }
         case 'payroll-summary': {
           const { data, error } = await supabase.from('payroll_records')
-            .select('*, employees(employee_id, first_name, last_name), payroll_periods(period_start, period_end, pay_date)')
+            .select('*, employees(employee_id, first_name, last_name, suffix_name), payroll_periods(period_start, period_end, pay_date)')
             .order('created_at', { ascending: false });
           if (error) throw error;
           const columns: ReportColumn[] = [
@@ -194,7 +194,7 @@ export default function Reports() {
             `${r.payroll_periods?.period_start || ''} – ${r.payroll_periods?.period_end || ''}`,
             r.payroll_periods?.pay_date || '',
             r.employees?.employee_id || '',
-            `${r.employees?.last_name || ''}, ${r.employees?.first_name || ''}`,
+            `${r.employees?.last_name || ''}, ${r.employees?.first_name || ''}${r.employees?.suffix_name ? ', ' + r.employees.suffix_name : ''}`,
             Number(r.days_worked || 0),
             fmtMoney(Number(r.basic_pay || 0)),
             fmtMoney(Number(r.gross_pay || 0)),
@@ -215,7 +215,7 @@ export default function Reports() {
         }
         case 'gov-contributions': {
           const { data, error } = await supabase.from('payroll_records')
-            .select('*, employees(employee_id, first_name, last_name, sss_number, philhealth_number, pagibig_number), payroll_periods(period_start, period_end)')
+            .select('*, employees(employee_id, first_name, last_name, suffix_name, sss_number, philhealth_number, pagibig_number), payroll_periods(period_start, period_end)')
             .order('created_at', { ascending: false });
           if (error) throw error;
           const columns: ReportColumn[] = [
@@ -235,7 +235,7 @@ export default function Reports() {
           const rows = (data || []).map((r: any) => [
             `${r.payroll_periods?.period_start || ''} – ${r.payroll_periods?.period_end || ''}`,
             r.employees?.employee_id || '',
-            `${r.employees?.last_name || ''}, ${r.employees?.first_name || ''}`,
+            `${r.employees?.last_name || ''}, ${r.employees?.first_name || ''}${r.employees?.suffix_name ? ', ' + r.employees.suffix_name : ''}`,
             r.employees?.sss_number || '',
             fmtMoney(Number(r.sss_contribution || 0)),
             fmtMoney(Number((r.sss_contribution || 0) * 1.5)),

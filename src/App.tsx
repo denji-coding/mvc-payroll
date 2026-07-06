@@ -136,7 +136,7 @@ function AppRoutes() {
 }
 
 const App = () => (
-  <ThemeProvider defaultTheme="system" storageKey="mvc-theme">
+  <ThemeProvider defaultTheme="light" storageKey="mvc-theme">
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>

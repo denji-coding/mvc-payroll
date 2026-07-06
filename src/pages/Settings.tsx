@@ -1306,7 +1306,7 @@ function MedicalCertificatesTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('leave_requests')
-        .select('*, employees(first_name, last_name, employee_id)')
+        .select('*, employees(first_name, last_name, suffix_name, employee_id)')
         .not('medical_certificate_url', 'is', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -1328,7 +1328,7 @@ function MedicalCertificatesTab() {
     {
       id: 'employee',
       header: 'Employee',
-      accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name),
+      accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name, row.employees?.suffix_name),
     },
     {
       accessorKey: 'leave_type',

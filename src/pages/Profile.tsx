@@ -15,6 +15,7 @@ export default function Profile() {
   const { profile, user, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [suffixName, setSuffixName] = useState('');
   const [form, setForm] = useState({
     first_name: profile?.firstName || '',
     last_name: profile?.lastName || '',
@@ -38,6 +39,12 @@ export default function Profile() {
       if (data) {
         setForm(prev => ({ ...prev, phone: data.phone || '' }));
       }
+      const { data: emp } = await supabase
+        .from('employees')
+        .select('suffix_name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (emp?.suffix_name) setSuffixName(emp.suffix_name);
     };
     loadProfile();
   }, [user?.id]);
@@ -129,7 +136,7 @@ export default function Profile() {
                 <AvatarFallback className="bg-primary text-primary-foreground text-xl sm:text-2xl">{getInitials()}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <CardTitle className="text-base sm:text-xl truncate">{profile?.firstName} {profile?.lastName}</CardTitle>
+                <CardTitle className="text-base sm:text-xl truncate">{profile?.firstName} {profile?.lastName}{suffixName ? ` ${suffixName}` : ''}</CardTitle>
                 <p className="text-muted-foreground flex items-center gap-1.5 sm:gap-2 mt-1 text-xs sm:text-sm">
                   <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="truncate">{profile?.email}</span>

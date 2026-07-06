@@ -56,7 +56,7 @@ export default function Payroll() {
     try {
       const { data: periodRecords, error } = await supabase
         .from('payroll_records')
-        .select('*, employees(employee_id, first_name, last_name)')
+        .select('*, employees(employee_id, first_name, last_name, suffix_name)')
         .eq('payroll_period_id', period.id)
         .order('employees(last_name)', { ascending: true });
       
@@ -152,7 +152,7 @@ export default function Payroll() {
   ];
 
   const recordColumns: ColumnDef<any, any>[] = [
-    { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name) },
+    { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name, row.employees?.suffix_name) },
     { accessorKey: 'is_manual', header: 'Type of Calculation', cell: ({ getValue }) => getValue() ? <Badge variant="outline" className="bg-info/10 text-info border-info/30">Manual</Badge> : <Badge variant="outline">Automated</Badge> },
     { accessorKey: 'basic_pay', header: 'Basic', cell: ({ getValue }) => formatCurrency(getValue() as number) },
     { accessorKey: 'gross_pay', header: 'Gross', cell: ({ getValue }) => formatCurrency(getValue() as number) },
@@ -173,7 +173,7 @@ export default function Payroll() {
             {isHR && isPeriodNotApproved && (
               <AlertDialog>
                 <AlertDialogTrigger asChild><Button size="sm" variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {formatFullName(r.employees?.first_name, r.employees?.last_name)}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name)}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
               </AlertDialog>
             )}
           </div>
@@ -309,7 +309,7 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { r
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name)}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name)}</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h4 className="font-semibold text-success mb-2">Earnings</h4>

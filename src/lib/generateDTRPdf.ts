@@ -219,7 +219,7 @@ function addMonthPage(
     margin: { left: margin, right: margin },
     didParseCell: function(data) {
       if (data.section === 'body') {
-        const remarks = data.row.raw?.[7];
+        const remarks = String(data.row.raw?.[7] ?? '');
         if (remarks === 'Weekend') {
           data.cell.styles.fillColor = [248, 248, 248];
           data.cell.styles.textColor = [128, 128, 128];
@@ -227,6 +227,8 @@ function addMonthPage(
           data.cell.styles.textColor = [220, 38, 38];
         } else if (remarks === 'Late') {
           data.cell.styles.textColor = [217, 119, 6];
+        } else if (remarks.startsWith('Leave')) {
+          data.cell.styles.textColor = [37, 99, 235];
         }
       }
     }

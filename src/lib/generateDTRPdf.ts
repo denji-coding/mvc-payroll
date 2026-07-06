@@ -314,7 +314,8 @@ export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams)
       monthName, 
       monthData.year,
       employeeCreatedAt,
-      weekendDutyDays
+      weekendDutyDays,
+      getLeaveForDate,
     );
   });
 

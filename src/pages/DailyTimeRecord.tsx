@@ -135,7 +135,9 @@ export default function DailyTimeRecord() {
 
   const getLeaveForDate = (dateStr: string) => {
     if (!leaveRequests) return null;
-    return leaveRequests.find((l) => dateStr >= l.start_date && dateStr <= l.end_date) || null;
+    const l = leaveRequests.find((l) => dateStr >= l.start_date && dateStr <= l.end_date);
+    if (!l) return null;
+    return { label: formatLeaveTypeLabel(l.leave_type), pay_type: l.pay_type };
   };
 
   // Set of day_of_week numbers (0=Sun, 6=Sat) where employee has duty

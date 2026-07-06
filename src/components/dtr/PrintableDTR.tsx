@@ -146,20 +146,21 @@ export function PrintableDTR({
             const rest = isRestDay(day);
             const isFuture = day > new Date();
             const beforeCreation = isBeforeCreation(day);
+            const leave = getLeaveForDate ? getLeaveForDate(dateStr) : null;
 
             return (
               <tr key={dateStr} style={{ backgroundColor: rest ? '#f9fafb' : 'white' }}>
                 <td className="border border-black px-1 py-0 text-center">{format(day, 'dd')}</td>
                 <td className="border border-black px-1 py-0 text-center">{format(day, 'EEE')}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.morning_in || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.morning_out || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.afternoon_in || null)}</td>
-                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest ? '' : formatTime(record?.afternoon_out || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest || leave ? '' : formatTime(record?.morning_in || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest || leave ? '' : formatTime(record?.morning_out || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest || leave ? '' : formatTime(record?.afternoon_in || null)}</td>
+                <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>{beforeCreation || rest || leave ? '' : formatTime(record?.afternoon_out || null)}</td>
                 <td className="border border-black px-1 py-0 text-center">
-                  {beforeCreation || rest ? '' : (record?.hours_worked ? record.hours_worked.toFixed(1) : '')}
+                  {beforeCreation || rest || leave ? '' : (record?.hours_worked ? record.hours_worked.toFixed(1) : '')}
                 </td>
                 <td className="border border-black px-1 py-0 text-center" style={{ fontSize: '7pt' }}>
-                  {beforeCreation ? '' : getRemarks(record, rest, isFuture)}
+                  {beforeCreation ? '' : getRemarks(record, rest, isFuture, leave)}
                 </td>
               </tr>
             );

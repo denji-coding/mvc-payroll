@@ -189,6 +189,7 @@ CREATE TABLE IF NOT EXISTS public.employees (
   first_name               text NOT NULL,
   middle_name              text,
   last_name                text NOT NULL,
+  suffix_name              text,                            -- optional (e.g. Jr., Sr., II, III)
   email                    text NOT NULL,
   phone                    text,
   date_of_birth            date,

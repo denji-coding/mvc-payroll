@@ -1,11 +1,14 @@
 import React from "react";
 import { Document, Page, Text, View, Image, StyleSheet, pdf } from "@react-pdf/renderer";
 import { format } from "date-fns";
+import { formatFullName } from "@/lib/formatName";
 
 interface PayslipEmployee {
   employee_id: string;
   first_name: string;
+  middle_name?: string | null;
   last_name: string;
+  suffix_name?: string | null;
   position: string;
   department: string | null;
 }

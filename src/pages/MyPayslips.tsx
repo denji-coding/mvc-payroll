@@ -49,7 +49,7 @@ export default function MyPayslips() {
   const handleDownloadPayslip = (record: any) => {
     if (!employee || !record) return;
     generatePayslipPdf({
-      employee: { employee_id: employee.employee_id, first_name: employee.first_name, last_name: employee.last_name, position: employee.position, department: employee.department },
+      employee: { employee_id: employee.employee_id, first_name: employee.first_name, middle_name: (employee as any).middle_name, last_name: employee.last_name, suffix_name: (employee as any).suffix_name, position: employee.position, department: employee.department },
       payroll: {
         period_start: record.payroll_periods.period_start, period_end: record.payroll_periods.period_end, pay_date: record.payroll_periods.pay_date,
         basic_pay: Number(record.basic_pay), days_worked: Number(record.days_worked || 0), overtime_pay: Number(record.overtime_pay || 0),

@@ -195,7 +195,7 @@ export default function Reports() {
             `${r.payroll_periods?.period_start || ''} – ${r.payroll_periods?.period_end || ''}`,
             r.payroll_periods?.pay_date || '',
             r.employees?.employee_id || '',
-            `${r.employees?.last_name || ''}, ${r.employees?.first_name || ''}${r.employees?.suffix_name ? ', ' + r.employees.suffix_name : ''}`,
+            formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name),
             Number(r.days_worked || 0),
             fmtMoney(Number(r.basic_pay || 0)),
             fmtMoney(Number(r.gross_pay || 0)),

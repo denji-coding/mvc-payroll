@@ -169,19 +169,19 @@ export function PrintableDTR({
       {/* Summary - Compact */}
       <div className="grid grid-cols-4 gap-2 text-xs mb-4 p-2 border border-black">
         <div className="text-center">
-          <p className="font-semibold text-xs">Days Worked</p>
+          <p className="font-semibold text-xs">No. of Days Worked</p>
           <p className="text-sm font-bold">{summary.daysWorked}</p>
         </div>
         <div className="text-center">
-          <p className="font-semibold text-xs">Total Hours</p>
+          <p className="font-semibold text-xs">Total Hours Worked</p>
           <p className="text-sm font-bold">{summary.totalHours.toFixed(1)}</p>
         </div>
         <div className="text-center">
-          <p className="font-semibold text-xs">Late Days</p>
-          <p className="text-sm font-bold">{summary.lateDays}</p>
+          <p className="font-semibold text-xs">No. of Minutes Late</p>
+          <p className="text-sm font-bold">{summary.lateMinutes ?? 0}</p>
         </div>
         <div className="text-center">
-          <p className="font-semibold text-xs">Absent Days</p>
+          <p className="font-semibold text-xs">No. of Days Absent</p>
           <p className="text-sm font-bold">{summary.absentDays}</p>
         </div>
       </div>

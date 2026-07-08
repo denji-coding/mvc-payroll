@@ -26,6 +26,7 @@ interface Summary {
   daysWorked: number;
   totalHours: number;
   lateDays: number;
+  lateMinutes?: number;
   absentDays: number;
 }
 

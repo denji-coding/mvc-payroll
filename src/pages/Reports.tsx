@@ -152,7 +152,7 @@ export default function Reports() {
           const rows = (data || []).map((a: any) => [
             a.date,
             a.employees?.employee_id || '',
-            `${a.employees?.last_name || ''}, ${a.employees?.first_name || ''}${a.employees?.suffix_name ? ', ' + a.employees.suffix_name : ''}`,
+            formatFullName(a.employees?.first_name, a.employees?.last_name, a.employees?.suffix_name, a.employees?.middle_name),
             formatTs(a.morning_in || a.time_in),
             formatTs(a.morning_out),
             formatTs(a.afternoon_in),

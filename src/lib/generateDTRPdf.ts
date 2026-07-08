@@ -41,6 +41,7 @@ interface MonthData {
     daysWorked: number;
     totalHours: number;
     lateDays: number;
+    lateMinutes: number;
     absentDays: number;
   };
 }
@@ -53,6 +54,7 @@ interface GenerateDTRPdfParams {
     daysWorked: number;
     totalHours: number;
     lateDays: number;
+    lateMinutes: number;
     absentDays: number;
   };
   month: string;
@@ -101,7 +103,7 @@ function addMonthPage(
   employee: Employee,
   daysInMonth: Date[],
   attendanceMap: Map<string, AttendanceRecord>,
-  summary: { daysWorked: number; totalHours: number; lateDays: number; absentDays: number },
+  summary: { daysWorked: number; totalHours: number; lateDays: number; lateMinutes: number; absentDays: number },
   month: string,
   year: number,
   employeeCreatedAt?: string,
@@ -371,13 +373,14 @@ export function calculateSummary(
   daysInMonth: Date[],
   employeeCreatedAt?: string,
   weekendDutyDays: Set<number> = new Set()
-): { daysWorked: number; totalHours: number; lateDays: number; absentDays: number } {
-  if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, absentDays: 0 };
+): { daysWorked: number; totalHours: number; lateDays: number; lateMinutes: number; absentDays: number } {
+  if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, lateMinutes: 0, absentDays: 0 };
   
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const daysWorked = attendance.filter(a => a.status === 'present' || a.status === 'late').length;
   const totalHours = attendance.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
   const lateDays = attendance.filter(a => (a.late_minutes || 0) > 0).length;
+  const lateMinutes = attendance.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
   const attendedDates = new Set(attendance.map(a => a.date));
   const absentDays = daysInMonth.filter(day => {
     const dateStr = format(day, 'yyyy-MM-dd');
@@ -388,5 +391,5 @@ export function calculateSummary(
     return !attendedDates.has(dateStr) && day <= new Date();
   }).length;
 
-  return { daysWorked, totalHours, lateDays, absentDays };
+  return { daysWorked, totalHours, lateDays, lateMinutes, absentDays };
 }

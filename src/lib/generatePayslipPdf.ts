@@ -93,11 +93,31 @@ const PayslipDocument: React.FC<GeneratePayslipPdfParams> = ({ employee, payroll
   // Build earnings rows
   const earningsItems: { desc: string; detail: string; amount: string }[] = [];
   earningsItems.push({ desc: "No. of Days", detail: `${payroll.days_worked} days`, amount: fmtAmount(payroll.basic_pay) });
+
+  // Always show Leave with Pay under Earnings (even if 0.00)
+  const lwpRegex = /leave\s*with\s*pay/i;
+  let lwpAmount = 0;
+  let lwpDays = 0;
+  const otherAllowances: [string, number][] = [];
   if (payroll.allowances_breakdown) {
     Object.entries(payroll.allowances_breakdown).forEach(([name, amt]) => {
-      if (Number(amt) > 0) earningsItems.push({ desc: name, detail: "", amount: fmtAmount(Number(amt)) });
+      const val = Number(amt);
+      if (lwpRegex.test(name)) {
+        lwpAmount += val;
+        const m = name.match(/\((\d+(?:\.\d+)?)\s*days?\)/i);
+        if (m) lwpDays += Number(m[1]);
+      } else if (val > 0) {
+        otherAllowances.push([name, val]);
+      }
     });
-  } else if (payroll.total_allowances > 0) {
+  }
+  earningsItems.push({
+    desc: "Leave with Pay",
+    detail: `${lwpDays} day${lwpDays === 1 ? "" : "s"}`,
+    amount: fmtAmount(lwpAmount),
+  });
+  otherAllowances.forEach(([name, amt]) => earningsItems.push({ desc: name, detail: "", amount: fmtAmount(amt) }));
+  if (!payroll.allowances_breakdown && payroll.total_allowances > 0) {
     earningsItems.push({ desc: "Allowances", detail: "", amount: fmtAmount(payroll.total_allowances) });
   }
 

@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format, isWeekend, getDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { formatSuffix } from '@/lib/formatName';
+import { formatFullName } from '@/lib/formatName';
 
 export interface DtrLeaveInfo {
   label: string;

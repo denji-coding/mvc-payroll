@@ -137,30 +137,27 @@ function addMonthPage(
   doc.setFont('helvetica', 'bold');
   doc.text('Name:', leftCol, yPos);
   doc.setFont('helvetica', 'normal');
-  const suffix = formatSuffix(employee.suffix_name);
-  doc.text(`${employee.first_name} ${employee.last_name}${suffix ? ' ' + suffix : ''}`, leftCol + 20, yPos);
-  
+  doc.text(
+    formatFullName(employee.first_name, employee.last_name, employee.suffix_name, employee.middle_name),
+    leftCol + 20,
+    yPos,
+  );
+
   doc.setFont('helvetica', 'bold');
   doc.text('Employee ID:', rightCol, yPos);
   doc.setFont('helvetica', 'normal');
   doc.text(employee.employee_id, rightCol + 28, yPos);
-  
+
   yPos += 5;
   doc.setFont('helvetica', 'bold');
   doc.text('Position:', leftCol, yPos);
   doc.setFont('helvetica', 'normal');
   doc.text(employee.position, leftCol + 20, yPos);
-  
+
   doc.setFont('helvetica', 'bold');
-  doc.text('Department:', rightCol, yPos);
+  doc.text('Period:', rightCol, yPos);
   doc.setFont('helvetica', 'normal');
-  doc.text(employee.department || '-', rightCol + 28, yPos);
-  
-  yPos += 5;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Period:', leftCol, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${month} ${year}`, leftCol + 20, yPos);
+  doc.text(`${month} ${year}`, rightCol + 28, yPos);
 
   // Prepare table data
   const tableData = daysInMonth.map((day) => {

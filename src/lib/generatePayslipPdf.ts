@@ -158,7 +158,7 @@ const PayslipDocument: React.FC<GeneratePayslipPdfParams> = ({ employee, payroll
       // Employee Info Table
       React.createElement(View, { style: s.row },
         React.createElement(View, { style: s.c0 }, React.createElement(Text, { style: s.boldText }, "Employee Name")),
-        React.createElement(View, { style: s.c1 }, React.createElement(Text, null, `${employee.last_name}, ${employee.first_name}`)),
+        React.createElement(View, { style: s.c1 }, React.createElement(Text, null, formatFullName(employee.first_name, employee.last_name, employee.suffix_name, employee.middle_name))),
         React.createElement(View, { style: s.c2 }, React.createElement(Text, { style: s.boldText }, "Employee ID")),
         React.createElement(View, { style: s.c3 }, React.createElement(Text, null, employee.employee_id)),
       ),

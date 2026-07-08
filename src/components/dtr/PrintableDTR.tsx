@@ -106,7 +106,7 @@ export function PrintableDTR({
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3 text-xs border-b pb-2">
         <div className="flex gap-1">
           <span className="font-semibold">Name:</span>
-          <span className="border-b border-black flex-1">{capitalizeWords(employee.first_name)} {capitalizeWords(employee.last_name)}{formatSuffix(employee.suffix_name) ? ` ${formatSuffix(employee.suffix_name)}` : ''}</span>
+          <span className="border-b border-black flex-1">{formatFullName(employee.first_name, employee.last_name, employee.suffix_name, employee.middle_name)}</span>
         </div>
         <div className="flex gap-1">
           <span className="font-semibold">Employee ID:</span>
@@ -117,12 +117,8 @@ export function PrintableDTR({
           <span className="border-b border-black flex-1">{employee.position}</span>
         </div>
         <div className="flex gap-1">
-          <span className="font-semibold">Department:</span>
-          <span className="border-b border-black flex-1">{employee.department || 'N/A'}</span>
-        </div>
-        <div className="flex gap-1 col-span-2">
           <span className="font-semibold">Period:</span>
-          <span>{month} {year}</span>
+          <span className="border-b border-black flex-1">{month} {year}</span>
         </div>
       </div>
 

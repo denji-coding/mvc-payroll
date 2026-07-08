@@ -1,5 +1,5 @@
 import { format, isWeekend, getDay } from 'date-fns';
-import { capitalizeWords, formatSuffix } from '@/lib/formatName';
+import { formatFullName } from '@/lib/formatName';
 
 interface AttendanceRecord {
   date: string;
@@ -14,6 +14,7 @@ interface AttendanceRecord {
 
 interface Employee {
   first_name: string;
+  middle_name?: string | null;
   last_name: string;
   suffix_name?: string | null;
   employee_id: string;
@@ -25,6 +26,7 @@ interface Summary {
   daysWorked: number;
   totalHours: number;
   lateDays: number;
+  lateMinutes?: number;
   absentDays: number;
 }
 
@@ -105,7 +107,7 @@ export function PrintableDTR({
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3 text-xs border-b pb-2">
         <div className="flex gap-1">
           <span className="font-semibold">Name:</span>
-          <span className="border-b border-black flex-1">{capitalizeWords(employee.first_name)} {capitalizeWords(employee.last_name)}{formatSuffix(employee.suffix_name) ? ` ${formatSuffix(employee.suffix_name)}` : ''}</span>
+          <span className="border-b border-black flex-1">{formatFullName(employee.first_name, employee.last_name, employee.suffix_name, employee.middle_name)}</span>
         </div>
         <div className="flex gap-1">
           <span className="font-semibold">Employee ID:</span>
@@ -116,12 +118,8 @@ export function PrintableDTR({
           <span className="border-b border-black flex-1">{employee.position}</span>
         </div>
         <div className="flex gap-1">
-          <span className="font-semibold">Department:</span>
-          <span className="border-b border-black flex-1">{employee.department || 'N/A'}</span>
-        </div>
-        <div className="flex gap-1 col-span-2">
           <span className="font-semibold">Period:</span>
-          <span>{month} {year}</span>
+          <span className="border-b border-black flex-1">{month} {year}</span>
         </div>
       </div>
 
@@ -171,19 +169,19 @@ export function PrintableDTR({
       {/* Summary - Compact */}
       <div className="grid grid-cols-4 gap-2 text-xs mb-4 p-2 border border-black">
         <div className="text-center">
-          <p className="font-semibold text-xs">Days Worked</p>
+          <p className="font-semibold text-xs">No. of Days Worked</p>
           <p className="text-sm font-bold">{summary.daysWorked}</p>
         </div>
         <div className="text-center">
-          <p className="font-semibold text-xs">Total Hours</p>
+          <p className="font-semibold text-xs">Total Hours Worked</p>
           <p className="text-sm font-bold">{summary.totalHours.toFixed(1)}</p>
         </div>
         <div className="text-center">
-          <p className="font-semibold text-xs">Late Days</p>
-          <p className="text-sm font-bold">{summary.lateDays}</p>
+          <p className="font-semibold text-xs">No. of Minutes Late</p>
+          <p className="text-sm font-bold">{summary.lateMinutes ?? 0}</p>
         </div>
         <div className="text-center">
-          <p className="font-semibold text-xs">Absent Days</p>
+          <p className="font-semibold text-xs">No. of Days Absent</p>
           <p className="text-sm font-bold">{summary.absentDays}</p>
         </div>
       </div>

@@ -56,7 +56,7 @@ export default function Payroll() {
     try {
       const { data: periodRecords, error } = await supabase
         .from('payroll_records')
-        .select('*, employees(employee_id, first_name, last_name, suffix_name)')
+        .select('*, employees(employee_id, first_name, middle_name, last_name, suffix_name)')
         .eq('payroll_period_id', period.id)
         .order('employees(last_name)', { ascending: true });
       
@@ -152,7 +152,7 @@ export default function Payroll() {
   ];
 
   const recordColumns: ColumnDef<any, any>[] = [
-    { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name, row.employees?.suffix_name) },
+    { id: 'employee', header: 'Employee', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name, row.employees?.suffix_name, row.employees?.middle_name) },
     { accessorKey: 'is_manual', header: 'Type of Calculation', cell: ({ getValue }) => getValue() ? <Badge variant="outline" className="bg-info/10 text-info border-info/30">Manual</Badge> : <Badge variant="outline">Automated</Badge> },
     { accessorKey: 'basic_pay', header: 'Basic', cell: ({ getValue }) => formatCurrency(getValue() as number) },
     { accessorKey: 'gross_pay', header: 'Gross', cell: ({ getValue }) => formatCurrency(getValue() as number) },
@@ -173,7 +173,7 @@ export default function Payroll() {
             {isHR && isPeriodNotApproved && (
               <AlertDialog>
                 <AlertDialogTrigger asChild><Button size="sm" variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name)}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name)}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
               </AlertDialog>
             )}
           </div>
@@ -285,39 +285,47 @@ export default function Payroll() {
 
 function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { record: any; onClose: () => void; formatCurrency: (n: number | null) => string; periodStatus?: string }) {
   const canDownload = periodStatus === 'approved' || periodStatus === 'paid';
-  const handleDownload = () => {
-    const lwpHtml = lwpEntries.map(([key, value]) => `<div class="row"><span>${key}</span><span>${formatCurrency(value)}</span></div>`).join('');
-    const lateHtml = lateEntries.length > 0 
-      ? lateEntries.map(([key, value]) => `<div class="row"><span>${key}</span><span>${formatCurrency(value)}</span></div>`).join('')
-      : (r.other_deductions || 0) > 0 ? `<div class="row"><span>Late Deduction</span><span>${formatCurrency(r.other_deductions)}</span></div>` : '';
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip - ${r.employees?.first_name} ${r.employees?.last_name}</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto}.header{text-align:center;margin-bottom:30px;border-bottom:2px solid #333;padding-bottom:20px}.header h1{margin:0;color:#333}.section{margin-bottom:20px}.section h3{margin:0 0 10px;padding:5px;background:#f5f5f5}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee}.row.total{font-weight:bold;border-top:2px solid #333;margin-top:10px;padding-top:10px}.net-pay{text-align:center;background:#f0f7ff;padding:20px;border-radius:8px;margin-top:20px}.net-pay .amount{font-size:28px;font-weight:bold;color:#0066cc}</style></head><body><div class="header"><h1>MVC Corporation</h1><p>PAYSLIP</p></div><div><strong>Employee:</strong> ${r.employees?.first_name} ${r.employees?.last_name}<br><strong>Employee ID:</strong> ${r.employees?.employee_id || 'N/A'}</div><div class="section"><h3 style="color:#22c55e">Earnings</h3><div class="row"><span>Basic Pay</span><span>${formatCurrency(r.basic_pay)}</span></div>${lwpHtml}<div class="row total"><span>Gross</span><span>${formatCurrency(r.gross_pay)}</span></div></div><div class="section"><h3 style="color:#ef4444">Deductions</h3><div class="row"><span>SSS</span><span>${formatCurrency(r.sss_contribution)}</span></div><div class="row"><span>PhilHealth</span><span>${formatCurrency(r.philhealth_contribution)}</span></div><div class="row"><span>Pag-IBIG</span><span>${formatCurrency(r.pagibig_contribution)}</span></div>${lateHtml}<div class="row total"><span>Total</span><span>${formatCurrency(r.total_deductions)}</span></div></div><div class="net-pay"><p style="margin:0 0 5px;color:#666">Net Pay</p><p class="amount" style="margin:0">${formatCurrency(r.net_pay)}</p></div></body></html>`;
-    const blob = new Blob([html], { type: 'text/html' }); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `payslip-${r.employees?.last_name || 'employee'}.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  };
 
   // Parse allowances_breakdown for LWP display
   const allowancesBreakdown = (r.allowances_breakdown && typeof r.allowances_breakdown === 'object') ? r.allowances_breakdown as Record<string, number> : {};
   const deductionsBreakdown = (r.deductions_breakdown && typeof r.deductions_breakdown === 'object') ? r.deductions_breakdown as Record<string, number> : {};
-  
-  // Find LWP entries in allowances breakdown
-  const lwpEntries = Object.entries(allowancesBreakdown).filter(([key]) => key.toLowerCase().includes('leave with pay') || key.toLowerCase().startsWith('lwp'));
-  
-  // Find late/LWOP entries in deductions breakdown  
+
+  // Aggregate LWP amount + days across breakdown entries; always shown even when 0.00
+  const lwpRegex = /leave\s*with\s*pay/i;
+  let lwpAmount = 0;
+  let lwpDays = 0;
+  Object.entries(allowancesBreakdown).forEach(([key, value]) => {
+    if (lwpRegex.test(key)) {
+      lwpAmount += Number(value) || 0;
+      const m = key.match(/\((\d+(?:\.\d+)?)\s*days?\)/i);
+      if (m) lwpDays += Number(m[1]);
+    }
+  });
+  const lwpDaysLabel = `${lwpDays} day${lwpDays === 1 ? '' : 's'}`;
+
   const lateEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('late'));
   const lwopEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('without pay'));
+
+  const handleDownload = () => {
+    const lateHtml = lateEntries.length > 0
+      ? lateEntries.map(([key, value]) => `<div class="row"><span>${key}</span><span>${formatCurrency(value)}</span></div>`).join('')
+      : (r.other_deductions || 0) > 0 ? `<div class="row"><span>Late Deduction</span><span>${formatCurrency(r.other_deductions)}</span></div>` : '';
+    const employeeName = formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name);
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip - ${employeeName}</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto}.header{text-align:center;margin-bottom:30px;border-bottom:2px solid #333;padding-bottom:20px}.header h1{margin:0;color:#333}.section{margin-bottom:20px}.section h3{margin:0 0 10px;padding:5px;background:#f5f5f5}.details{margin-bottom:20px;font-size:13px}.details div{padding:3px 0}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee}.row.total{font-weight:bold;border-top:2px solid #333;margin-top:10px;padding-top:10px}.net-pay{text-align:center;background:#f0f7ff;padding:20px;border-radius:8px;margin-top:20px}.net-pay .amount{font-size:28px;font-weight:bold;color:#0066cc}</style></head><body><div class="header"><h1>MVC Corporation</h1><p>PAYSLIP</p></div><div class="details"><div><strong>Employee:</strong> ${employeeName}</div><div><strong>Employee ID:</strong> ${r.employees?.employee_id || 'N/A'}</div><div><strong>Days Worked:</strong> ${Number(r.days_worked || 0)}</div><div><strong>Leave with Pay:</strong> ${lwpDaysLabel}</div></div><div class="section"><h3 style="color:#22c55e">Earnings</h3><div class="row"><span>Basic Pay</span><span>${formatCurrency(r.basic_pay)}</span></div><div class="row"><span>Leave with Pay (${lwpDaysLabel})</span><span>${formatCurrency(lwpAmount)}</span></div><div class="row total"><span>Gross</span><span>${formatCurrency(r.gross_pay)}</span></div></div><div class="section"><h3 style="color:#ef4444">Deductions</h3><div class="row"><span>SSS</span><span>${formatCurrency(r.sss_contribution)}</span></div><div class="row"><span>PhilHealth</span><span>${formatCurrency(r.philhealth_contribution)}</span></div><div class="row"><span>Pag-IBIG</span><span>${formatCurrency(r.pagibig_contribution)}</span></div>${lateHtml}<div class="row total"><span>Total</span><span>${formatCurrency(r.total_deductions)}</span></div></div><div class="net-pay"><p style="margin:0 0 5px;color:#666">Net Pay</p><p class="amount" style="margin:0">${formatCurrency(r.net_pay)}</p></div></body></html>`;
+    const blob = new Blob([html], { type: 'text/html' }); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `payslip-${r.employees?.last_name || 'employee'}.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name)}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name)}</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h4 className="font-semibold text-success mb-2">Earnings</h4>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between"><span>Basic Pay</span><span>{formatCurrency(r.basic_pay)}</span></div>
-              {lwpEntries.map(([key, value]) => (
-                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
-              ))}
+              <div className="flex justify-between"><span>Leave with Pay ({lwpDaysLabel})</span><span>{formatCurrency(lwpAmount)}</span></div>
               <div className="flex justify-between font-bold border-t pt-1"><span>Gross</span><span>{formatCurrency(r.gross_pay)}</span></div>
             </div>
           </div>

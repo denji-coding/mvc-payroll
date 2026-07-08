@@ -132,7 +132,7 @@ export function useLeaveRequests(status?: 'pending' | 'manager_approved' | 'hr_a
     queryFn: async () => {
       let query = supabase
         .from('leave_requests')
-        .select('*, employees(first_name, last_name, suffix_name, employee_id, branch_id)')
+        .select('*, employees(first_name, middle_name, last_name, suffix_name, employee_id, branch_id)')
         .order('created_at', { ascending: false });
       
       if (status) {
@@ -217,7 +217,7 @@ export function useAllLeaveCredits() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('leave_credits')
-        .select('*, employees(id, first_name, last_name, suffix_name, employee_id)')
+        .select('*, employees(id, first_name, middle_name, last_name, suffix_name, employee_id)')
         .eq('year', currentYear)
         .order('created_at', { ascending: false });
       

@@ -24,14 +24,33 @@ export function formatSuffix(suffix: string | null | undefined): string {
 }
 
 /**
- * Format a full name from first/last name (and optional suffix), capitalizing each word.
+ * Extract the initial of the middle name (first character of the first middle-name word).
+ * Returns an empty string when no middle name is provided.
+ */
+export function middleInitial(middleName: string | null | undefined): string {
+  if (!middleName) return '';
+  const trimmed = middleName.trim();
+  if (!trimmed) return '';
+  const firstWord = trimmed.split(/\s+/)[0];
+  const letter = firstWord.charAt(0);
+  return letter ? `${letter.toUpperCase()}.` : '';
+}
+
+/**
+ * Format a full name from first/last name (and optional suffix, optional middle name).
+ * When a middle name is provided, only its first initial is shown:
+ *   "Roy B. Nabesis", "John Mark S. Espanol", "Rey B. Nabesis Jr."
  */
 export function formatFullName(
   firstName: string | null | undefined,
   lastName: string | null | undefined,
   suffix?: string | null,
+  middleName?: string | null,
 ): string {
-  const base = `${capitalizeWords(firstName)} ${capitalizeWords(lastName)}`.trim();
+  const first = capitalizeWords(firstName);
+  const last = capitalizeWords(lastName);
+  const mi = middleInitial(middleName);
   const suf = formatSuffix(suffix);
-  return suf ? `${base} ${suf}`.trim() : base;
+  const parts = [first, mi, last, suf].filter(Boolean);
+  return parts.join(' ').trim();
 }

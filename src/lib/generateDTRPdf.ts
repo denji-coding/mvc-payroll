@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format, isWeekend, getDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { formatSuffix } from '@/lib/formatName';
+import { formatFullName } from '@/lib/formatName';
 
 export interface DtrLeaveInfo {
   label: string;
@@ -24,6 +24,7 @@ interface AttendanceRecord {
 
 interface Employee {
   first_name: string;
+  middle_name?: string | null;
   last_name: string;
   suffix_name?: string | null;
   employee_id: string;
@@ -40,6 +41,7 @@ interface MonthData {
     daysWorked: number;
     totalHours: number;
     lateDays: number;
+    lateMinutes: number;
     absentDays: number;
   };
 }
@@ -52,6 +54,7 @@ interface GenerateDTRPdfParams {
     daysWorked: number;
     totalHours: number;
     lateDays: number;
+    lateMinutes: number;
     absentDays: number;
   };
   month: string;
@@ -100,7 +103,7 @@ function addMonthPage(
   employee: Employee,
   daysInMonth: Date[],
   attendanceMap: Map<string, AttendanceRecord>,
-  summary: { daysWorked: number; totalHours: number; lateDays: number; absentDays: number },
+  summary: { daysWorked: number; totalHours: number; lateDays: number; lateMinutes: number; absentDays: number },
   month: string,
   year: number,
   employeeCreatedAt?: string,
@@ -137,30 +140,27 @@ function addMonthPage(
   doc.setFont('helvetica', 'bold');
   doc.text('Name:', leftCol, yPos);
   doc.setFont('helvetica', 'normal');
-  const suffix = formatSuffix(employee.suffix_name);
-  doc.text(`${employee.first_name} ${employee.last_name}${suffix ? ' ' + suffix : ''}`, leftCol + 20, yPos);
-  
+  doc.text(
+    formatFullName(employee.first_name, employee.last_name, employee.suffix_name, employee.middle_name),
+    leftCol + 20,
+    yPos,
+  );
+
   doc.setFont('helvetica', 'bold');
   doc.text('Employee ID:', rightCol, yPos);
   doc.setFont('helvetica', 'normal');
   doc.text(employee.employee_id, rightCol + 28, yPos);
-  
+
   yPos += 5;
   doc.setFont('helvetica', 'bold');
   doc.text('Position:', leftCol, yPos);
   doc.setFont('helvetica', 'normal');
   doc.text(employee.position, leftCol + 20, yPos);
-  
+
   doc.setFont('helvetica', 'bold');
-  doc.text('Department:', rightCol, yPos);
+  doc.text('Period:', rightCol, yPos);
   doc.setFont('helvetica', 'normal');
-  doc.text(employee.department || '-', rightCol + 28, yPos);
-  
-  yPos += 5;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Period:', leftCol, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${month} ${year}`, leftCol + 20, yPos);
+  doc.text(`${month} ${year}`, rightCol + 28, yPos);
 
   // Prepare table data
   const tableData = daysInMonth.map((day) => {
@@ -246,10 +246,10 @@ function addMonthPage(
   const summaryY = yPos;
   const colWidth = (pageWidth - 2 * margin) / 4;
   
-  doc.text(`Days Worked: ${summary.daysWorked}`, margin, summaryY);
-  doc.text(`Total Hours: ${summary.totalHours.toFixed(1)}`, margin + colWidth, summaryY);
-  doc.text(`Late Days: ${summary.lateDays}`, margin + colWidth * 2, summaryY);
-  doc.text(`Absent Days: ${summary.absentDays}`, margin + colWidth * 3, summaryY);
+  doc.text(`No. of Days Worked: ${summary.daysWorked}`, margin, summaryY);
+  doc.text(`Total Hours Worked: ${summary.totalHours.toFixed(1)}`, margin + colWidth, summaryY);
+  doc.text(`No. of Minutes Late: ${summary.lateMinutes ?? 0}`, margin + colWidth * 2, summaryY);
+  doc.text(`No. of Days Absent: ${summary.absentDays}`, margin + colWidth * 3, summaryY);
 
   // Signature lines
   yPos = summaryY + 15;
@@ -373,13 +373,14 @@ export function calculateSummary(
   daysInMonth: Date[],
   employeeCreatedAt?: string,
   weekendDutyDays: Set<number> = new Set()
-): { daysWorked: number; totalHours: number; lateDays: number; absentDays: number } {
-  if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, absentDays: 0 };
+): { daysWorked: number; totalHours: number; lateDays: number; lateMinutes: number; absentDays: number } {
+  if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, lateMinutes: 0, absentDays: 0 };
   
   const employeeStart = employeeCreatedAt ? new Date(employeeCreatedAt) : null;
   const daysWorked = attendance.filter(a => a.status === 'present' || a.status === 'late').length;
   const totalHours = attendance.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
   const lateDays = attendance.filter(a => (a.late_minutes || 0) > 0).length;
+  const lateMinutes = attendance.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
   const attendedDates = new Set(attendance.map(a => a.date));
   const absentDays = daysInMonth.filter(day => {
     const dateStr = format(day, 'yyyy-MM-dd');
@@ -390,5 +391,5 @@ export function calculateSummary(
     return !attendedDates.has(dateStr) && day <= new Date();
   }).length;
 
-  return { daysWorked, totalHours, lateDays, absentDays };
+  return { daysWorked, totalHours, lateDays, lateMinutes, absentDays };
 }

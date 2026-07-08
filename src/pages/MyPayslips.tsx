@@ -28,7 +28,7 @@ export default function MyPayslips() {
     queryKey: ['my-employee-record', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase.from('employees').select('id, employee_id, first_name, last_name, position, department, basic_salary').eq('user_id', user.id).single();
+      const { data, error } = await supabase.from('employees').select('id, employee_id, first_name, middle_name, last_name, suffix_name, position, department, basic_salary').eq('user_id', user.id).single();
       if (error) throw error; return data;
     },
     enabled: !!user?.id,
@@ -49,7 +49,7 @@ export default function MyPayslips() {
   const handleDownloadPayslip = (record: any) => {
     if (!employee || !record) return;
     generatePayslipPdf({
-      employee: { employee_id: employee.employee_id, first_name: employee.first_name, last_name: employee.last_name, position: employee.position, department: employee.department },
+      employee: { employee_id: employee.employee_id, first_name: employee.first_name, middle_name: (employee as any).middle_name, last_name: employee.last_name, suffix_name: (employee as any).suffix_name, position: employee.position, department: employee.department },
       payroll: {
         period_start: record.payroll_periods.period_start, period_end: record.payroll_periods.period_end, pay_date: record.payroll_periods.pay_date,
         basic_pay: Number(record.basic_pay), days_worked: Number(record.days_worked || 0), overtime_pay: Number(record.overtime_pay || 0),
@@ -158,7 +158,28 @@ export default function MyPayslips() {
                 <h4 className="font-semibold text-sm mb-2" style={{ color: 'hsl(var(--success))' }}>Earnings</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between"><span className="text-muted-foreground">Basic Pay</span><span>{fmt(Number(viewRecord.basic_pay || 0))}</span></div>
-                  {Number(viewRecord.total_allowances) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Allowances</span><span>{fmt(Number(viewRecord.total_allowances))}</span></div>}
+                  {(() => {
+                    const bd = (viewRecord.allowances_breakdown && typeof viewRecord.allowances_breakdown === 'object') ? viewRecord.allowances_breakdown as Record<string, number> : {};
+                    let lwpAmt = 0, lwpDays = 0;
+                    Object.entries(bd).forEach(([k, v]) => {
+                      if (/leave\s*with\s*pay/i.test(k)) {
+                        lwpAmt += Number(v) || 0;
+                        const m = k.match(/\((\d+(?:\.\d+)?)\s*days?\)/i);
+                        if (m) lwpDays += Number(m[1]);
+                      }
+                    });
+                    return (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Leave with Pay ({lwpDays} day{lwpDays === 1 ? '' : 's'})</span>
+                        <span>{fmt(lwpAmt)}</span>
+                      </div>
+                    );
+                  })()}
+                  {Number(viewRecord.total_allowances) > 0 && (() => {
+                    const bd = (viewRecord.allowances_breakdown && typeof viewRecord.allowances_breakdown === 'object') ? viewRecord.allowances_breakdown as Record<string, number> : {};
+                    const otherTotal = Object.entries(bd).filter(([k]) => !/leave\s*with\s*pay/i.test(k)).reduce((s, [, v]) => s + (Number(v) || 0), 0);
+                    return otherTotal > 0 ? <div className="flex justify-between"><span className="text-muted-foreground">Allowances</span><span>{fmt(otherTotal)}</span></div> : null;
+                  })()}
                   <div className="flex justify-between font-semibold pt-1 border-t"><span>Gross Pay</span><span style={{ color: 'hsl(var(--success))' }}>{fmt(Number(viewRecord.gross_pay || 0))}</span></div>
                 </div>
               </div>

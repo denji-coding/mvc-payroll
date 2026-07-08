@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCompanyInfo } from '@/hooks/useCompanyInfo';
 import { PdfReportPreviewDialog } from '@/components/reports/PdfReportPreviewDialog';
 import type { ReportColumn, CompanyHeaderInfo, PreparedByInfo } from '@/components/reports/PdfReportDocument';
+import { formatFullName } from '@/lib/formatName';
 
 type ReportType = 'employee-masterlist' | 'attendance-summary' | 'payroll-summary' | 'gov-contributions';
 

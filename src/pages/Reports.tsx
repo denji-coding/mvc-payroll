@@ -236,7 +236,7 @@ export default function Reports() {
           const rows = (data || []).map((r: any) => [
             `${r.payroll_periods?.period_start || ''} – ${r.payroll_periods?.period_end || ''}`,
             r.employees?.employee_id || '',
-            `${r.employees?.last_name || ''}, ${r.employees?.first_name || ''}${r.employees?.suffix_name ? ', ' + r.employees.suffix_name : ''}`,
+            formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name),
             r.employees?.sss_number || '',
             fmtMoney(Number(r.sss_contribution || 0)),
             fmtMoney(Number((r.sss_contribution || 0) * 1.5)),

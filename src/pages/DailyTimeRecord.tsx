@@ -170,12 +170,13 @@ export default function DailyTimeRecord() {
 
   // Calculate summary statistics
   const summary = useMemo(() => {
-    if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, absentDays: 0 };
+    if (!attendance) return { daysWorked: 0, totalHours: 0, lateDays: 0, lateMinutes: 0, absentDays: 0 };
     
     const employeeStart = employee?.created_at ? new Date(employee.created_at) : null;
     const daysWorked = attendance.filter(a => a.status === 'present' || a.status === 'late' || a.status === 'half_day').length;
     const totalHours = attendance.reduce((sum, a) => sum + (a.hours_worked || 0), 0);
     const lateDays = attendance.filter(a => (a.late_minutes || 0) > 0).length;
+    const lateMinutes = attendance.reduce((sum, a) => sum + (a.late_minutes || 0), 0);
     const attendedDates = new Set(attendance.map(a => a.date));
     const absentDays = daysInMonth.filter(day => {
       const dateStr = format(day, 'yyyy-MM-dd');
@@ -188,7 +189,7 @@ export default function DailyTimeRecord() {
       return !attendedDates.has(dateStr) && day <= new Date();
     }).length;
 
-    return { daysWorked, totalHours, lateDays, absentDays };
+    return { daysWorked, totalHours, lateDays, lateMinutes, absentDays };
   }, [attendance, daysInMonth, weekendDutyDays]);
 
   // Validate date range

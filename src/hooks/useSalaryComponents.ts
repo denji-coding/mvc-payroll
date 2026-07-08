@@ -135,7 +135,7 @@ export function useEmployeeSalaryAdjustments(employeeId?: string) {
         .select(`
           *,
           component:salary_components(*),
-          employee:employees(first_name, last_name, suffix_name, employee_id)
+          employee:employees(first_name, middle_name, last_name, suffix_name, employee_id)
         `)
         .order('created_at', { ascending: false });
       

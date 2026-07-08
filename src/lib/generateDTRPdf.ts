@@ -244,10 +244,10 @@ function addMonthPage(
   const summaryY = yPos;
   const colWidth = (pageWidth - 2 * margin) / 4;
   
-  doc.text(`Days Worked: ${summary.daysWorked}`, margin, summaryY);
-  doc.text(`Total Hours: ${summary.totalHours.toFixed(1)}`, margin + colWidth, summaryY);
-  doc.text(`Late Days: ${summary.lateDays}`, margin + colWidth * 2, summaryY);
-  doc.text(`Absent Days: ${summary.absentDays}`, margin + colWidth * 3, summaryY);
+  doc.text(`No. of Days Worked: ${summary.daysWorked}`, margin, summaryY);
+  doc.text(`Total Hours Worked: ${summary.totalHours.toFixed(1)}`, margin + colWidth, summaryY);
+  doc.text(`No. of Minutes Late: ${summary.lateMinutes ?? 0}`, margin + colWidth * 2, summaryY);
+  doc.text(`No. of Days Absent: ${summary.absentDays}`, margin + colWidth * 3, summaryY);
 
   // Signature lines
   yPos = summaryY + 15;

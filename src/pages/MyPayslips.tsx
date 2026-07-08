@@ -28,7 +28,7 @@ export default function MyPayslips() {
     queryKey: ['my-employee-record', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase.from('employees').select('id, employee_id, first_name, last_name, position, department, basic_salary').eq('user_id', user.id).single();
+      const { data, error } = await supabase.from('employees').select('id, employee_id, first_name, middle_name, last_name, suffix_name, position, department, basic_salary').eq('user_id', user.id).single();
       if (error) throw error; return data;
     },
     enabled: !!user?.id,

@@ -110,7 +110,7 @@ export default function Reports() {
           ];
           const rows = (data || []).map((e: any) => [
             e.employee_id,
-            `${e.last_name}, ${e.first_name}${e.middle_name ? ' ' + e.middle_name : ''}${e.suffix_name ? ', ' + e.suffix_name : ''}`,
+            formatFullName(e.first_name, e.last_name, e.suffix_name, e.middle_name),
             e.email,
             e.phone || '',
             e.position || '',

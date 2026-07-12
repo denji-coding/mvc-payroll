@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { EmployeeAvatar } from '@/components/employees/EmployeeAvatar';
 import { format } from 'date-fns';
 import { User, Briefcase, Building2, CreditCard, Phone, Mail, MapPin, Calendar, Shield } from 'lucide-react';
-import { capitalizeWords } from '@/lib/formatName';
+import { formatFullName } from '@/lib/formatName';
 
 interface EmployeeViewModalProps {
   employee: any;
@@ -39,9 +39,9 @@ export function EmployeeViewModal({ employee, open, onClose }: EmployeeViewModal
   };
 
   const InfoRow = ({ label, value }: { label: string; value: string | null | undefined }) => (
-    <div className="flex justify-between py-1.5 border-b border-border/50 last:border-0 gap-2">
+    <div className="flex flex-col sm:flex-row sm:justify-between py-1.5 border-b border-border/50 last:border-0 gap-1 sm:gap-2">
       <span className="text-sm text-muted-foreground shrink-0">{label}</span>
-      <span className="text-sm font-medium text-right max-w-[60%] break-all">{value || '-'}</span>
+      <span className="text-sm font-medium sm:text-right sm:max-w-[60%] break-words whitespace-normal">{value || '-'}</span>
     </div>
   );
 
@@ -65,8 +65,8 @@ export function EmployeeViewModal({ employee, open, onClose }: EmployeeViewModal
               className="h-16 w-16"
             />
             <div>
-              <DialogTitle className="text-xl">
-                {capitalizeWords(employee.first_name)} {employee.middle_name ? `${capitalizeWords(employee.middle_name)} ` : ''}{capitalizeWords(employee.last_name)}
+              <DialogTitle className="text-xl break-words">
+                {formatFullName(employee.first_name, employee.last_name, employee.suffix_name, employee.middle_name)}
               </DialogTitle>
               <p className="text-muted-foreground">{employee.position}</p>
               <div className="mt-1">{getStatusBadge(employee.employment_status)}</div>

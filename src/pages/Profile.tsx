@@ -10,12 +10,14 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Save, User, Lock, Phone, Mail, Loader2 } from 'lucide-react';
+import { formatFullName } from '@/lib/formatName';
 
 export default function Profile() {
   const { profile, user, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [suffixName, setSuffixName] = useState('');
+  const [middleName, setMiddleName] = useState('');
   const [form, setForm] = useState({
     first_name: profile?.firstName || '',
     last_name: profile?.lastName || '',
@@ -41,10 +43,11 @@ export default function Profile() {
       }
       const { data: emp } = await supabase
         .from('employees')
-        .select('suffix_name')
+        .select('suffix_name, middle_name')
         .eq('user_id', user.id)
         .maybeSingle();
       if (emp?.suffix_name) setSuffixName(emp.suffix_name);
+      if (emp?.middle_name) setMiddleName(emp.middle_name);
     };
     loadProfile();
   }, [user?.id]);
@@ -136,7 +139,7 @@ export default function Profile() {
                 <AvatarFallback className="bg-primary text-primary-foreground text-xl sm:text-2xl">{getInitials()}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <CardTitle className="text-base sm:text-xl truncate">{profile?.firstName} {profile?.lastName}{suffixName ? ` ${suffixName}` : ''}</CardTitle>
+                <CardTitle className="text-base sm:text-xl break-words">{formatFullName(profile?.firstName, profile?.lastName, suffixName, middleName)}</CardTitle>
                 <p className="text-muted-foreground flex items-center gap-1.5 sm:gap-2 mt-1 text-xs sm:text-sm">
                   <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="truncate">{profile?.email}</span>

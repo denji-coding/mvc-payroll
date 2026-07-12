@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Save, User, Lock, Phone, Mail, Loader2 } from 'lucide-react';
+import { formatFullName } from '@/lib/formatName';
 
 export default function Profile() {
   const { profile, user, refreshProfile } = useAuth();

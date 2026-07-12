@@ -17,6 +17,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [suffixName, setSuffixName] = useState('');
+  const [middleName, setMiddleName] = useState('');
   const [form, setForm] = useState({
     first_name: profile?.firstName || '',
     last_name: profile?.lastName || '',

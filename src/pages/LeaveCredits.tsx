@@ -132,8 +132,9 @@ export default function LeaveCredits() {
       },
     },
     { accessorKey: 'is_active', header: 'Status', cell: ({ getValue }) => <Badge variant={getValue() ? 'default' : 'secondary'}>{getValue() ? 'Active' : 'Inactive'}</Badge> },
-    { accessorKey: 'default_credits', header: () => <div className="text-center">Day Limit</div>, cell: ({ getValue }) => <div className="text-center">{getValue()} days</div> },
-    { accessorKey: 'credits_per_application', header: () => <div className="text-center">Credits/App</div>, cell: ({ getValue }) => <div className="text-center">{getValue() || 1}</div> },
+    { accessorKey: 'default_credits', header: 'Day Limit', cell: ({ getValue }) => `${getValue()} days` },
+    { accessorKey: 'credits_per_application', header: 'Credits/App', cell: ({ getValue }) => getValue() || 1 },
+
 
     {
       id: 'actions', header: 'Actions', enableSorting: false,

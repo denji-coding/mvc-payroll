@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 export default function LeaveCredits() {
   const { role } = useAuth();
   const { data: leaveTypes, isLoading } = useLeaveTypes();
-  const { data: allCredits } = useAllLeaveCredits();
+  
   const createLeaveType = useCreateLeaveType();
   const updateLeaveType = useUpdateLeaveType();
   const deleteLeaveType = useDeleteLeaveType();

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLeaveTypes, useCreateLeaveType, useUpdateLeaveType, useDeleteLeaveType, LeaveType } from '@/hooks/useLeaveTypes';
-import { useAllLeaveCredits } from '@/hooks/useLeaves';
+
 import { useLwpConfig, useUpdateLwpConfig, LwpConfig } from '@/hooks/useSettings';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 export default function LeaveCredits() {
   const { role } = useAuth();
   const { data: leaveTypes, isLoading } = useLeaveTypes();
-  const { data: allCredits } = useAllLeaveCredits();
+  
   const createLeaveType = useCreateLeaveType();
   const updateLeaveType = useUpdateLeaveType();
   const deleteLeaveType = useDeleteLeaveType();
@@ -113,10 +113,6 @@ export default function LeaveCredits() {
 
   const handleToggleActive = (id: string, currentActive: boolean) => updateLeaveType.mutate({ id, is_active: !currentActive });
 
-  const getTotalTaken = (leaveTypeName: string) => {
-    if (!allCredits) return 0;
-    return allCredits.filter((c: any) => c.leave_type === leaveTypeName).reduce((sum: number, c: any) => sum + (c.used_credits || 0), 0);
-  };
 
   if ((role !== 'hr_admin' && role !== 'super_admin')) {
     return <div className="page-container"><Card><CardContent className="py-12 text-center"><p className="text-muted-foreground">You don't have permission to access this page.</p></CardContent></Card></div>;
@@ -138,10 +134,6 @@ export default function LeaveCredits() {
     { accessorKey: 'is_active', header: 'Status', cell: ({ getValue }) => <Badge variant={getValue() ? 'default' : 'secondary'}>{getValue() ? 'Active' : 'Inactive'}</Badge> },
     { accessorKey: 'default_credits', header: 'Day Limit', cell: ({ getValue }) => `${getValue()} days` },
     { accessorKey: 'credits_per_application', header: 'Credits/App', cell: ({ getValue }) => getValue() || 1 },
-    {
-      id: 'total_taken', header: 'Total Taken',
-      cell: ({ row }) => <Badge variant="destructive" className="min-w-[60px]">{getTotalTaken(row.original.name)} used</Badge>,
-    },
     {
       id: 'actions', header: 'Actions', enableSorting: false,
       cell: ({ row }) => {

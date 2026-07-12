@@ -43,10 +43,11 @@ export default function Profile() {
       }
       const { data: emp } = await supabase
         .from('employees')
-        .select('suffix_name')
+        .select('suffix_name, middle_name')
         .eq('user_id', user.id)
         .maybeSingle();
       if (emp?.suffix_name) setSuffixName(emp.suffix_name);
+      if (emp?.middle_name) setMiddleName(emp.middle_name);
     };
     loadProfile();
   }, [user?.id]);

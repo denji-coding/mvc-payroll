@@ -139,10 +139,6 @@ export default function LeaveCredits() {
     { accessorKey: 'default_credits', header: 'Day Limit', cell: ({ getValue }) => `${getValue()} days` },
     { accessorKey: 'credits_per_application', header: 'Credits/App', cell: ({ getValue }) => getValue() || 1 },
     {
-      id: 'total_taken', header: 'Total Taken',
-      cell: ({ row }) => <Badge variant="destructive" className="min-w-[60px]">{getTotalTaken(row.original.name)} used</Badge>,
-    },
-    {
       id: 'actions', header: 'Actions', enableSorting: false,
       cell: ({ row }) => {
         const lt = row.original;

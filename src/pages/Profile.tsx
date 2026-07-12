@@ -139,7 +139,7 @@ export default function Profile() {
                 <AvatarFallback className="bg-primary text-primary-foreground text-xl sm:text-2xl">{getInitials()}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <CardTitle className="text-base sm:text-xl truncate">{profile?.firstName} {profile?.lastName}{suffixName ? ` ${suffixName}` : ''}</CardTitle>
+                <CardTitle className="text-base sm:text-xl break-words">{formatFullName(profile?.firstName, profile?.lastName, suffixName, middleName)}</CardTitle>
                 <p className="text-muted-foreground flex items-center gap-1.5 sm:gap-2 mt-1 text-xs sm:text-sm">
                   <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="truncate">{profile?.email}</span>

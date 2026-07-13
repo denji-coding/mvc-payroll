@@ -4,7 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Upload, X, User } from 'lucide-react';
+import { Camera, Upload, X, User, Loader2, CheckCircle2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface EmployeeAvatarUploadProps {
   avatarUrl: string | null;
@@ -35,6 +36,8 @@ export function EmployeeAvatarUpload({
 }: EmployeeAvatarUploadProps) {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [justUploaded, setJustUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = () => {
@@ -71,6 +74,13 @@ export function EmployeeAvatarUpload({
     }
 
     setUploading(true);
+    setProgress(10);
+    setJustUploaded(false);
+
+    // Simulated progress (Supabase JS SDK doesn't expose upload progress)
+    const progressInterval = setInterval(() => {
+      setProgress((p) => (p < 85 ? p + 8 : p));
+    }, 150);
 
     try {
       const fileExt = file.name.split('.').pop();
@@ -89,9 +99,14 @@ export function EmployeeAvatarUpload({
         .from('employee-avatars')
         .getPublicUrl(filePath);
 
+      clearInterval(progressInterval);
+      setProgress(100);
       onAvatarChange(publicUrl);
+      setJustUploaded(true);
       toast({ title: 'Photo uploaded successfully' });
+      setTimeout(() => setJustUploaded(false), 2500);
     } catch (error: any) {
+      clearInterval(progressInterval);
       console.error('Upload error:', error);
       toast({
         variant: 'destructive',
@@ -99,7 +114,9 @@ export function EmployeeAvatarUpload({
         description: error.message || 'Failed to upload image.',
       });
     } finally {
+      clearInterval(progressInterval);
       setUploading(false);
+      setTimeout(() => setProgress(0), 600);
       // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -117,14 +134,27 @@ export function EmployeeAvatarUpload({
       <Label className="text-center">Employee Photo</Label>
       
       <div className="relative group">
-        <Avatar className="h-32 w-32 border-2 border-border">
+        <Avatar className={`h-32 w-32 border-2 ${uploading ? 'border-primary' : justUploaded ? 'border-green-500' : 'border-border'} ${uploading ? 'opacity-60' : ''} transition-all`}>
           <AvatarImage src={displayUrl} alt={`${firstName} ${lastName}`} />
           <AvatarFallback className="text-2xl bg-muted">
             {getInitials() || <User className="h-12 w-12" />}
           </AvatarFallback>
         </Avatar>
-        
-        {!disabled && (
+
+        {uploading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-full">
+            <Loader2 className="h-8 w-8 text-white animate-spin" />
+            <span className="mt-1 text-[10px] font-medium text-white">Uploading…</span>
+          </div>
+        )}
+
+        {!uploading && justUploaded && (
+          <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 shadow-md">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+        )}
+
+        {!disabled && !uploading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               type="button"
@@ -139,6 +169,13 @@ export function EmployeeAvatarUpload({
           </div>
         )}
       </div>
+
+      {uploading && (
+        <div className="w-full max-w-[220px] space-y-1">
+          <Progress value={progress} className="h-1.5" />
+          <p className="text-xs text-center text-muted-foreground">Uploading photo… {progress}%</p>
+        </div>
+      )}
 
       <input
         ref={fileInputRef}
@@ -158,7 +195,12 @@ export function EmployeeAvatarUpload({
           disabled={disabled || uploading}
         >
           <Upload className="h-4 w-4 mr-2" />
-          {uploading ? 'Uploading...' : avatarUrl ? 'Change Photo' : 'Upload Photo'}
+          {uploading ? (
+            <span className="flex items-center">
+              <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              Uploading…
+            </span>
+          ) : avatarUrl ? 'Change Photo' : 'Upload Photo'}
         </Button>
         
         {avatarUrl && (

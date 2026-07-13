@@ -36,6 +36,8 @@ export function EmployeeAvatarUpload({
 }: EmployeeAvatarUploadProps) {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [justUploaded, setJustUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = () => {

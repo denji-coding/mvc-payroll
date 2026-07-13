@@ -195,7 +195,12 @@ export function EmployeeAvatarUpload({
           disabled={disabled || uploading}
         >
           <Upload className="h-4 w-4 mr-2" />
-          {uploading ? 'Uploading...' : avatarUrl ? 'Change Photo' : 'Upload Photo'}
+          {uploading ? (
+            <span className="flex items-center">
+              <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              Uploading…
+            </span>
+          ) : avatarUrl ? 'Change Photo' : 'Upload Photo'}
         </Button>
         
         {avatarUrl && (

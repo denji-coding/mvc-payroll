@@ -134,14 +134,27 @@ export function EmployeeAvatarUpload({
       <Label className="text-center">Employee Photo</Label>
       
       <div className="relative group">
-        <Avatar className="h-32 w-32 border-2 border-border">
+        <Avatar className={`h-32 w-32 border-2 ${uploading ? 'border-primary' : justUploaded ? 'border-green-500' : 'border-border'} ${uploading ? 'opacity-60' : ''} transition-all`}>
           <AvatarImage src={displayUrl} alt={`${firstName} ${lastName}`} />
           <AvatarFallback className="text-2xl bg-muted">
             {getInitials() || <User className="h-12 w-12" />}
           </AvatarFallback>
         </Avatar>
-        
-        {!disabled && (
+
+        {uploading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-full">
+            <Loader2 className="h-8 w-8 text-white animate-spin" />
+            <span className="mt-1 text-[10px] font-medium text-white">Uploading…</span>
+          </div>
+        )}
+
+        {!uploading && justUploaded && (
+          <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 shadow-md">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+        )}
+
+        {!disabled && !uploading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               type="button"
@@ -156,6 +169,13 @@ export function EmployeeAvatarUpload({
           </div>
         )}
       </div>
+
+      {uploading && (
+        <div className="w-full max-w-[220px] space-y-1">
+          <Progress value={progress} className="h-1.5" />
+          <p className="text-xs text-center text-muted-foreground">Uploading photo… {progress}%</p>
+        </div>
+      )}
 
       <input
         ref={fileInputRef}

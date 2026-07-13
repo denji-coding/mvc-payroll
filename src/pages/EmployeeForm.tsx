@@ -252,11 +252,31 @@ export default function EmployeeForm() {
       }
 
       const { error } = await supabase.from("employees").update(cleanPayload).eq("id", id);
-      setLoading(false);
       if (error) {
+        setLoading(false);
         toast.error(error.message);
         return;
       }
+
+      // Sync updated info to the linked profile so the Employee Portal reflects changes
+      const { data: emp } = await supabase
+        .from("employees")
+        .select("user_id")
+        .eq("id", id)
+        .maybeSingle();
+      if (emp?.user_id) {
+        await supabase
+          .from("profiles")
+          .update({
+            first_name: (cleanPayload.first_name as string) ?? "",
+            last_name: (cleanPayload.last_name as string) ?? "",
+            email: (cleanPayload.email as string) ?? "",
+            phone: (cleanPayload.phone as string) ?? null,
+          })
+          .eq("id", emp.user_id);
+      }
+
+      setLoading(false);
       toast.success("Employee updated successfully");
       navigate("/employees");
     } else {

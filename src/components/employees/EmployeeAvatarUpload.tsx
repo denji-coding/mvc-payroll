@@ -74,6 +74,13 @@ export function EmployeeAvatarUpload({
     }
 
     setUploading(true);
+    setProgress(10);
+    setJustUploaded(false);
+
+    // Simulated progress (Supabase JS SDK doesn't expose upload progress)
+    const progressInterval = setInterval(() => {
+      setProgress((p) => (p < 85 ? p + 8 : p));
+    }, 150);
 
     try {
       const fileExt = file.name.split('.').pop();
@@ -92,9 +99,14 @@ export function EmployeeAvatarUpload({
         .from('employee-avatars')
         .getPublicUrl(filePath);
 
+      clearInterval(progressInterval);
+      setProgress(100);
       onAvatarChange(publicUrl);
+      setJustUploaded(true);
       toast({ title: 'Photo uploaded successfully' });
+      setTimeout(() => setJustUploaded(false), 2500);
     } catch (error: any) {
+      clearInterval(progressInterval);
       console.error('Upload error:', error);
       toast({
         variant: 'destructive',
@@ -102,7 +114,9 @@ export function EmployeeAvatarUpload({
         description: error.message || 'Failed to upload image.',
       });
     } finally {
+      clearInterval(progressInterval);
       setUploading(false);
+      setTimeout(() => setProgress(0), 600);
       // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';

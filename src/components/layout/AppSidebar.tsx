@@ -194,6 +194,7 @@ export function AppSidebar() {
   const { data: permissions, isLoading: permissionsLoading } = useRolePermissionsByRole(effectiveRole);
   const { data: companyInfo } = useCompanyInfo();
   const collapsed = state === "collapsed";
+  const [footerMenuOpen, setFooterMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const companyLogo = companyInfo?.company_logo_url || companyLogoDefault;

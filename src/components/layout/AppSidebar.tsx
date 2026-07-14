@@ -366,61 +366,71 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={`w-full flex items-center gap-3 rounded-lg hover:bg-sidebar-accent transition-colors ${collapsed ? "justify-center p-2" : "p-2"}`}
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={profile?.avatarUrl} />
-                <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-sm">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
-              {!collapsed && (
-                <>
-                  <div className="flex-1 text-left min-w-0">
-                    <p className="text-sm font-medium text-sidebar-foreground truncate">
-                      {capitalizeWords(profile?.firstName)} {capitalizeWords(profile?.lastName)}
-                    </p>
-                    <p className="text-xs text-sidebar-foreground/60 truncate capitalize">{role?.replace("_", " ")}</p>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-sidebar-foreground/60" />
-                </>
-              )}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem asChild>
-              <NavLink to="/profile" className="w-full">
-                My Profile
-              </NavLink>
-            </DropdownMenuItem>
-            {actualRole === "hr_admin" && (
+        <div className="relative">
+          <button
+            onClick={() => setFooterMenuOpen((v) => !v)}
+            className={`w-full flex items-center gap-3 rounded-lg hover:bg-sidebar-accent transition-colors ${collapsed ? "justify-center p-2" : "p-2"}`}
+          >
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={profile?.avatarUrl} />
+              <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-sm">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+            {!collapsed && (
               <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (isViewingSwitched) {
-                      switchToAdmin();
-                    } else {
-                      switchToEmployee();
-                    }
-                    navigate("/");
-                  }}
-                  className="cursor-pointer"
-                >
-                  <ArrowLeftRight className="w-4 h-4 mr-2" />
-                  {isViewingSwitched ? "Back to Admin Portal" : "Switch to Employee Portal"}
-                </DropdownMenuItem>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-sm font-medium text-sidebar-foreground truncate">
+                    {capitalizeWords(profile?.firstName)} {capitalizeWords(profile?.lastName)}
+                  </p>
+                  <p className="text-xs text-sidebar-foreground/60 truncate capitalize">{role?.replace("_", " ")}</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-sidebar-foreground/60 transition-transform ${footerMenuOpen ? "rotate-180" : ""}`} />
               </>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={signOut} className="text-destructive">
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </button>
+          {footerMenuOpen && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 rounded-md border border-sidebar-border bg-popover text-popover-foreground shadow-md py-1 z-50">
+              <NavLink
+                to="/profile"
+                className="flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                onClick={() => setFooterMenuOpen(false)}
+              >
+                My Profile
+              </NavLink>
+              {actualRole === "hr_admin" && (
+                <>
+                  <div className="h-px bg-border my-1" />
+                  <button
+                    onClick={() => {
+                      if (isViewingSwitched) {
+                        switchToAdmin();
+                      } else {
+                        switchToEmployee();
+                      }
+                      setFooterMenuOpen(false);
+                      navigate("/");
+                    }}
+                    className="w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                  >
+                    <ArrowLeftRight className="w-4 h-4 mr-2" />
+                    {isViewingSwitched ? "Back to Admin Portal" : "Switch to Employee Portal"}
+                  </button>
+                </>
+              )}
+              <div className="h-px bg-border my-1" />
+              <button
+                onClick={() => {
+                  setFooterMenuOpen(false);
+                  signOut();
+                }}
+                className="w-full flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

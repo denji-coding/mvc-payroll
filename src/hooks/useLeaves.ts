@@ -91,7 +91,8 @@ async function deductLeaveCreditsOnce(
 
   if (!creditRecord) return;
 
-  const creditsToDeduct = Number(leaveTypeConfig?.credits_per_application) || 1;
+  // Deduct exactly 1 credit per approved application, regardless of number of days requested
+  const creditsToDeduct = 1;
   const { error: creditUpdateError } = await supabase
     .from('leave_credits')
     .update({

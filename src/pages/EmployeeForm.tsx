@@ -619,7 +619,7 @@ export default function EmployeeForm() {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
             <div>
-              <Label>SSS Number</Label>
+              <RequiredLabel>SSS Number</RequiredLabel>
               <Input
                 value={form.sss_number}
                 onChange={(e) => {

@@ -32,6 +32,10 @@ interface DatePickerProps {
   disabled?: boolean;
   className?: string;
   disabledDates?: (date: Date) => boolean;
+  /** Highlights dates (e.g. already applied leave) with a marker */
+  markedDates?: (date: Date) => boolean;
+  /** Legend text shown below the calendar when markedDates is provided */
+  markedLabel?: string;
 }
 
 export function DatePicker({
@@ -41,6 +45,8 @@ export function DatePicker({
   disabled = false,
   className,
   disabledDates,
+  markedDates,
+  markedLabel = "Leave already applied",
 }: DatePickerProps) {
   const [calendarDate, setCalendarDate] = React.useState<Date>(date || new Date());
   const [open, setOpen] = React.useState(false);

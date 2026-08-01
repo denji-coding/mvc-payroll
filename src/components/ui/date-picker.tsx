@@ -144,12 +144,27 @@ export function DatePicker({
           month={calendarDate}
           onMonthChange={setCalendarDate}
           disabled={disabledDates}
+          modifiers={markedDates ? { applied: markedDates } : undefined}
+          modifiersClassNames={
+            markedDates
+              ? {
+                  applied:
+                    "relative font-semibold text-primary after:absolute after:bottom-1 after:left-1/2 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-primary",
+                }
+              : undefined
+          }
           classNames={{
             caption: "hidden",
             nav: "hidden",
           }}
           className="p-2 pt-1 pointer-events-auto"
         />
+        {markedDates && (
+          <div className="flex items-center gap-2 border-t px-3 py-2 text-xs text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {markedLabel}
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );

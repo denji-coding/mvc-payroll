@@ -157,15 +157,21 @@ export default function EmployeeForm() {
   const validateGovernmentIds = (): string[] => {
     const errors: string[] = [];
     const sss = form.sss_number.replace(/[-\s]/g, "");
-    if (sss && sss.length > 0 && sss.length !== 10) {
+    if (!sss || sss.length === 0) {
+      errors.push("SSS Number is required");
+    } else if (sss.length !== 10) {
       errors.push("SSS Number must be exactly 10 digits (XX-XXXXXXX-X)");
     }
     const phil = form.philhealth_number.replace(/[-\s]/g, "");
-    if (phil && phil.length > 0 && phil.length !== 12) {
+    if (!phil || phil.length === 0) {
+      errors.push("PhilHealth Number is required");
+    } else if (phil.length !== 12) {
       errors.push("PhilHealth Number must be exactly 12 digits (XX-XXXXXXXXX-X)");
     }
     const pagibig = form.pagibig_number.replace(/[-\s]/g, "");
-    if (pagibig && pagibig.length > 0 && pagibig.length !== 12) {
+    if (!pagibig || pagibig.length === 0) {
+      errors.push("Pag-IBIG Number is required");
+    } else if (pagibig.length !== 12) {
       errors.push("Pag-IBIG Number must be exactly 12 digits (XXXX-XXXX-XXXX)");
     }
     return errors;
@@ -613,7 +619,7 @@ export default function EmployeeForm() {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
             <div>
-              <Label>SSS Number</Label>
+              <RequiredLabel>SSS Number</RequiredLabel>
               <Input
                 value={form.sss_number}
                 onChange={(e) => {
@@ -630,7 +636,7 @@ export default function EmployeeForm() {
               />
             </div>
             <div>
-              <Label>PhilHealth Number</Label>
+              <RequiredLabel>PhilHealth Number</RequiredLabel>
               <Input
                 value={form.philhealth_number}
                 onChange={(e) => {
@@ -647,7 +653,7 @@ export default function EmployeeForm() {
               />
             </div>
             <div>
-              <Label>Pag-IBIG Number</Label>
+              <RequiredLabel>Pag-IBIG Number</RequiredLabel>
               <Input
                 value={form.pagibig_number}
                 onChange={(e) => {

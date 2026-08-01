@@ -52,11 +52,14 @@ async function validatePhoneAndGovIds(data: EmployeeData): Promise<string | null
     return 'Emergency contact phone must start with 09 and be exactly 11 digits';
   }
   const sssDigits = (data.sss_number || '').replace(/[-\s]/g, '');
-  if (sssDigits.length > 0 && sssDigits.length !== 10) return 'SSS Number must be exactly 10 digits';
+  if (sssDigits.length === 0) return 'SSS Number is required';
+  if (sssDigits.length !== 10) return 'SSS Number must be exactly 10 digits';
   const philDigits = (data.philhealth_number || '').replace(/[-\s]/g, '');
-  if (philDigits.length > 0 && philDigits.length !== 12) return 'PhilHealth Number must be exactly 12 digits';
+  if (philDigits.length === 0) return 'PhilHealth Number is required';
+  if (philDigits.length !== 12) return 'PhilHealth Number must be exactly 12 digits';
   const pagibigDigits = (data.pagibig_number || '').replace(/[-\s]/g, '');
-  if (pagibigDigits.length > 0 && pagibigDigits.length !== 12) return 'Pag-IBIG Number must be exactly 12 digits';
+  if (pagibigDigits.length === 0) return 'Pag-IBIG Number is required';
+  if (pagibigDigits.length !== 12) return 'Pag-IBIG Number must be exactly 12 digits';
   return null;
 }
 

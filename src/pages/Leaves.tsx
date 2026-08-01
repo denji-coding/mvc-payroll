@@ -367,6 +367,8 @@ export default function Leaves() {
                       placeholder="Select a Date"
                       disabled={!form.leave_type}
                       disabledDates={getDateDisabledFn()}
+                      markedDates={isAppliedDate}
+                      markedLabel="Leave already applied"
                     />
                   </div>
                   <div className="space-y-2">
@@ -381,6 +383,8 @@ export default function Leaves() {
                         const beforeStart = startDate ? isBefore(date, startDate) : false;
                         return typeDisabled || beforeStart;
                       }}
+                      markedDates={isAppliedDate}
+                      markedLabel="Leave already applied"
                     />
                   </div>
                 </div>

@@ -42,25 +42,14 @@ export const employeeSchema = z.object({
   civil_status: z.enum(['single', 'married', 'widowed', 'separated', 'divorced']).optional().nullable(),
   address: z.string().max(500, 'Address must be less than 500 characters').optional().nullable(),
   sss_number: z.string()
-    .regex(sssRegex, 'Invalid SSS number format (XX-XXXXXXX-X or 10 digits)')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
-  tin_number: z.string()
-    .regex(tinRegex, 'Invalid TIN format (XXX-XXX-XXX or XXX-XXX-XXX-XXXXX)')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
+    .min(1, 'SSS number is required')
+    .regex(sssRegex, 'Invalid SSS number format (XX-XXXXXXX-X or 10 digits)'),
   philhealth_number: z.string()
-    .regex(philhealthRegex, 'Invalid PhilHealth number format (XX-XXXXXXXXX-X or 12 digits)')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
+    .min(1, 'PhilHealth number is required')
+    .regex(philhealthRegex, 'Invalid PhilHealth number format (XX-XXXXXXXXX-X or 12 digits)'),
   pagibig_number: z.string()
-    .regex(pagibigRegex, 'Invalid Pag-IBIG number format (XXXX-XXXX-XXXX or 12 digits)')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
+    .min(1, 'Pag-IBIG number is required')
+    .regex(pagibigRegex, 'Invalid Pag-IBIG number format (XXXX-XXXX-XXXX or 12 digits)'),
   bank_name: z.string().max(100, 'Bank name must be less than 100 characters').optional().nullable(),
   bank_account_number: z.string().max(50, 'Account number must be less than 50 characters').optional().nullable(),
   rfid_card_number: z.string().max(50, 'RFID card number must be less than 50 characters').optional().nullable(),

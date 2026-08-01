@@ -111,6 +111,17 @@ export default function Leaves() {
     return myLeaves.some((l: any) => l.status === 'pending');
   }, [myLeaves]);
 
+  // Dates already covered by a pending/approved leave request
+  const isAppliedDate = useMemo(() => {
+    const ranges = (myLeaves || [])
+      .filter((l: any) => ['pending', 'manager_approved', 'hr_approved'].includes(l.status))
+      .map((l: any) => ({ start: l.start_date, end: l.end_date }));
+    return (date: Date) => {
+      const key = format(date, "yyyy-MM-dd");
+      return ranges.some((r) => r.start <= key && r.end >= key);
+    };
+  }, [myLeaves]);
+
   // Max days limit check
   const maxDays = selectedLeaveType?.max_days_per_application || selectedLeaveType?.default_credits;
   const exceedsLimit = maxDays && calculatedDays > maxDays;
@@ -356,6 +367,8 @@ export default function Leaves() {
                       placeholder="Select a Date"
                       disabled={!form.leave_type}
                       disabledDates={getDateDisabledFn()}
+                      markedDates={isAppliedDate}
+                      markedLabel="Leave already applied"
                     />
                   </div>
                   <div className="space-y-2">
@@ -370,6 +383,8 @@ export default function Leaves() {
                         const beforeStart = startDate ? isBefore(date, startDate) : false;
                         return typeDisabled || beforeStart;
                       }}
+                      markedDates={isAppliedDate}
+                      markedLabel="Leave already applied"
                     />
                   </div>
                 </div>

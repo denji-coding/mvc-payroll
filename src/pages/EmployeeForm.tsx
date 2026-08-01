@@ -636,7 +636,7 @@ export default function EmployeeForm() {
               />
             </div>
             <div>
-              <Label>PhilHealth Number</Label>
+              <RequiredLabel>PhilHealth Number</RequiredLabel>
               <Input
                 value={form.philhealth_number}
                 onChange={(e) => {
@@ -653,7 +653,7 @@ export default function EmployeeForm() {
               />
             </div>
             <div>
-              <Label>Pag-IBIG Number</Label>
+              <RequiredLabel>Pag-IBIG Number</RequiredLabel>
               <Input
                 value={form.pagibig_number}
                 onChange={(e) => {

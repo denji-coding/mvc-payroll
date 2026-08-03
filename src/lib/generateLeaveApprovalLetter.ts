@@ -75,7 +75,12 @@ export function buildLeaveApprovalLetter({
   doc.text('LEAVE APPROVAL LETTER', pageWidth / 2, y, { align: 'center' });
   y += 12;
 
-  const fullName = formatFullName(employee as any);
+  const fullName = formatFullName(
+    employee.first_name,
+    employee.last_name,
+    employee.suffix_name,
+    employee.middle_name,
+  );
 
   // Recipient
   doc.setFont('helvetica', 'bold');

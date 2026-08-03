@@ -194,6 +194,11 @@ export function generateLeaveApprovalLetterBlobUrl(params: GenerateLeaveApproval
 
 export function downloadLeaveApprovalLetter(params: GenerateLeaveApprovalLetterParams): void {
   const doc = buildLeaveApprovalLetter(params);
-  const name = formatFullName(params.employee as any).replace(/[^\w]+/g, '_');
+  const name = formatFullName(
+    params.employee.first_name,
+    params.employee.last_name,
+    params.employee.suffix_name,
+    params.employee.middle_name,
+  ).replace(/[^\w]+/g, '_');
   doc.save(`Leave_Approval_Letter_${name}_${params.request.start_date}.pdf`);
 }

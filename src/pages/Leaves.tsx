@@ -610,6 +610,12 @@ export default function Leaves() {
           )}
         </CardContent>
       </Card>
+
+      <LeaveApprovalLetterDialog
+        open={!!letterParams}
+        onOpenChange={(open) => !open && setLetterParams(null)}
+        params={letterParams}
+      />
     </div>
   );
 }

@@ -36,7 +36,7 @@ const relationships: Relationship[] = [
   { parent: 'employees', child: 'leave_credits', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'leave_requests', fkColumn: 'employee_id', parentColumn: 'id' },
   { parent: 'employees', child: 'payroll_records', fkColumn: 'employee_id', parentColumn: 'id' },
-  { parent: 'employees', child: 'loans', fkColumn: 'employee_id', parentColumn: 'id' },
+  
   // Salary & Payroll
   { parent: 'salary_components', child: 'employee_salary_adjustments', fkColumn: 'component_id', parentColumn: 'id' },
   { parent: 'payroll_periods', child: 'payroll_records', fkColumn: 'payroll_period_id', parentColumn: 'id' },
@@ -81,7 +81,7 @@ const tables: TableSchema[] = [
       { name: 'date_of_birth', type: 'date', nullable: 'Yes', default: '-', description: 'Date of birth' },
       { name: 'address', type: 'text', nullable: 'Yes', default: '-', description: 'Home address' },
       { name: 'position', type: 'text', nullable: 'No', default: '-', description: 'Job position title' },
-      { name: 'department', type: 'text', nullable: 'Yes', default: '-', description: 'Department' },
+      
       { name: 'branch_id', type: 'uuid', nullable: 'Yes', default: '-', description: 'FK → branches.id' },
       { name: 'date_hired', type: 'date', nullable: 'No', default: '-', description: 'Hire date' },
       { name: 'employment_status', type: 'enum', nullable: 'Yes', default: 'active', description: 'active|resigned|terminated|on_leave|inactive' },
@@ -90,9 +90,6 @@ const tables: TableSchema[] = [
       { name: 'sss_number', type: 'text', nullable: 'Yes', default: '-', description: 'SSS number' },
       { name: 'philhealth_number', type: 'text', nullable: 'Yes', default: '-', description: 'PhilHealth number' },
       { name: 'pagibig_number', type: 'text', nullable: 'Yes', default: '-', description: 'Pag-IBIG number' },
-      { name: 'tin_number', type: 'text', nullable: 'Yes', default: '-', description: 'TIN number' },
-      { name: 'bank_name', type: 'text', nullable: 'Yes', default: '-', description: 'Bank name' },
-      { name: 'bank_account_number', type: 'text', nullable: 'Yes', default: '-', description: 'Bank account number' },
       { name: 'emergency_contact_name', type: 'text', nullable: 'Yes', default: '-', description: 'Emergency contact name' },
       { name: 'emergency_contact_phone', type: 'text', nullable: 'Yes', default: '-', description: 'Emergency contact phone' },
       { name: 'avatar_url', type: 'text', nullable: 'Yes', default: '-', description: 'Profile photo URL' },
@@ -170,8 +167,6 @@ const tables: TableSchema[] = [
       { name: 'id', type: 'uuid', nullable: 'No', default: 'gen_random_uuid()', description: 'Primary key' },
       { name: 'employee_id', type: 'uuid', nullable: 'No', default: '-', description: 'FK → employees.id' },
       { name: 'date', type: 'date', nullable: 'No', default: '-', description: 'Attendance date' },
-      { name: 'time_in', type: 'timestamptz', nullable: 'Yes', default: '-', description: 'Clock-in timestamp' },
-      { name: 'time_out', type: 'timestamptz', nullable: 'Yes', default: '-', description: 'Clock-out timestamp' },
       { name: 'morning_in', type: 'timestamptz', nullable: 'Yes', default: '-', description: 'AM session in' },
       { name: 'morning_out', type: 'timestamptz', nullable: 'Yes', default: '-', description: 'AM session out' },
       { name: 'afternoon_in', type: 'timestamptz', nullable: 'Yes', default: '-', description: 'PM session in' },
@@ -331,23 +326,6 @@ const tables: TableSchema[] = [
       { name: 'effective_from', type: 'date', nullable: 'Yes', default: '-', description: 'Start date' },
       { name: 'effective_to', type: 'date', nullable: 'Yes', default: '-', description: 'End date' },
       { name: 'created_at', type: 'timestamptz', nullable: 'Yes', default: 'now()', description: 'Created timestamp' },
-    ],
-  },
-  {
-    name: 'loans',
-    description: 'Employee loan records with amortization tracking.',
-    columns: [
-      { name: 'id', type: 'uuid', nullable: 'No', default: 'gen_random_uuid()', description: 'Primary key' },
-      { name: 'employee_id', type: 'uuid', nullable: 'No', default: '-', description: 'FK → employees.id' },
-      { name: 'loan_type', type: 'text', nullable: 'No', default: '-', description: 'SSS|Pag-IBIG|Company|etc.' },
-      { name: 'principal_amount', type: 'numeric', nullable: 'No', default: '-', description: 'Original loan amount' },
-      { name: 'monthly_amortization', type: 'numeric', nullable: 'No', default: '-', description: 'Monthly payment' },
-      { name: 'total_paid', type: 'numeric', nullable: 'Yes', default: '0', description: 'Total paid so far' },
-      { name: 'remaining_balance', type: 'numeric', nullable: 'No', default: '-', description: 'Remaining balance' },
-      { name: 'start_date', type: 'date', nullable: 'No', default: '-', description: 'Loan start date' },
-      { name: 'status', type: 'text', nullable: 'Yes', default: 'active', description: 'active|paid|cancelled' },
-      { name: 'created_at', type: 'timestamptz', nullable: 'Yes', default: 'now()', description: 'Created timestamp' },
-      { name: 'updated_at', type: 'timestamptz', nullable: 'Yes', default: 'now()', description: 'Updated timestamp' },
     ],
   },
   {
@@ -596,7 +574,7 @@ export function generateDataDictionaryPdf(): void {
     { x: 96,  y: 110, w: 34, h: 14, label: 'leave_requests',    color: [139, 92, 246] },
     { x: 136, y: 110, w: 32, h: 14, label: 'leave_credits',     color: [139, 92, 246] },
     // Row 5 - More children
-    { x: 10,  y: 138, w: 32, h: 14, label: 'loans',             color: [236, 72, 153] },
+    
     { x: 48,  y: 138, w: 50, h: 14, label: 'employee_salary_adj', color: [236, 72, 153] },
     { x: 105, y: 138, w: 38, h: 14, label: 'payroll_records',   color: [236, 72, 153] },
     // Row 6 - Reference tables
@@ -726,7 +704,7 @@ export function generateDataDictionaryPdf(): void {
   const cardinalityData = [
     ['profiles', '1 : N', 'user_roles, employees, branch_managers, notifications, password_reset_tokens, announcements, payroll_periods, leave_requests'],
     ['branches', '1 : N', 'employees, branch_managers, announcements'],
-    ['employees', '1 : N', 'attendance, schedules, leave_credits, leave_requests, payroll_records, loans, salary_adjustments'],
+    ['employees', '1 : N', 'attendance, schedules, leave_credits, leave_requests, payroll_records, salary_adjustments'],
     ['salary_components', '1 : N', 'employee_salary_adjustments'],
     ['payroll_periods', '1 : N', 'payroll_records'],
     ['leave_types', '1 : N', 'leave_credits, leave_requests'],

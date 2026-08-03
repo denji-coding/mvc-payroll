@@ -13,13 +13,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock } from "lucide-react";
+import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock, Eye } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, startOfToday, isBefore, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DataTable, ColumnDef } from "@/components/ui/data-table";
+import { useQuery } from "@tanstack/react-query";
+import { useCompanyInfo } from "@/hooks/useCompanyInfo";
+import { LeaveApprovalLetterDialog } from "@/components/leaves/LeaveApprovalLetterDialog";
+import type { GenerateLeaveApprovalLetterParams } from "@/lib/generateLeaveApprovalLetter";
 
 const LEAVE_TYPE_ICON_MAP: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string }> = {
   sick: { icon: Heart, color: "text-destructive" },
@@ -57,8 +61,25 @@ export default function Leaves() {
   const { data: credits } = useLeaveCredits();
   const { data: leaveTypes } = useLeaveTypes();
   const { data: lwpConfig } = useLwpConfig();
+  const { data: companyInfo } = useCompanyInfo();
   const createLeave = useCreateLeaveRequest();
   const cancelLeave = useCancelLeaveRequest();
+  const [letterParams, setLetterParams] = useState<GenerateLeaveApprovalLetterParams | null>(null);
+
+  const { data: myEmployee } = useQuery({
+    queryKey: ["my-employee-letter-info", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("employees")
+        .select("first_name, middle_name, last_name, suffix_name, employee_id, position")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
 
   const activeLeaveTypes = (leaveTypes || []).filter((lt) => lt.is_active);
 
@@ -270,7 +291,28 @@ export default function Leaves() {
       cell: ({ row }) => {
         const leave = row.original;
         const canCancel = leave.status === "pending";
-        if (!canCancel) return null;
+        const isApproved = leave.status === "hr_approved";
+        if (!canCancel && !isApproved) return null;
+        if (isApproved) {
+          return (
+            <Button
+              variant="ghost"
+              size="icon"
+              title="View Leave Approval Letter"
+              disabled={!myEmployee}
+              onClick={() =>
+                myEmployee &&
+                setLetterParams({
+                  employee: myEmployee as any,
+                  request: leave,
+                  companyName: companyInfo?.company_name,
+                })
+              }
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          );
+        }
         return (
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -568,6 +610,12 @@ export default function Leaves() {
           )}
         </CardContent>
       </Card>
+
+      <LeaveApprovalLetterDialog
+        open={!!letterParams}
+        onOpenChange={(open) => !open && setLetterParams(null)}
+        params={letterParams}
+      />
     </div>
   );
 }

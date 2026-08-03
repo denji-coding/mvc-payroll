@@ -10,7 +10,7 @@ interface PayslipEmployee {
   last_name: string;
   suffix_name?: string | null;
   position: string;
-  department: string | null;
+  department?: string | null;
 }
 
 interface PayrollData {

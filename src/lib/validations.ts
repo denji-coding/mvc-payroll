@@ -31,7 +31,7 @@ export const employeeSchema = z.object({
   position: z.string()
     .min(1, 'Position is required')
     .max(100, 'Position must be less than 100 characters'),
-  department: z.string().max(100, 'Department must be less than 100 characters').optional().nullable(),
+  
   branch_id: z.string().uuid('Invalid branch selected').optional().nullable(),
   date_hired: z.string().min(1, 'Date hired is required'),
   date_of_birth: z.string().optional().nullable(),
@@ -50,8 +50,6 @@ export const employeeSchema = z.object({
   pagibig_number: z.string()
     .min(1, 'Pag-IBIG number is required')
     .regex(pagibigRegex, 'Invalid Pag-IBIG number format (XXXX-XXXX-XXXX or 12 digits)'),
-  bank_name: z.string().max(100, 'Bank name must be less than 100 characters').optional().nullable(),
-  bank_account_number: z.string().max(50, 'Account number must be less than 50 characters').optional().nullable(),
   rfid_card_number: z.string().max(50, 'RFID card number must be less than 50 characters').optional().nullable(),
   emergency_contact_name: z.string().max(100, 'Emergency contact name must be less than 100 characters').optional().nullable(),
   emergency_contact_phone: z.string()

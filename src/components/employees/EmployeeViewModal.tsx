@@ -108,7 +108,7 @@ export function EmployeeViewModal({ employee, open, onClose }: EmployeeViewModal
               <InfoRow label="SSS Number" value={employee.sss_number} />
               <InfoRow label="PhilHealth Number" value={employee.philhealth_number} />
               <InfoRow label="Pag-IBIG Number" value={employee.pagibig_number} />
-              <InfoRow label="TIN Number" value={employee.tin_number} />
+              
             </div>
           </div>
 

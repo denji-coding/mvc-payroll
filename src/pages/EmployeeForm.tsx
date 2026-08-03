@@ -44,7 +44,7 @@ export default function EmployeeForm() {
     civil_status: "",
     address: "",
     position: "",
-    department: "",
+    
     date_hired: "",
     basic_salary: "",
     branch_id: "",
@@ -87,7 +87,7 @@ export default function EmployeeForm() {
       civil_status: employeeData.civil_status || "",
       address: employeeData.address || "",
       position: employeeData.position || "",
-      department: employeeData.department || "",
+      
       date_hired: employeeData.date_hired || "",
       basic_salary: employeeData.basic_salary?.toString() || "",
       branch_id: employeeData.branch_id || "",

@@ -28,7 +28,7 @@ export default function MyPayslips() {
     queryKey: ['my-employee-record', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase.from('employees').select('id, employee_id, first_name, middle_name, last_name, suffix_name, position, department, basic_salary').eq('user_id', user.id).single();
+      const { data, error } = await supabase.from('employees').select('id, employee_id, first_name, middle_name, last_name, suffix_name, position, basic_salary').eq('user_id', user.id).single();
       if (error) throw error; return data;
     },
     enabled: !!user?.id,
@@ -49,7 +49,7 @@ export default function MyPayslips() {
   const handleDownloadPayslip = (record: any) => {
     if (!employee || !record) return;
     generatePayslipPdf({
-      employee: { employee_id: employee.employee_id, first_name: employee.first_name, middle_name: (employee as any).middle_name, last_name: employee.last_name, suffix_name: (employee as any).suffix_name, position: employee.position, department: employee.department },
+      employee: { employee_id: employee.employee_id, first_name: employee.first_name, middle_name: (employee as any).middle_name, last_name: employee.last_name, suffix_name: (employee as any).suffix_name, position: employee.position },
       payroll: {
         period_start: record.payroll_periods.period_start, period_end: record.payroll_periods.period_end, pay_date: record.payroll_periods.pay_date,
         basic_pay: Number(record.basic_pay), days_worked: Number(record.days_worked || 0), overtime_pay: Number(record.overtime_pay || 0),

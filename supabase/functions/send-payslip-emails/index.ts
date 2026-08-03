@@ -257,7 +257,7 @@ Deno.serve(async (req) => {
     const { data: records, error: recordsError } = await supabase
       .from("payroll_records")
       .select(
-        `*, employees(id, first_name, last_name, email, user_id, employee_id, position, department, basic_salary)`,
+        `*, employees(id, first_name, last_name, email, user_id, employee_id, position, basic_salary)`,
       )
       .eq("payroll_period_id", payroll_period_id);
 

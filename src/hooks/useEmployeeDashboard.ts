@@ -32,7 +32,7 @@ export function useEmployeeDashboard() {
       // Get today's attendance
       const { data: todayAttendance } = await supabase
         .from('attendance')
-        .select('status, time_in, time_out')
+        .select('status, morning_in, morning_out, afternoon_in, afternoon_out')
         .eq('employee_id', employeeId)
         .eq('date', today)
         .maybeSingle();
@@ -51,8 +51,8 @@ export function useEmployeeDashboard() {
 
       return {
         todayStatus: todayAttendance?.status || null,
-        todayTimeIn: todayAttendance?.time_in || null,
-        todayTimeOut: todayAttendance?.time_out || null,
+        todayTimeIn: todayAttendance?.morning_in || todayAttendance?.afternoon_in || null,
+        todayTimeOut: todayAttendance?.afternoon_out || todayAttendance?.morning_out || null,
         monthlyPresent,
         monthlyLate,
         monthlyAbsent,

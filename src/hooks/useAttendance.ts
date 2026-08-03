@@ -41,7 +41,7 @@ export function useAttendanceByDate(date: string) {
         .from('attendance')
         .select('*, employees(employee_id, first_name, middle_name, last_name, suffix_name)')
         .eq('date', date)
-        .order('time_in', { ascending: true });
+        .order('morning_in', { ascending: true });
       
       if (error) throw error;
       return data;

@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
         await supabaseAdmin.from('payroll_records').delete().eq('employee_id', emp.id);
         await supabaseAdmin.from('employee_salary_adjustments').delete().eq('employee_id', emp.id);
         await supabaseAdmin.from('employee_schedules').delete().eq('employee_id', emp.id);
-        await supabaseAdmin.from('loans').delete().eq('employee_id', emp.id);
+        
         await supabaseAdmin.from('employees').delete().eq('id', emp.id);
 
         if (emp.user_id) {

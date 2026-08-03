@@ -18,16 +18,13 @@ interface EmployeeData {
   civil_status?: string;
   address?: string;
   position: string;
-  department?: string;
+  
   date_hired: string;
   basic_salary: number;
   branch_id?: string;
   sss_number?: string;
   philhealth_number?: string;
   pagibig_number?: string;
-  tin_number?: string;
-  bank_name?: string;
-  bank_account_number?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   rfid_card_number?: string;

@@ -19,7 +19,7 @@ interface Employee {
   suffix_name?: string | null;
   employee_id: string;
   position: string;
-  department: string | null;
+  department?: string | null;
 }
 
 interface Summary {

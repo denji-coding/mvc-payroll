@@ -325,11 +325,6 @@ serve(async (req) => {
           // No schedule for this day, fallback to hours_worked capped at 8
           if (a.hours_worked != null && a.hours_worked > 0) {
             totalCappedHours += Math.min(parseFloat(String(a.hours_worked)), 8);
-          } else if (a.time_in && a.time_out) {
-            const inTime = new Date(a.time_in).getTime();
-            const outTime = new Date(a.time_out).getTime();
-            const rawHours = (outTime - inTime) / (1000 * 60 * 60);
-            totalCappedHours += Math.min(Math.max(rawHours, 0), 8);
           }
         }
       }

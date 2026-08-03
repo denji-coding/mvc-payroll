@@ -288,7 +288,7 @@ serve(async (req) => {
           .insert({
             employee_id: employee.id,
             date: today,
-            time_in: currentTime,
+            morning_in: currentTime,
             morning_in: currentTime,
             rfid_time_in: rfid_card_number,
             status,
@@ -373,7 +373,7 @@ serve(async (req) => {
       const { data, error } = await supabase
         .from('attendance')
         .update({
-          time_out: currentTime,
+          afternoon_out: currentTime,
           afternoon_out: currentTime,
           rfid_time_out: rfid_card_number,
           hours_worked: Math.round(totalHours * 100) / 100,

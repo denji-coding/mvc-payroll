@@ -291,7 +291,28 @@ export default function Leaves() {
       cell: ({ row }) => {
         const leave = row.original;
         const canCancel = leave.status === "pending";
-        if (!canCancel) return null;
+        const isApproved = leave.status === "hr_approved";
+        if (!canCancel && !isApproved) return null;
+        if (isApproved) {
+          return (
+            <Button
+              variant="ghost"
+              size="icon"
+              title="View Leave Approval Letter"
+              disabled={!myEmployee}
+              onClick={() =>
+                myEmployee &&
+                setLetterParams({
+                  employee: myEmployee as any,
+                  request: leave,
+                  companyName: companyInfo?.company_name,
+                })
+              }
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          );
+        }
         return (
           <AlertDialog>
             <AlertDialogTrigger asChild>

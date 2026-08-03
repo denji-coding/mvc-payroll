@@ -10,7 +10,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/branches": "Branches",
   "/positions": "Positions",
   "/attendance": "Attendance",
-  "/clock-in-out": "Clock In / Out",
+  
   "/my-attendance": "My Attendance",
   "/dtr": "Daily Time Record",
   "/time-schedule": "Time Schedule",

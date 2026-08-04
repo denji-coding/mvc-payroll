@@ -168,7 +168,7 @@ export default function MyAttendance() {
               </div>
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg col-span-2 md:col-span-1">
                 <p className="text-xs md:text-sm text-muted-foreground">PM Out</p>
-                <p className="font-semibold text-sm md:text-base">{formatTime((attendance as any).afternoon_out || attendance.time_out)}</p>
+                <p className="font-semibold text-sm md:text-base">{formatTime((attendance as any).afternoon_out)}</p>
               </div>
             </div>
             {attendance.hours_worked && (

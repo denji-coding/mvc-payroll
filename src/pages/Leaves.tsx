@@ -306,6 +306,7 @@ export default function Leaves() {
                   employee: myEmployee as any,
                   request: leave,
                   companyName: companyInfo?.company_name,
+                  companyLogoUrl: companyInfo?.company_logo_url,
                 })
               }
             >

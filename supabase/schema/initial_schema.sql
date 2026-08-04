@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS public.employees (
   emergency_contact_name   text,
   emergency_contact_phone  text,
   position                 text NOT NULL,
-  department               text,
+  
   date_hired               date NOT NULL,
   employment_status        public.employment_status DEFAULT 'active',
   basic_salary             numeric NOT NULL DEFAULT 0,

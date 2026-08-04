@@ -1168,20 +1168,6 @@ CREATE POLICY "Super admins have full access" ON public.payroll_records
   USING (public.is_super_admin(auth.uid()))
   WITH CHECK (public.is_super_admin(auth.uid()));
 
--- loans -----------------------------------------------------------------------
-DROP POLICY IF EXISTS "Employees can view own loans" ON public.loans;
-CREATE POLICY "Employees can view own loans" ON public.loans
-  FOR SELECT USING (employee_id = public.get_employee_by_user(auth.uid()));
-
-DROP POLICY IF EXISTS "HR can manage all loans" ON public.loans;
-CREATE POLICY "HR can manage all loans" ON public.loans
-  FOR ALL USING (public.has_role(auth.uid(),'hr_admin'));
-
-DROP POLICY IF EXISTS "Super admins have full access" ON public.loans;
-CREATE POLICY "Super admins have full access" ON public.loans
-  FOR ALL TO authenticated
-  USING (public.is_super_admin(auth.uid()))
-  WITH CHECK (public.is_super_admin(auth.uid()));
 
 -- announcements ---------------------------------------------------------------
 DROP POLICY IF EXISTS "Authenticated can view published announcements" ON public.announcements;

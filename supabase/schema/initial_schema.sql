@@ -276,8 +276,6 @@ CREATE TABLE IF NOT EXISTS public.attendance (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   employee_id         uuid NOT NULL REFERENCES public.employees(id) ON DELETE CASCADE,
   date                date NOT NULL,
-  time_in             timestamptz,
-  time_out            timestamptz,
   morning_in          timestamptz,
   morning_out         timestamptz,
   afternoon_in        timestamptz,

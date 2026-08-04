@@ -156,7 +156,7 @@ export default function MyAttendance() {
               </div>
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg">
                 <p className="text-xs md:text-sm text-muted-foreground">AM In</p>
-                <p className="font-semibold text-sm md:text-base">{formatTime((attendance as any).morning_in || attendance.time_in)}</p>
+                <p className="font-semibold text-sm md:text-base">{formatTime((attendance as any).morning_in)}</p>
               </div>
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg">
                 <p className="text-xs md:text-sm text-muted-foreground">AM Out</p>

@@ -648,12 +648,27 @@ END;
 $$;
 
 -- Notification fan-out triggers ----------------------------------------------
+CREATE OR REPLACE FUNCTION public.format_employee_name(_first text, _middle text, _last text, _suffix text)
+RETURNS text LANGUAGE sql IMMUTABLE SET search_path = public AS $$
+  SELECT btrim(regexp_replace(
+    concat_ws(' ',
+      initcap(coalesce(btrim(_first), '')),
+      CASE WHEN coalesce(btrim(_middle), '') = '' THEN NULL
+           ELSE upper(left(btrim(_middle), 1)) || '.' END,
+      initcap(coalesce(btrim(_last), '')),
+      CASE WHEN coalesce(btrim(_suffix), '') = '' THEN NULL
+           WHEN btrim(_suffix) ~* '^[ivxlcdm]+\.?$' THEN upper(btrim(_suffix))
+           ELSE initcap(btrim(_suffix)) END
+    ), '\s+', ' ', 'g'))
+$$;
+
 CREATE OR REPLACE FUNCTION public.notify_hr_on_leave_request()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE hr_user RECORD; emp_name TEXT;
 BEGIN
-  SELECT first_name || ' ' || last_name INTO emp_name FROM employees WHERE id = NEW.employee_id;
-  FOR hr_user IN SELECT user_id FROM user_roles WHERE role = 'hr_admin' LOOP
+  SELECT public.format_employee_name(first_name, middle_name, last_name, suffix_name)
+    INTO emp_name FROM employees WHERE id = NEW.employee_id;
+  FOR hr_user IN SELECT user_id FROM user_roles WHERE role::text IN ('hr_admin','super_admin') LOOP
     INSERT INTO notifications (user_id, type, title, message, reference_id, reference_type)
     VALUES (hr_user.user_id, 'leave_request', 'New Leave Request',
             emp_name || ' has submitted a ' || NEW.leave_type || ' leave request',

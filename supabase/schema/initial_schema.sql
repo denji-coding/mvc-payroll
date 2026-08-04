@@ -763,7 +763,7 @@ BEGIN
   FOREACH t IN ARRAY ARRAY[
     'profiles','role_permissions','branches','positions','employees','employee_schedules',
     'attendance','leave_types','leave_credits','leave_requests',
-    'payroll_periods','payroll_records','loans','announcements','settings'
+    'payroll_periods','payroll_records','announcements','settings'
   ] LOOP
     EXECUTE format('DROP TRIGGER IF EXISTS update_%I_updated_at ON public.%I', t, t);
     EXECUTE format(

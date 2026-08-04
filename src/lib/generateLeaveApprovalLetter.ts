@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
 import { formatFullName } from '@/lib/formatName';
+import companyLogo from '@/assets/company-logo.png';
 
 export interface LeaveLetterEmployee {
   first_name: string;
@@ -26,6 +27,10 @@ export interface GenerateLeaveApprovalLetterParams {
   employee: LeaveLetterEmployee;
   request: LeaveLetterRequest;
   companyName?: string;
+  companyLogoUrl?: string | null;
+  companyAddress?: string;
+  companyPhone?: string;
+  companyEmail?: string;
   approvedByName?: string | null;
 }
 
@@ -38,41 +43,91 @@ const titleCase = (value: string) =>
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(' ');
 
-export function buildLeaveApprovalLetter({
+async function loadImageDataUrl(src: string): Promise<string | null> {
+  try {
+    const res = await fetch(src);
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function buildLeaveApprovalLetter({
   employee,
   request,
   companyName = 'Migrants Venture Corporation',
+  companyLogoUrl,
+  companyAddress,
+  companyPhone,
+  companyEmail,
   approvedByName,
-}: GenerateLeaveApprovalLetterParams): jsPDF {
+}: GenerateLeaveApprovalLetterParams): Promise<jsPDF> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
   const contentWidth = pageWidth - margin * 2;
-  let y = 22;
+  const issuedDate = request.hr_action_at ? new Date(request.hr_action_at) : new Date();
 
-  // Header
+  // ---- Header (matches the Reports PDF header) ----
+  const logoData = await loadImageDataUrl(companyLogoUrl || companyLogo);
+  let y = 16;
+  const headerTop = y;
+  if (logoData) {
+    try {
+      doc.addImage(logoData, 'PNG', margin, headerTop, 16, 16);
+    } catch {
+      /* ignore unsupported image */
+    }
+  }
+  const textX = margin + (logoData ? 20 : 0);
+
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text(companyName.toUpperCase(), pageWidth / 2, y, { align: 'center' });
-  y += 6;
+  doc.setFontSize(12);
+  doc.setTextColor(22, 101, 52);
+  doc.text(companyName.toUpperCase(), textX, headerTop + 5.5);
+
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(55, 65, 81);
+  let metaY = headerTop + 10;
+  if (companyAddress) {
+    doc.text(companyAddress, textX, metaY);
+    metaY += 3.5;
+  }
+  const contact = [companyPhone, companyEmail].filter(Boolean).join('  •  ');
+  if (contact) {
+    doc.text(contact, textX, metaY);
+  }
+
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.text('Human Resource Department', pageWidth / 2, y, { align: 'center' });
-  y += 6;
-  doc.setDrawColor(180);
-  doc.line(margin, y, pageWidth - margin, y);
-  y += 12;
+  doc.setTextColor(17, 24, 39);
+  doc.text('LEAVE APPROVAL LETTER', pageWidth - margin, headerTop + 5.5, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(107, 114, 128);
+  doc.text(`Generated: ${format(issuedDate, 'MMM d, yyyy hh:mm a')}`, pageWidth - margin, headerTop + 10, {
+    align: 'right',
+  });
+
+  doc.setDrawColor(22, 101, 52);
+  doc.setLineWidth(0.6);
+  doc.line(margin, headerTop + 20, pageWidth - margin, headerTop + 20);
+  doc.setLineWidth(0.2);
+  doc.setTextColor(17, 24, 39);
+
+  y = headerTop + 32;
 
   // Date
-  const issuedDate = request.hr_action_at ? new Date(request.hr_action_at) : new Date();
   doc.setFontSize(11);
   doc.text(format(issuedDate, 'MMMM d, yyyy'), margin, y);
-  y += 12;
-
-  // Title
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text('LEAVE APPROVAL LETTER', pageWidth / 2, y, { align: 'center' });
   y += 12;
 
   const fullName = formatFullName(
@@ -100,8 +155,7 @@ export function buildLeaveApprovalLetter({
   doc.text(`Dear ${fullName},`, margin, y);
   y += 9;
 
-  const payLabel =
-    request.pay_type === 'without_pay' ? 'Leave without Pay' : 'Leave with Pay';
+  const payLabel = request.pay_type === 'without_pay' ? 'Leave without Pay' : 'Leave with Pay';
   const startDate = parseDate(request.start_date);
   const endDate = parseDate(request.end_date);
   const days = Number(request.total_days) || 0;
@@ -113,7 +167,6 @@ export function buildLeaveApprovalLetter({
   doc.text(bodyLines, margin, y);
   y += bodyLines.length * 5.5 + 6;
 
-  // Details block
   const details: [string, string][] = [
     ['Leave Type', titleCase(request.leave_type)],
     ['Pay Status', payLabel],
@@ -173,32 +226,38 @@ export function buildLeaveApprovalLetter({
   doc.setFontSize(10);
   doc.text('Human Resource Department', margin, y);
 
-  // Footer
-  const pageHeight = doc.internal.pageSize.getHeight();
-  doc.setFontSize(8);
-  doc.setTextColor(130);
-  doc.text(
-    'This is a system-generated document from the HR Management System.',
-    pageWidth / 2,
-    pageHeight - 12,
-    { align: 'center' },
-  );
+  // Footer (matches Reports PDF footer)
+  doc.setDrawColor(209, 213, 219);
+  doc.line(margin, pageHeight - 16, pageWidth - margin, pageHeight - 16);
+  doc.setFontSize(7.5);
+  doc.setTextColor(107, 114, 128);
+  doc.text(`${companyName} • HRM & Payroll System`, margin, pageHeight - 11);
+  doc.text('Page 1 of 1', pageWidth / 2, pageHeight - 11, { align: 'center' });
+  doc.text(format(issuedDate, 'yyyy-MM-dd HH:mm'), pageWidth - margin, pageHeight - 11, { align: 'right' });
 
   return doc;
 }
 
-export function generateLeaveApprovalLetterBlobUrl(params: GenerateLeaveApprovalLetterParams): string {
-  const doc = buildLeaveApprovalLetter(params);
-  return URL.createObjectURL(doc.output('blob'));
+export async function generateLeaveApprovalLetterBlob(
+  params: GenerateLeaveApprovalLetterParams,
+): Promise<Blob> {
+  const doc = await buildLeaveApprovalLetter(params);
+  return doc.output('blob');
 }
 
-export function downloadLeaveApprovalLetter(params: GenerateLeaveApprovalLetterParams): void {
-  const doc = buildLeaveApprovalLetter(params);
+export function leaveApprovalLetterFileName(params: GenerateLeaveApprovalLetterParams): string {
   const name = formatFullName(
     params.employee.first_name,
     params.employee.last_name,
     params.employee.suffix_name,
     params.employee.middle_name,
   ).replace(/[^\w]+/g, '_');
-  doc.save(`Leave_Approval_Letter_${name}_${params.request.start_date}.pdf`);
+  return `Leave_Approval_Letter_${name}_${params.request.start_date}.pdf`;
+}
+
+export async function downloadLeaveApprovalLetter(
+  params: GenerateLeaveApprovalLetterParams,
+): Promise<void> {
+  const doc = await buildLeaveApprovalLetter(params);
+  doc.save(leaveApprovalLetterFileName(params));
 }

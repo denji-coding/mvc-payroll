@@ -63,10 +63,10 @@ export default function Attendance() {
   const columns: ColumnDef<any, any>[] = [
     { id: 'emp_id', header: 'Employee ID', accessorFn: (row) => row.employees?.employee_id },
     { id: 'name', header: 'Name', accessorFn: (row) => formatFullName(row.employees?.first_name, row.employees?.last_name, row.employees?.suffix_name, row.employees?.middle_name) },
-    { id: 'am_in', header: 'AM In', accessorFn: (row) => row.morning_in || row.time_in, cell: ({ getValue }) => formatTime(getValue() as string) },
+    { id: 'am_in', header: 'AM In', accessorFn: (row) => row.morning_in, cell: ({ getValue }) => formatTime(getValue() as string) },
     { id: 'am_out', header: 'AM Out', accessorFn: (row) => row.morning_out, cell: ({ getValue }) => formatTime(getValue() as string) },
     { id: 'pm_in', header: 'PM In', accessorFn: (row) => row.afternoon_in, cell: ({ getValue }) => formatTime(getValue() as string) },
-    { id: 'pm_out', header: 'PM Out', accessorFn: (row) => row.afternoon_out || row.time_out, cell: ({ getValue }) => formatTime(getValue() as string) },
+    { id: 'pm_out', header: 'PM Out', accessorFn: (row) => row.afternoon_out, cell: ({ getValue }) => formatTime(getValue() as string) },
     { accessorKey: 'hours_worked', header: 'Hours', cell: ({ getValue }) => (getValue() as number)?.toFixed(2) || '-' },
     { accessorKey: 'late_minutes', header: 'Late', cell: ({ getValue }) => getValue() || 0 },
     { accessorKey: 'status', header: 'Status', cell: ({ getValue }) => getStatusBadge((getValue() as string) || 'present') },

@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS public.employees (
   emergency_contact_name   text,
   emergency_contact_phone  text,
   position                 text NOT NULL,
-  department               text,
+  
   date_hired               date NOT NULL,
   employment_status        public.employment_status DEFAULT 'active',
   basic_salary             numeric NOT NULL DEFAULT 0,
@@ -207,9 +207,6 @@ CREATE TABLE IF NOT EXISTS public.employees (
   sss_number               text,
   philhealth_number        text,
   pagibig_number           text,
-  tin_number               text,
-  bank_name                text,
-  bank_account_number      text,
   rfid_card_number         text UNIQUE,
   avatar_url               text,
   created_at               timestamptz DEFAULT now(),
@@ -276,8 +273,6 @@ CREATE TABLE IF NOT EXISTS public.attendance (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   employee_id         uuid NOT NULL REFERENCES public.employees(id) ON DELETE CASCADE,
   date                date NOT NULL,
-  time_in             timestamptz,
-  time_out            timestamptz,
   morning_in          timestamptz,
   morning_out         timestamptz,
   afternoon_in        timestamptz,
@@ -420,23 +415,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.payroll_records TO authenticated;
 GRANT ALL ON public.payroll_records TO service_role;
 ALTER TABLE public.payroll_records ENABLE ROW LEVEL SECURITY;
 
--- ---- loans ------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS public.loans (
-  id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id            uuid NOT NULL REFERENCES public.employees(id) ON DELETE CASCADE,
-  loan_type              text NOT NULL,
-  principal_amount       numeric NOT NULL,
-  monthly_amortization   numeric NOT NULL,
-  total_paid             numeric DEFAULT 0,
-  remaining_balance      numeric NOT NULL,
-  start_date             date NOT NULL,
-  status                 text DEFAULT 'active',
-  created_at             timestamptz DEFAULT now(),
-  updated_at             timestamptz DEFAULT now()
-);
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.loans TO authenticated;
-GRANT ALL ON public.loans TO service_role;
-ALTER TABLE public.loans ENABLE ROW LEVEL SECURITY;
 
 -- ---- announcements ----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.announcements (
@@ -648,12 +626,27 @@ END;
 $$;
 
 -- Notification fan-out triggers ----------------------------------------------
+CREATE OR REPLACE FUNCTION public.format_employee_name(_first text, _middle text, _last text, _suffix text)
+RETURNS text LANGUAGE sql IMMUTABLE SET search_path = public AS $$
+  SELECT btrim(regexp_replace(
+    concat_ws(' ',
+      initcap(coalesce(btrim(_first), '')),
+      CASE WHEN coalesce(btrim(_middle), '') = '' THEN NULL
+           ELSE upper(left(btrim(_middle), 1)) || '.' END,
+      initcap(coalesce(btrim(_last), '')),
+      CASE WHEN coalesce(btrim(_suffix), '') = '' THEN NULL
+           WHEN btrim(_suffix) ~* '^[ivxlcdm]+\.?$' THEN upper(btrim(_suffix))
+           ELSE initcap(btrim(_suffix)) END
+    ), '\s+', ' ', 'g'))
+$$;
+
 CREATE OR REPLACE FUNCTION public.notify_hr_on_leave_request()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE hr_user RECORD; emp_name TEXT;
 BEGIN
-  SELECT first_name || ' ' || last_name INTO emp_name FROM employees WHERE id = NEW.employee_id;
-  FOR hr_user IN SELECT user_id FROM user_roles WHERE role = 'hr_admin' LOOP
+  SELECT public.format_employee_name(first_name, middle_name, last_name, suffix_name)
+    INTO emp_name FROM employees WHERE id = NEW.employee_id;
+  FOR hr_user IN SELECT user_id FROM user_roles WHERE role::text IN ('hr_admin','super_admin') LOOP
     INSERT INTO notifications (user_id, type, title, message, reference_id, reference_type)
     VALUES (hr_user.user_id, 'leave_request', 'New Leave Request',
             emp_name || ' has submitted a ' || NEW.leave_type || ' leave request',
@@ -686,17 +679,28 @@ $$;
 
 CREATE OR REPLACE FUNCTION public.notify_employee_on_attendance()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE emp_user_id uuid; msg TEXT;
+DECLARE
+  emp_user_id uuid; msg TEXT;
+  new_first timestamptz; old_first timestamptz; new_last timestamptz; old_last timestamptz;
 BEGIN
   SELECT user_id INTO emp_user_id FROM employees WHERE id = NEW.employee_id;
   IF emp_user_id IS NULL THEN RETURN NEW; END IF;
-  IF TG_OP = 'INSERT' AND NEW.time_in IS NOT NULL THEN
-    msg := 'You clocked in at ' || to_char(NEW.time_in AT TIME ZONE 'Asia/Manila','HH12:MI AM');
+
+  new_first := COALESCE(NEW.morning_in, NEW.afternoon_in);
+  new_last  := COALESCE(NEW.afternoon_out, NEW.morning_out);
+  IF TG_OP = 'UPDATE' THEN
+    old_first := COALESCE(OLD.morning_in, OLD.afternoon_in);
+    old_last  := COALESCE(OLD.afternoon_out, OLD.morning_out);
+  END IF;
+
+  IF (TG_OP = 'INSERT' AND new_first IS NOT NULL)
+     OR (TG_OP = 'UPDATE' AND old_first IS NULL AND new_first IS NOT NULL) THEN
+    msg := 'You clocked in at ' || to_char(new_first AT TIME ZONE 'Asia/Manila','HH12:MI AM');
     IF NEW.late_minutes > 0 THEN msg := msg || ' (' || NEW.late_minutes || ' minutes late)'; END IF;
     INSERT INTO notifications (user_id, type, title, message, reference_id, reference_type)
     VALUES (emp_user_id, 'attendance', 'Clock In Recorded', msg, NEW.id, 'attendance');
-  ELSIF TG_OP = 'UPDATE' AND OLD.time_out IS NULL AND NEW.time_out IS NOT NULL THEN
-    msg := 'You clocked out at ' || to_char(NEW.time_out AT TIME ZONE 'Asia/Manila','HH12:MI AM');
+  ELSIF TG_OP = 'UPDATE' AND old_last IS DISTINCT FROM new_last AND new_last IS NOT NULL THEN
+    msg := 'You clocked out at ' || to_char(new_last AT TIME ZONE 'Asia/Manila','HH12:MI AM');
     IF NEW.hours_worked IS NOT NULL THEN msg := msg || '. Hours worked: ' || round(NEW.hours_worked::numeric,2); END IF;
     INSERT INTO notifications (user_id, type, title, message, reference_id, reference_type)
     VALUES (emp_user_id, 'attendance', 'Clock Out Recorded', msg, NEW.id, 'attendance');
@@ -763,7 +767,7 @@ BEGIN
   FOREACH t IN ARRAY ARRAY[
     'profiles','role_permissions','branches','positions','employees','employee_schedules',
     'attendance','leave_types','leave_credits','leave_requests',
-    'payroll_periods','payroll_records','loans','announcements','settings'
+    'payroll_periods','payroll_records','announcements','settings'
   ] LOOP
     EXECUTE format('DROP TRIGGER IF EXISTS update_%I_updated_at ON public.%I', t, t);
     EXECUTE format(
@@ -1168,20 +1172,6 @@ CREATE POLICY "Super admins have full access" ON public.payroll_records
   USING (public.is_super_admin(auth.uid()))
   WITH CHECK (public.is_super_admin(auth.uid()));
 
--- loans -----------------------------------------------------------------------
-DROP POLICY IF EXISTS "Employees can view own loans" ON public.loans;
-CREATE POLICY "Employees can view own loans" ON public.loans
-  FOR SELECT USING (employee_id = public.get_employee_by_user(auth.uid()));
-
-DROP POLICY IF EXISTS "HR can manage all loans" ON public.loans;
-CREATE POLICY "HR can manage all loans" ON public.loans
-  FOR ALL USING (public.has_role(auth.uid(),'hr_admin'));
-
-DROP POLICY IF EXISTS "Super admins have full access" ON public.loans;
-CREATE POLICY "Super admins have full access" ON public.loans
-  FOR ALL TO authenticated
-  USING (public.is_super_admin(auth.uid()))
-  WITH CHECK (public.is_super_admin(auth.uid()));
 
 -- announcements ---------------------------------------------------------------
 DROP POLICY IF EXISTS "Authenticated can view published announcements" ON public.announcements;

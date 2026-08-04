@@ -75,8 +75,6 @@ export type Database = {
           rfid_time_in: string | null
           rfid_time_out: string | null
           status: string | null
-          time_in: string | null
-          time_out: string | null
           undertime_minutes: number | null
           updated_at: string | null
         }
@@ -96,8 +94,6 @@ export type Database = {
           rfid_time_in?: string | null
           rfid_time_out?: string | null
           status?: string | null
-          time_in?: string | null
-          time_out?: string | null
           undertime_minutes?: number | null
           updated_at?: string | null
         }
@@ -117,8 +113,6 @@ export type Database = {
           rfid_time_in?: string | null
           rfid_time_out?: string | null
           status?: string | null
-          time_in?: string | null
-          time_out?: string | null
           undertime_minutes?: number | null
           updated_at?: string | null
         }
@@ -299,15 +293,12 @@ export type Database = {
         Row: {
           address: string | null
           avatar_url: string | null
-          bank_account_number: string | null
-          bank_name: string | null
           basic_salary: number
           branch_id: string | null
           civil_status: string | null
           created_at: string | null
           date_hired: string
           date_of_birth: string | null
-          department: string | null
           email: string
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
@@ -327,22 +318,18 @@ export type Database = {
           rfid_card_number: string | null
           sss_number: string | null
           suffix_name: string | null
-          tin_number: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           address?: string | null
           avatar_url?: string | null
-          bank_account_number?: string | null
-          bank_name?: string | null
           basic_salary?: number
           branch_id?: string | null
           civil_status?: string | null
           created_at?: string | null
           date_hired: string
           date_of_birth?: string | null
-          department?: string | null
           email: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -362,22 +349,18 @@ export type Database = {
           rfid_card_number?: string | null
           sss_number?: string | null
           suffix_name?: string | null
-          tin_number?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           address?: string | null
           avatar_url?: string | null
-          bank_account_number?: string | null
-          bank_name?: string | null
           basic_salary?: number
           branch_id?: string | null
           civil_status?: string | null
           created_at?: string | null
           date_hired?: string
           date_of_birth?: string | null
-          department?: string | null
           email?: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -397,7 +380,6 @@ export type Database = {
           rfid_card_number?: string | null
           sss_number?: string | null
           suffix_name?: string | null
-          tin_number?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -594,56 +576,6 @@ export type Database = {
           upload_condition_days?: number | null
         }
         Relationships: []
-      }
-      loans: {
-        Row: {
-          created_at: string | null
-          employee_id: string
-          id: string
-          loan_type: string
-          monthly_amortization: number
-          principal_amount: number
-          remaining_balance: number
-          start_date: string
-          status: string | null
-          total_paid: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          employee_id: string
-          id?: string
-          loan_type: string
-          monthly_amortization: number
-          principal_amount: number
-          remaining_balance: number
-          start_date: string
-          status?: string | null
-          total_paid?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          employee_id?: string
-          id?: string
-          loan_type?: string
-          monthly_amortization?: number
-          principal_amount?: number
-          remaining_balance?: number
-          start_date?: string
-          status?: string | null
-          total_paid?: number | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "loans_employee_id_fkey"
-            columns: ["employee_id"]
-            isOneToOne: false
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       notifications: {
         Row: {
@@ -1013,6 +945,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      format_employee_name: {
+        Args: {
+          _first: string
+          _last: string
+          _middle: string
+          _suffix: string
+        }
+        Returns: string
+      }
       get_employee_by_user: { Args: { _user_id: string }; Returns: string }
       get_user_branch_id: { Args: { _user_id: string }; Returns: string }
       has_any_admin: { Args: never; Returns: boolean }

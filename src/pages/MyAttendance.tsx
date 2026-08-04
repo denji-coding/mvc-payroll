@@ -115,10 +115,10 @@ export default function MyAttendance() {
 
   const columns: ColumnDef<any, any>[] = [
     { accessorKey: 'date', header: 'Date', cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy') },
-    { id: 'am_in', header: 'AM In', accessorFn: (row) => row.morning_in || row.time_in, cell: ({ getValue }) => formatTime(getValue() as string) },
+    { id: 'am_in', header: 'AM In', accessorFn: (row) => row.morning_in, cell: ({ getValue }) => formatTime(getValue() as string) },
     { id: 'am_out', header: 'AM Out', accessorFn: (row) => row.morning_out, cell: ({ getValue }) => formatTime(getValue() as string) },
     { id: 'pm_in', header: 'PM In', accessorFn: (row) => row.afternoon_in, cell: ({ getValue }) => formatTime(getValue() as string) },
-    { id: 'pm_out', header: 'PM Out', accessorFn: (row) => row.afternoon_out || row.time_out, cell: ({ getValue }) => formatTime(getValue() as string) },
+    { id: 'pm_out', header: 'PM Out', accessorFn: (row) => row.afternoon_out, cell: ({ getValue }) => formatTime(getValue() as string) },
     { accessorKey: 'hours_worked', header: 'Hours', cell: ({ getValue }) => getValue() || '-' },
     { accessorKey: 'status', header: 'Status', cell: ({ row }) => getStatusBadge(row.original.status, row.original) },
   ];
@@ -156,7 +156,7 @@ export default function MyAttendance() {
               </div>
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg">
                 <p className="text-xs md:text-sm text-muted-foreground">AM In</p>
-                <p className="font-semibold text-sm md:text-base">{formatTime((attendance as any).morning_in || attendance.time_in)}</p>
+                <p className="font-semibold text-sm md:text-base">{formatTime((attendance as any).morning_in)}</p>
               </div>
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg">
                 <p className="text-xs md:text-sm text-muted-foreground">AM Out</p>
@@ -168,7 +168,7 @@ export default function MyAttendance() {
               </div>
               <div className="text-center p-3 md:p-4 bg-muted/50 rounded-lg col-span-2 md:col-span-1">
                 <p className="text-xs md:text-sm text-muted-foreground">PM Out</p>
-                <p className="font-semibold text-sm md:text-base">{formatTime((attendance as any).afternoon_out || attendance.time_out)}</p>
+                <p className="font-semibold text-sm md:text-base">{formatTime((attendance as any).afternoon_out)}</p>
               </div>
             </div>
             {attendance.hours_worked && (

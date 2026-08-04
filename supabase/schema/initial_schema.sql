@@ -686,17 +686,28 @@ $$;
 
 CREATE OR REPLACE FUNCTION public.notify_employee_on_attendance()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE emp_user_id uuid; msg TEXT;
+DECLARE
+  emp_user_id uuid; msg TEXT;
+  new_first timestamptz; old_first timestamptz; new_last timestamptz; old_last timestamptz;
 BEGIN
   SELECT user_id INTO emp_user_id FROM employees WHERE id = NEW.employee_id;
   IF emp_user_id IS NULL THEN RETURN NEW; END IF;
-  IF TG_OP = 'INSERT' AND NEW.time_in IS NOT NULL THEN
-    msg := 'You clocked in at ' || to_char(NEW.time_in AT TIME ZONE 'Asia/Manila','HH12:MI AM');
+
+  new_first := COALESCE(NEW.morning_in, NEW.afternoon_in);
+  new_last  := COALESCE(NEW.afternoon_out, NEW.morning_out);
+  IF TG_OP = 'UPDATE' THEN
+    old_first := COALESCE(OLD.morning_in, OLD.afternoon_in);
+    old_last  := COALESCE(OLD.afternoon_out, OLD.morning_out);
+  END IF;
+
+  IF (TG_OP = 'INSERT' AND new_first IS NOT NULL)
+     OR (TG_OP = 'UPDATE' AND old_first IS NULL AND new_first IS NOT NULL) THEN
+    msg := 'You clocked in at ' || to_char(new_first AT TIME ZONE 'Asia/Manila','HH12:MI AM');
     IF NEW.late_minutes > 0 THEN msg := msg || ' (' || NEW.late_minutes || ' minutes late)'; END IF;
     INSERT INTO notifications (user_id, type, title, message, reference_id, reference_type)
     VALUES (emp_user_id, 'attendance', 'Clock In Recorded', msg, NEW.id, 'attendance');
-  ELSIF TG_OP = 'UPDATE' AND OLD.time_out IS NULL AND NEW.time_out IS NOT NULL THEN
-    msg := 'You clocked out at ' || to_char(NEW.time_out AT TIME ZONE 'Asia/Manila','HH12:MI AM');
+  ELSIF TG_OP = 'UPDATE' AND old_last IS DISTINCT FROM new_last AND new_last IS NOT NULL THEN
+    msg := 'You clocked out at ' || to_char(new_last AT TIME ZONE 'Asia/Manila','HH12:MI AM');
     IF NEW.hours_worked IS NOT NULL THEN msg := msg || '. Hours worked: ' || round(NEW.hours_worked::numeric,2); END IF;
     INSERT INTO notifications (user_id, type, title, message, reference_id, reference_type)
     VALUES (emp_user_id, 'attendance', 'Clock Out Recorded', msg, NEW.id, 'attendance');

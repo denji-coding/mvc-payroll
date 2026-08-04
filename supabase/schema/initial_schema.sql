@@ -420,23 +420,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.payroll_records TO authenticated;
 GRANT ALL ON public.payroll_records TO service_role;
 ALTER TABLE public.payroll_records ENABLE ROW LEVEL SECURITY;
 
--- ---- loans ------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS public.loans (
-  id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id            uuid NOT NULL REFERENCES public.employees(id) ON DELETE CASCADE,
-  loan_type              text NOT NULL,
-  principal_amount       numeric NOT NULL,
-  monthly_amortization   numeric NOT NULL,
-  total_paid             numeric DEFAULT 0,
-  remaining_balance      numeric NOT NULL,
-  start_date             date NOT NULL,
-  status                 text DEFAULT 'active',
-  created_at             timestamptz DEFAULT now(),
-  updated_at             timestamptz DEFAULT now()
-);
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.loans TO authenticated;
-GRANT ALL ON public.loans TO service_role;
-ALTER TABLE public.loans ENABLE ROW LEVEL SECURITY;
 
 -- ---- announcements ----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.announcements (

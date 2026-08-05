@@ -283,6 +283,18 @@ export default function Leaves() {
       cell: ({ getValue }) => format(new Date((getValue() as string) + "T00:00:00"), "MMM d, yyyy"),
     },
     { accessorKey: "total_days", header: "Days" },
+    {
+      accessorKey: "hr_remarks",
+      header: "HR Comment",
+      cell: ({ getValue }) => {
+        const value = (getValue() as string | null)?.trim();
+        return value ? (
+          <span className="block max-w-[220px] break-words">{value}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+    },
     { accessorKey: "status", header: "Status", cell: ({ getValue }) => getStatusBadge(getValue() as string) },
     {
       id: "actions",

@@ -106,14 +106,10 @@ export async function buildLeaveApprovalLetter({
     doc.text(contact, textX, metaY);
   }
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(17, 24, 39);
-  doc.text('LEAVE APPROVAL LETTER', pageWidth - margin, headerTop + 5.5, { align: 'right' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(107, 114, 128);
-  doc.text(`Generated: ${format(issuedDate, 'MMM d, yyyy hh:mm a')}`, pageWidth - margin, headerTop + 10, {
+  doc.text(`Generated: ${format(issuedDate, 'MMM d, yyyy hh:mm a')}`, pageWidth - margin, headerTop + 5.5, {
     align: 'right',
   });
 
@@ -123,7 +119,13 @@ export async function buildLeaveApprovalLetter({
   doc.setLineWidth(0.2);
   doc.setTextColor(17, 24, 39);
 
-  y = headerTop + 32;
+  // Centered document title below the green divider
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('LEAVE APPROVAL LETTER', pageWidth / 2, headerTop + 32, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+
+  y = headerTop + 44;
 
   // Date
   doc.setFontSize(11);

@@ -259,6 +259,29 @@ export default function Leaves() {
     );
   };
 
+  const openLetter = async (leave: any) => {
+    if (!myEmployee) return;
+    let approvedByName: string | null = null;
+    if (leave.hr_id) {
+      const { data: hrProfile } = await supabase
+        .from("profiles")
+        .select("first_name, middle_name, last_name")
+        .eq("id", leave.hr_id)
+        .maybeSingle();
+      if (hrProfile) {
+        approvedByName =
+          formatFullName(hrProfile.first_name, hrProfile.last_name, null, hrProfile.middle_name) || null;
+      }
+    }
+    setLetterParams({
+      employee: myEmployee as any,
+      request: leave,
+      companyName: companyInfo?.company_name,
+      companyLogoUrl: companyInfo?.company_logo_url,
+      approvedByName,
+    });
+  };
+
   const columns: ColumnDef<any, any>[] = [
     {
       accessorKey: "leave_type",

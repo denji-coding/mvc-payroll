@@ -16,4 +16,17 @@ if (typeof (Promise as any).withResolvers !== "function") {
   };
 }
 
+// Polyfill Promise.try for environments that don't support it yet
+if (typeof (Promise as any).try !== "function") {
+  (Promise as any).try = function <T>(fn: () => T | PromiseLike<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      try {
+        resolve(fn());
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+}
+
 createRoot(document.getElementById("root")!).render(<App />);

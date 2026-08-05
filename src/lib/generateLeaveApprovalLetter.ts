@@ -109,9 +109,6 @@ export async function buildLeaveApprovalLetter({
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(107, 114, 128);
-  doc.text(`Generated: ${format(issuedDate, 'MMM d, yyyy hh:mm a')}`, pageWidth - margin, headerTop + 5.5, {
-    align: 'right',
-  });
 
   doc.setDrawColor(22, 101, 52);
   doc.setLineWidth(0.6);
@@ -216,17 +213,20 @@ export async function buildLeaveApprovalLetter({
   y += 20;
 
   // Signature
+  const signerName = approvedByName || 'HR Approver';
+  const signerLabel = 'Human Resource Department';
+
   doc.setFont('helvetica', 'normal');
   doc.text('Approved by:', margin, y);
   y += 16;
   doc.setFont('helvetica', 'bold');
-  doc.text(approvedByName || 'Human Resource Department', margin, y);
+  doc.text(signerName, margin, y);
   doc.setDrawColor(120);
   doc.line(margin, y + 1.5, margin + 70, y + 1.5);
   y += 6;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text('Human Resource Department', margin, y);
+  doc.text(signerLabel, margin, y);
 
   // Footer (matches Reports PDF footer)
   doc.setDrawColor(209, 213, 219);

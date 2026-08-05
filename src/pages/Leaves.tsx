@@ -13,15 +13,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock, Eye } from "lucide-react";
+import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, startOfToday, isBefore, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
+import { formatFullName } from "@/lib/formatName";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DataTable, ColumnDef } from "@/components/ui/data-table";
 import { useQuery } from "@tanstack/react-query";
 import { useCompanyInfo } from "@/hooks/useCompanyInfo";
+import { LeaveLetterPdfIcon } from "@/components/icons/LeaveLetterPdfIcon";
 import { LeaveApprovalLetterDialog } from "@/components/leaves/LeaveApprovalLetterDialog";
 import type { GenerateLeaveApprovalLetterParams } from "@/lib/generateLeaveApprovalLetter";
 
@@ -259,6 +261,29 @@ export default function Leaves() {
     );
   };
 
+  const openLetter = async (leave: any) => {
+    if (!myEmployee) return;
+    let approvedByName: string | null = null;
+    if (leave.hr_id) {
+      const { data: hrProfile } = await supabase
+        .from("profiles")
+        .select("first_name, middle_name, last_name")
+        .eq("id", leave.hr_id)
+        .maybeSingle();
+      if (hrProfile) {
+        approvedByName =
+          formatFullName(hrProfile.first_name, hrProfile.last_name, null, hrProfile.middle_name) || null;
+      }
+    }
+    setLetterParams({
+      employee: myEmployee as any,
+      request: leave,
+      companyName: companyInfo?.company_name,
+      companyLogoUrl: companyInfo?.company_logo_url,
+      approvedByName,
+    });
+  };
+
   const columns: ColumnDef<any, any>[] = [
     {
       accessorKey: "leave_type",
@@ -283,6 +308,18 @@ export default function Leaves() {
       cell: ({ getValue }) => format(new Date((getValue() as string) + "T00:00:00"), "MMM d, yyyy"),
     },
     { accessorKey: "total_days", header: "Days" },
+    {
+      accessorKey: "hr_remarks",
+      header: "HR Comment",
+      cell: ({ getValue }) => {
+        const value = (getValue() as string | null)?.trim();
+        return value ? (
+          <span className="block max-w-[220px] break-words">{value}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+    },
     { accessorKey: "status", header: "Status", cell: ({ getValue }) => getStatusBadge(getValue() as string) },
     {
       id: "actions",
@@ -300,17 +337,9 @@ export default function Leaves() {
               size="icon"
               title="View Leave Approval Letter"
               disabled={!myEmployee}
-              onClick={() =>
-                myEmployee &&
-                setLetterParams({
-                  employee: myEmployee as any,
-                  request: leave,
-                  companyName: companyInfo?.company_name,
-                  companyLogoUrl: companyInfo?.company_logo_url,
-                })
-              }
+              onClick={() => openLetter(leave)}
             >
-              <Eye className="h-4 w-4" />
+              <LeaveLetterPdfIcon className="h-5 w-5" />
             </Button>
           );
         }

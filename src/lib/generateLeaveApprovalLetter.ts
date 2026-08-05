@@ -63,7 +63,7 @@ export async function buildLeaveApprovalLetter({
   request,
   companyName = 'Migrants Venture Corporation',
   companyLogoUrl,
-  companyAddress,
+  companyAddress = 'Vasquez Bldg. Lapu-Lapu St. Corner Sobrecary St. Magugpo South, Tagum City, Davao del Norte',
   companyPhone,
   companyEmail,
   approvedByName,

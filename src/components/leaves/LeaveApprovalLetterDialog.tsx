@@ -147,7 +147,7 @@ export function LeaveApprovalLetterDialog({ open, onOpenChange, params }: Props)
           )}
         </div>
 
-        <div className="flex flex-wrap justify-end gap-2 border-t p-4">
+        <div className="flex flex-wrap justify-center gap-2 border-t p-4 sm:justify-end">
           <Button variant="outline" disabled={!url} onClick={() => triggerAnchor('_blank')}>
             <ExternalLink className="mr-2 h-4 w-4" />
             Open in New Tab

@@ -339,7 +339,7 @@ export default function Leaves() {
               disabled={!myEmployee}
               onClick={() => openLetter(leave)}
             >
-              <LeaveLetterPdfIcon className="h-5 w-5" />
+              <LeaveLetterPdfIcon className="h-6 w-6" />
             </Button>
           );
         }

@@ -13,15 +13,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock, Eye } from "lucide-react";
+import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, startOfToday, isBefore, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
+import { formatFullName } from "@/lib/formatName";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DataTable, ColumnDef } from "@/components/ui/data-table";
 import { useQuery } from "@tanstack/react-query";
 import { useCompanyInfo } from "@/hooks/useCompanyInfo";
+import { LeaveLetterPdfIcon } from "@/components/icons/LeaveLetterPdfIcon";
 import { LeaveApprovalLetterDialog } from "@/components/leaves/LeaveApprovalLetterDialog";
 import type { GenerateLeaveApprovalLetterParams } from "@/lib/generateLeaveApprovalLetter";
 
@@ -335,17 +337,9 @@ export default function Leaves() {
               size="icon"
               title="View Leave Approval Letter"
               disabled={!myEmployee}
-              onClick={() =>
-                myEmployee &&
-                setLetterParams({
-                  employee: myEmployee as any,
-                  request: leave,
-                  companyName: companyInfo?.company_name,
-                  companyLogoUrl: companyInfo?.company_logo_url,
-                })
-              }
+              onClick={() => openLetter(leave)}
             >
-              <Eye className="h-4 w-4" />
+              <LeaveLetterPdfIcon className="h-5 w-5" />
             </Button>
           );
         }

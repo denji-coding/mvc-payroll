@@ -664,6 +664,16 @@ export default function Leaves() {
         onOpenChange={(open) => !open && setLetterParams(null)}
         params={letterParams}
       />
+
+      <Dialog open={!!hrComment} onOpenChange={(open) => !open && setHrComment(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>HR Comment</DialogTitle>
+          </DialogHeader>
+          <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">{hrComment}</p>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

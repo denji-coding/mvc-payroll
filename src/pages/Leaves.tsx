@@ -67,6 +67,8 @@ export default function Leaves() {
   const createLeave = useCreateLeaveRequest();
   const cancelLeave = useCancelLeaveRequest();
   const [letterParams, setLetterParams] = useState<GenerateLeaveApprovalLetterParams | null>(null);
+  const [hrComment, setHrComment] = useState<string | null>(null);
+
 
   const { data: myEmployee } = useQuery({
     queryKey: ["my-employee-letter-info", user?.id],

@@ -271,14 +271,29 @@ export default function Leaves() {
       if (rpcName) {
         approvedByName = rpcName as string;
       } else {
-        const { data: hrProfile } = await supabase
-          .from("profiles")
-          .select("first_name, middle_name, last_name")
-          .eq("id", leave.hr_id)
+        const { data: hrEmployee } = await supabase
+          .from("employees")
+          .select("first_name, middle_name, last_name, suffix_name")
+          .eq("user_id", leave.hr_id)
           .maybeSingle();
-        if (hrProfile) {
+        if (hrEmployee) {
           approvedByName =
-            formatFullName(hrProfile.first_name, hrProfile.last_name, null, hrProfile.middle_name) || null;
+            formatFullName(
+              hrEmployee.first_name,
+              hrEmployee.last_name,
+              hrEmployee.suffix_name,
+              hrEmployee.middle_name,
+            ) || null;
+        } else {
+          const { data: hrProfile } = await supabase
+            .from("profiles")
+            .select("first_name, middle_name, last_name")
+            .eq("id", leave.hr_id)
+            .maybeSingle();
+          if (hrProfile) {
+            approvedByName =
+              formatFullName(hrProfile.first_name, hrProfile.last_name, null, hrProfile.middle_name) || null;
+          }
         }
       }
     }
@@ -354,9 +369,9 @@ export default function Leaves() {
               title="View Leave Approval Letter"
               disabled={!myEmployee}
               onClick={() => openLetter(leave)}
-              className="h-12 w-12 p-0"
+              className="h-8 w-8 p-0"
             >
-              <LeaveLetterPdfIcon className="h-10 w-10" />
+              <LeaveLetterPdfIcon className="h-7 w-7" />
             </Button>
           );
 

@@ -319,10 +319,18 @@ export default function Leaves() {
     {
       accessorKey: "hr_remarks",
       header: "HR Comment",
+      enableSorting: false,
       cell: ({ getValue }) => {
         const value = (getValue() as string | null)?.trim();
         return value ? (
-          <span className="block max-w-[220px] break-words">{value}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            title="View HR comment"
+            onClick={() => setHrComment(value)}
+          >
+            <MessageSquareText className="h-5 w-5 text-primary" />
+          </Button>
         ) : (
           <span className="text-muted-foreground">—</span>
         );
@@ -346,10 +354,12 @@ export default function Leaves() {
               title="View Leave Approval Letter"
               disabled={!myEmployee}
               onClick={() => openLetter(leave)}
+              className="h-12 w-12 p-0"
             >
-              <LeaveLetterPdfIcon className="h-8 w-8" />
+              <LeaveLetterPdfIcon className="h-10 w-10" />
             </Button>
           );
+
         }
         return (
           <AlertDialog>

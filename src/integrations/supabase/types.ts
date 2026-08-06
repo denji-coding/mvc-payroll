@@ -955,6 +955,7 @@ export type Database = {
         Returns: string
       }
       get_employee_by_user: { Args: { _user_id: string }; Returns: string }
+      get_leave_approver_name: { Args: { _leave_id: string }; Returns: string }
       get_user_branch_id: { Args: { _user_id: string }; Returns: string }
       has_any_admin: { Args: never; Returns: boolean }
       has_role: {

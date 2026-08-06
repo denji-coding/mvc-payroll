@@ -369,9 +369,8 @@ export default function Leaves() {
               title="View Leave Approval Letter"
               disabled={!myEmployee}
               onClick={() => openLetter(leave)}
-              className="h-8 w-8 p-0"
             >
-              <LeaveLetterPdfIcon className="h-7 w-7" />
+              <LeaveLetterPdfIcon className="h-5 w-5" />
             </Button>
           );
 

@@ -265,14 +265,19 @@ export default function Leaves() {
     if (!myEmployee) return;
     let approvedByName: string | null = null;
     if (leave.hr_id) {
-      const { data: hrProfile } = await supabase
-        .from("profiles")
-        .select("first_name, middle_name, last_name")
-        .eq("id", leave.hr_id)
-        .maybeSingle();
-      if (hrProfile) {
-        approvedByName =
-          formatFullName(hrProfile.first_name, hrProfile.last_name, null, hrProfile.middle_name) || null;
+      const { data: rpcName } = await supabase.rpc("get_leave_approver_name", { _leave_id: leave.id });
+      if (rpcName) {
+        approvedByName = rpcName as string;
+      } else {
+        const { data: hrProfile } = await supabase
+          .from("profiles")
+          .select("first_name, middle_name, last_name")
+          .eq("id", leave.hr_id)
+          .maybeSingle();
+        if (hrProfile) {
+          approvedByName =
+            formatFullName(hrProfile.first_name, hrProfile.last_name, null, hrProfile.middle_name) || null;
+        }
       }
     }
     setLetterParams({
@@ -283,6 +288,7 @@ export default function Leaves() {
       approvedByName,
     });
   };
+
 
   const columns: ColumnDef<any, any>[] = [
     {

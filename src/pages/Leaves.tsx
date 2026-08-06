@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock } from "lucide-react";
+import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock, MessageSquareText } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, startOfToday, isBefore, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -67,6 +67,8 @@ export default function Leaves() {
   const createLeave = useCreateLeaveRequest();
   const cancelLeave = useCancelLeaveRequest();
   const [letterParams, setLetterParams] = useState<GenerateLeaveApprovalLetterParams | null>(null);
+  const [hrComment, setHrComment] = useState<string | null>(null);
+
 
   const { data: myEmployee } = useQuery({
     queryKey: ["my-employee-letter-info", user?.id],
@@ -265,14 +267,19 @@ export default function Leaves() {
     if (!myEmployee) return;
     let approvedByName: string | null = null;
     if (leave.hr_id) {
-      const { data: hrProfile } = await supabase
-        .from("profiles")
-        .select("first_name, middle_name, last_name")
-        .eq("id", leave.hr_id)
-        .maybeSingle();
-      if (hrProfile) {
-        approvedByName =
-          formatFullName(hrProfile.first_name, hrProfile.last_name, null, hrProfile.middle_name) || null;
+      const { data: rpcName } = await supabase.rpc("get_leave_approver_name", { _leave_id: leave.id });
+      if (rpcName) {
+        approvedByName = rpcName as string;
+      } else {
+        const { data: hrProfile } = await supabase
+          .from("profiles")
+          .select("first_name, middle_name, last_name")
+          .eq("id", leave.hr_id)
+          .maybeSingle();
+        if (hrProfile) {
+          approvedByName =
+            formatFullName(hrProfile.first_name, hrProfile.last_name, null, hrProfile.middle_name) || null;
+        }
       }
     }
     setLetterParams({
@@ -283,6 +290,7 @@ export default function Leaves() {
       approvedByName,
     });
   };
+
 
   const columns: ColumnDef<any, any>[] = [
     {
@@ -311,10 +319,18 @@ export default function Leaves() {
     {
       accessorKey: "hr_remarks",
       header: "HR Comment",
+      enableSorting: false,
       cell: ({ getValue }) => {
         const value = (getValue() as string | null)?.trim();
         return value ? (
-          <span className="block max-w-[220px] break-words">{value}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            title="View HR comment"
+            onClick={() => setHrComment(value)}
+          >
+            <MessageSquareText className="h-5 w-5 text-primary" />
+          </Button>
         ) : (
           <span className="text-muted-foreground">—</span>
         );
@@ -338,10 +354,12 @@ export default function Leaves() {
               title="View Leave Approval Letter"
               disabled={!myEmployee}
               onClick={() => openLetter(leave)}
+              className="h-12 w-12 p-0"
             >
-              <LeaveLetterPdfIcon className="h-8 w-8" />
+              <LeaveLetterPdfIcon className="h-10 w-10" />
             </Button>
           );
+
         }
         return (
           <AlertDialog>
@@ -646,6 +664,16 @@ export default function Leaves() {
         onOpenChange={(open) => !open && setLetterParams(null)}
         params={letterParams}
       />
+
+      <Dialog open={!!hrComment} onOpenChange={(open) => !open && setHrComment(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>HR Comment</DialogTitle>
+          </DialogHeader>
+          <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">{hrComment}</p>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

@@ -19,6 +19,8 @@ import {
   ClipboardList,
   CreditCard,
   ArrowLeftRight,
+  User,
+  LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -395,10 +397,11 @@ export function AppSidebar() {
             <div className="absolute bottom-full left-0 right-0 mb-2 rounded-md border border-sidebar-border bg-popover text-popover-foreground shadow-md py-1 z-50">
               <NavLink
                 to="/profile"
-                className="flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                className={`flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
                 onClick={() => setFooterMenuOpen(false)}
               >
-                My Profile
+                <User className="w-4 h-4" />
+                {!collapsed && <span>My Profile</span>}
               </NavLink>
               {actualRole === "hr_admin" && (
                 <>
@@ -426,9 +429,10 @@ export function AppSidebar() {
                   setFooterMenuOpen(false);
                   signOut();
                 }}
-                className="w-full flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer"
+                className={`w-full flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer ${collapsed ? "justify-center gap-2" : "justify-start gap-2"}`}
               >
-                Sign Out
+                <LogOut className="w-4 h-4" />
+                <span>Log Out</span>
               </button>
             </div>
           )}

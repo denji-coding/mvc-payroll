@@ -400,7 +400,7 @@ export function AppSidebar() {
                 <TooltipTrigger asChild>
                   <NavLink
                     to="/profile"
-                    className={`flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
+                    className={`flex items-center px-[5px] py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
                     onClick={() => setFooterMenuOpen(false)}
                   >
                     <User className="w-5 h-5" />

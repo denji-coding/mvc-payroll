@@ -414,21 +414,30 @@ export function AppSidebar() {
               {actualRole === "hr_admin" && (
                 <>
                   <div className="h-px bg-border my-1" />
-                  <button
-                    onClick={() => {
-                      if (isViewingSwitched) {
-                        switchToAdmin();
-                      } else {
-                        switchToEmployee();
-                      }
-                      setFooterMenuOpen(false);
-                      navigate("/");
-                    }}
-                    className="w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                  >
-                    <ArrowLeftRight className="w-5 h-5 mr-2" />
-                    {isViewingSwitched ? "Back to Admin Portal" : "Switch to Employee Portal"}
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => {
+                          if (isViewingSwitched) {
+                            switchToAdmin();
+                          } else {
+                            switchToEmployee();
+                          }
+                          setFooterMenuOpen(false);
+                          navigate("/");
+                        }}
+                        className={`w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
+                      >
+                        <ArrowLeftRight className="w-5 h-5" />
+                        {!collapsed && (
+                          <span>{isViewingSwitched ? "Back to Admin Portal" : "Switch to Employee Portal"}</span>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" align="center" hidden={!collapsed || isMobile}>
+                      {isViewingSwitched ? "Back to Admin Portal" : "Switch to Employee Portal"}
+                    </TooltipContent>
+                  </Tooltip>
                 </>
               )}
               <div className="h-px bg-border my-1" />

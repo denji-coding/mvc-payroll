@@ -396,14 +396,21 @@ export function AppSidebar() {
           </button>
           {footerMenuOpen && (
             <div className="absolute bottom-full left-0 right-0 mb-2 rounded-md border border-sidebar-border bg-popover text-popover-foreground shadow-md py-1 z-50">
-              <NavLink
-                to="/profile"
-                className={`flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
-                onClick={() => setFooterMenuOpen(false)}
-              >
-                <User className="w-4 h-4" />
-                {!collapsed && <span>My Profile</span>}
-              </NavLink>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <NavLink
+                    to="/profile"
+                    className={`flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
+                    onClick={() => setFooterMenuOpen(false)}
+                  >
+                    <User className="w-5 h-5" />
+                    {!collapsed && <span>My Profile</span>}
+                  </NavLink>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center" hidden={!collapsed || isMobile}>
+                  My Profile
+                </TooltipContent>
+              </Tooltip>
               {actualRole === "hr_admin" && (
                 <>
                   <div className="h-px bg-border my-1" />
@@ -419,22 +426,29 @@ export function AppSidebar() {
                     }}
                     className="w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
                   >
-                    <ArrowLeftRight className="w-4 h-4 mr-2" />
+                    <ArrowLeftRight className="w-5 h-5 mr-2" />
                     {isViewingSwitched ? "Back to Admin Portal" : "Switch to Employee Portal"}
                   </button>
                 </>
               )}
               <div className="h-px bg-border my-1" />
-              <button
-                onClick={() => {
-                  setFooterMenuOpen(false);
-                  signOut();
-                }}
-                className={`w-full flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
-              >
-                <LogOut className="w-4 h-4" />
-                {!collapsed && <span>Log Out</span>}
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      setFooterMenuOpen(false);
+                      signOut();
+                    }}
+                    className={`w-full flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
+                  >
+                    <LogOut className="w-5 h-5" />
+                    {!collapsed && <span>Log Out</span>}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center" hidden={!collapsed || isMobile}>
+                  Log Out
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
         </div>

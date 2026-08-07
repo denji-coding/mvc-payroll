@@ -19,6 +19,8 @@ import {
   ClipboardList,
   CreditCard,
   ArrowLeftRight,
+  User,
+  LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";

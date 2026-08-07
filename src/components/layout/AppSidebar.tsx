@@ -429,10 +429,10 @@ export function AppSidebar() {
                   setFooterMenuOpen(false);
                   signOut();
                 }}
-                className={`w-full flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer ${collapsed ? "justify-center gap-2" : "justify-start gap-2"}`}
+                className={`w-full flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
               >
                 <LogOut className="w-4 h-4" />
-                <span>Log Out</span>
+                {!collapsed && <span>Log Out</span>}
               </button>
             </div>
           )}

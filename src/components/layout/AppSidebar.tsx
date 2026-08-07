@@ -426,7 +426,7 @@ export function AppSidebar() {
                           setFooterMenuOpen(false);
                           navigate("/");
                         }}
-                        className={`w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
+                        className={`w-full flex items-center px-[5px] py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
                       >
                         <ArrowLeftRight className="w-5 h-5" />
                         {!collapsed && (
@@ -448,7 +448,7 @@ export function AppSidebar() {
                       setFooterMenuOpen(false);
                       signOut();
                     }}
-                    className={`w-full flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
+                    className={`w-full flex items-center px-[5px] py-2 text-sm text-destructive hover:bg-accent cursor-pointer ${collapsed ? "justify-center" : "justify-start gap-2"}`}
                   >
                     <LogOut className="w-5 h-5" />
                     {!collapsed && <span>Log Out</span>}

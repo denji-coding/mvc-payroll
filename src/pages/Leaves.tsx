@@ -681,8 +681,6 @@ export default function Leaves() {
             />
           )}
         </CardContent>
-
-        </CardContent>
       </Card>
 
       <LeaveApprovalLetterDialog

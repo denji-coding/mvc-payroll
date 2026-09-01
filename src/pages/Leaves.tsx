@@ -26,6 +26,138 @@ import { useCompanyInfo } from "@/hooks/useCompanyInfo";
 import { LeaveLetterPdfIcon } from "@/components/icons/LeaveLetterPdfIcon";
 import { LeaveApprovalLetterDialog } from "@/components/leaves/LeaveApprovalLetterDialog";
 import type { GenerateLeaveApprovalLetterParams } from "@/lib/generateLeaveApprovalLetter";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+interface MobileLeaveListProps {
+  leaves: any[];
+  getStatusBadge: (status: string) => JSX.Element;
+  onViewComment: (comment: string) => void;
+  onViewLetter: (leave: any) => void;
+  onCancel: (id: string) => void;
+  cancelling: boolean;
+  canOpenLetter: boolean;
+}
+
+function MobileLeaveList({
+  leaves,
+  getStatusBadge,
+  onViewComment,
+  onViewLetter,
+  onCancel,
+  cancelling,
+  canOpenLetter,
+}: MobileLeaveListProps) {
+  if (!leaves.length) {
+    return <div className="text-center py-8 text-muted-foreground">No leave requests found</div>;
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 text-sm text-primary font-medium">
+        <CalendarDays className="h-4 w-4" />
+        {leaves.length} leave request{leaves.length === 1 ? "" : "s"} found
+      </div>
+
+      {leaves.map((leave: any) => {
+        const comment = (leave.hr_remarks as string | null)?.trim();
+        const isApproved = leave.status === "hr_approved";
+        const isRejected = leave.status === "rejected";
+        const canCancel = leave.status === "pending";
+        return (
+          <div key={leave.id} className="rounded-lg border bg-card shadow-sm p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-bold capitalize break-words">{leave.leave_type}</p>
+                <p className="text-sm text-muted-foreground capitalize">
+                  {((leave.pay_type as string) || "with_pay").replace("_", " ")}
+                </p>
+                <div className="mt-3 space-y-1.5 text-sm">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span>
+                      {format(new Date(leave.start_date + "T00:00:00"), "MMM d, yyyy")} –{" "}
+                      {format(new Date(leave.end_date + "T00:00:00"), "MMM d, yyyy")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span>
+                      {leave.total_days} day{Number(leave.total_days) === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-stretch gap-2 sm:w-[52%] sm:border-l sm:pl-4">
+                <div className="flex">{getStatusBadge(leave.status)}</div>
+                <div className="flex flex-wrap gap-2">
+                  {comment && (
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "flex-1 min-w-[130px]",
+                        isRejected && "border-destructive text-destructive hover:text-destructive",
+                      )}
+                      onClick={() => onViewComment(comment)}
+                    >
+                      <MessageSquareText className="h-4 w-4 mr-2" />
+                      HR Comment
+                    </Button>
+                  )}
+                  {isApproved && (
+                    <Button
+                      className="flex-1 min-w-[130px]"
+                      disabled={!canOpenLetter}
+                      onClick={() => onViewLetter(leave)}
+                    >
+                      <LeaveLetterPdfIcon className="h-4 w-4 mr-2" />
+                      View PDF
+                    </Button>
+                  )}
+                  {canCancel && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="flex-1 min-w-[130px] border-destructive text-destructive hover:text-destructive"
+                          disabled={cancelling}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Cancel Leave Request?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will cancel your {leave.leave_type} leave request (
+                            {format(new Date(leave.start_date + "T00:00:00"), "MMM d")} -{" "}
+                            {format(new Date(leave.end_date + "T00:00:00"), "MMM d, yyyy")}). This action cannot be
+                            undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Keep Request</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => onCancel(leave.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {cancelling ? "Cancelling..." : "Cancel Request"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 
 const LEAVE_TYPE_ICON_MAP: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string }> = {
   sick: { icon: Heart, color: "text-destructive" },

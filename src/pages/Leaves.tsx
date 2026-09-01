@@ -662,6 +662,16 @@ export default function Leaves() {
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : isMobile ? (
+            <MobileLeaveList
+              leaves={filteredLeaves}
+              getStatusBadge={getStatusBadge}
+              onViewComment={setHrComment}
+              onViewLetter={openLetter}
+              onCancel={(id) => cancelLeave.mutate(id)}
+              cancelling={cancelLeave.isPending}
+              canOpenLetter={!!myEmployee}
+            />
           ) : (
             <DataTable
               columns={columns}
@@ -670,6 +680,8 @@ export default function Leaves() {
               emptyMessage="No leave requests found"
             />
           )}
+        </CardContent>
+
         </CardContent>
       </Card>
 

@@ -59,6 +59,8 @@ const findCreditForLeaveType = (leaveTypeName: string, leaveCredits?: any[]) => 
 
 export default function Leaves() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+
   const { data: myLeaves, isLoading } = useMyLeaveRequests();
   const { data: credits } = useLeaveCredits();
   const { data: leaveTypes } = useLeaveTypes();

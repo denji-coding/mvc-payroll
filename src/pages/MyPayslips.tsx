@@ -14,6 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { FileText, Download, Calendar, PhilippinePeso, TrendingUp, TrendingDown, Eye } from 'lucide-react';
 import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobilePayslipList } from '@/components/payslips/MobilePayslipList';
 
 const currentYear = new Date().getFullYear();
 const startYear = 2020;

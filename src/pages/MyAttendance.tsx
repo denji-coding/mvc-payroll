@@ -10,6 +10,8 @@ import { useEmployeeAttendance } from '@/hooks/useAttendance';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, isBefore, isToday, subMonths, addMonths } from 'date-fns';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileAttendanceList } from '@/components/attendance/MobileAttendanceList';
 
 export default function MyAttendance() {
   const [currentTime, setCurrentTime] = useState(new Date());

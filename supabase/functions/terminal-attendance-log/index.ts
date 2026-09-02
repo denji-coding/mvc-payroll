@@ -41,7 +41,7 @@ serve(async (req) => {
 
     const { data, error } = await supabase
       .from('attendance')
-      .select('*, employees(first_name, last_name, employee_id, position, avatar_url)')
+      .select('*, employees(first_name, middle_name, last_name, suffix_name, employee_id, position, avatar_url)')
       .eq('date', today)
       .order('updated_at', { ascending: false })
       .limit(50);

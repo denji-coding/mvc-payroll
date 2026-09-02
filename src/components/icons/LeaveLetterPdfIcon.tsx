@@ -6,29 +6,69 @@ export function LeaveLetterPdfIcon({ className }: Props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      shapeRendering="geometricPrecision"
-      textRendering="geometricPrecision"
-      imageRendering="optimizeQuality"
-      fillRule="evenodd"
-      clipRule="evenodd"
-      viewBox="0 0 424 511.54"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+      version="1.1"
+      width="256"
+      height="256"
+      viewBox="0 0 256 256"
+      xmlSpace="preserve"
       className={className}
       aria-hidden="true"
     >
-      <path
-        fill="#262626"
-        fillRule="nonzero"
-        d="M86.37 413.44c-11.76 0-11.76-17.89 0-17.89H189.1c-.2 2.95-.31 5.93-.31 8.94s.11 5.99.31 8.95H86.37zm35.31-167.09H104.5v19.96H78.08v-82.59h41.62c18.94 0 28.41 10.17 28.41 30.52 0 11.19-2.47 19.47-7.4 24.84-1.85 2.03-4.41 3.75-7.66 5.16-3.26 1.41-7.05 2.11-11.37 2.11zm-17.18-41.49v20.35h6.08c3.17 0 5.49-.33 6.94-.99 1.45-.66 2.18-2.18 2.18-4.56v-9.25c0-2.38-.73-3.9-2.18-4.56-1.45-.66-3.77-.99-6.94-.99h-6.08zm53.52 61.45v-82.59h37c14.89 0 25.11 3.17 30.66 9.51 5.55 6.34 8.32 16.94 8.32 31.78 0 14.85-2.77 25.44-8.32 31.78-5.55 6.34-15.77 9.52-30.66 9.52h-37zm37.4-61.45h-10.97v40.3h10.97c3.61 0 6.23-.41 7.86-1.25 1.63-.84 2.44-2.75 2.44-5.75v-26.3c0-2.99-.81-4.91-2.44-5.74-1.63-.84-4.25-1.26-7.86-1.26zm98.71 30.79h-22.47v30.66h-26.43v-82.59h54.18l-3.3 21.14h-24.45v11.1h22.47v19.69zM265.81 24.26v29.1c0 65.66 15.31 69.47 69.08 69.47h22.03l-91.11-98.57zm94.33 115.92h-21.48c-61.02 0-90.2-4.09-90.2-86.28V17.35H56.82c-21.7 0-39.47 17.78-39.47 39.47v264.79H219.2c-4.64 5.47-8.83 11.34-12.51 17.54H17.35v89.83c0 21.62 17.85 39.47 39.47 39.47h149.04c3.53 6.12 7.56 11.92 12.02 17.34H56.82C25.63 485.79 0 460.17 0 428.98V56.82C0 25.55 25.55 0 56.82 0h206.33a8.68 8.68 0 016.93 3.45l105.07 113.68c2.19 2.37 2.34 4.66 2.34 7.52v166.86c-5.55-2.98-11.35-5.56-17.35-7.71V140.18z"
-      />
-      <path
-        fill="red"
-        d="M316.95 297.45c59.12 0 107.05 47.93 107.05 107.05 0 59.11-47.93 107.04-107.05 107.04S209.9 463.61 209.9 404.5c0-59.12 47.93-107.05 107.05-107.05z"
-      />
-      <path
-        fill="#fff"
-        fillRule="nonzero"
-        d="M337.9 356.54l-3.77 47.75 17.35-6.07c11.47-4.4 23.27 3.72 14.38 13.82-10.82 12.45-27.26 29.55-39.22 40.94-7.43 7.42-11.73 7.49-19.18.06-13.24-13-26.24-27.44-39.18-40.87-9.25-10.06 2.3-18.55 14.28-13.95l17.16 6.01c-1.25-16.28-2.82-31.84-3.77-48.1 0-2.99 2.5-5.39 5.42-5.61 10.31 0 20.84-.24 31.12 0 2.92.22 5.42 2.62 5.42 5.61l-.01.41z"
-      />
+      <g
+        style={{ stroke: "none", strokeWidth: 0, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "none", fillRule: "nonzero", opacity: 1 }}
+        transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)"
+      >
+        <path
+          d="M 78.806 62.716 V 20.496 c 0 -1.214 -0.473 -2.356 -1.332 -3.216 L 61.526 1.332 C 60.667 0.473 59.525 0 58.31 0 H 15.742 c -2.508 0 -4.548 2.04 -4.548 4.548 V 43.16 v 19.556 C 34.114 65.376 56.665 65.47 78.806 62.716 z"
+          style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(255,255,255)", fillRule: "nonzero", opacity: 1 }}
+          transform=" matrix(1 0 0 1 0 0) "
+          strokeLinecap="round"
+        />
+        <path
+          d="M 11.194 62.716 v 11.23 v 11.506 c 0 2.508 2.04 4.548 4.548 4.548 h 58.517 c 2.508 0 4.548 -2.04 4.548 -4.548 V 62.716 H 11.194 z"
+          style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(234,84,64)", fillRule: "nonzero", opacity: 1 }}
+          transform=" matrix(1 0 0 1 0 0) "
+          strokeLinecap="round"
+        />
+        <polygon points="60.27,18.41 78.81,36.88 78.73,19.73 " style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(230,230,230)", fillRule: "nonzero", opacity: 1 }} transform="  matrix(1 0 0 1 0 0) " />
+        <path
+          d="M 77.474 17.28 L 61.526 1.332 c -0.675 -0.676 -1.529 -1.102 -2.453 -1.258 v 15.382 c 0 2.358 1.919 4.277 4.277 4.277 h 15.382 C 78.576 18.81 78.15 17.956 77.474 17.28 z"
+          style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(194,194,194)", fillRule: "nonzero", opacity: 1 }}
+          transform=" matrix(1 0 0 1 0 0) "
+          strokeLinecap="round"
+        />
+        <path
+          d="M 33.092 68.321 h -4.374 c -0.69 0 -1.25 0.56 -1.25 1.25 v 8.091 v 5.541 c 0 0.69 0.56 1.25 1.25 1.25 s 1.25 -0.56 1.25 -1.25 v -4.291 h 3.124 c 2.254 0 4.088 -1.834 4.088 -4.088 v -2.415 C 37.18 70.155 35.346 68.321 33.092 68.321 z M 34.68 74.824 c 0 0.876 -0.712 1.588 -1.588 1.588 h -3.124 v -5.591 h 3.124 c 0.876 0 1.588 0.712 1.588 1.588 V 74.824 z"
+          style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(255,255,255)", fillRule: "nonzero", opacity: 1 }}
+          transform=" matrix(1 0 0 1 0 0) "
+          strokeLinecap="round"
+        />
+        <path
+          d="M 45.351 84.453 H 41.27 c -0.69 0 -1.25 -0.56 -1.25 -1.25 V 69.571 c 0 -0.69 0.56 -1.25 1.25 -1.25 h 4.082 c 2.416 0 4.38 1.965 4.38 4.38 v 7.371 C 49.731 82.488 47.767 84.453 45.351 84.453 z M 42.52 81.953 h 2.832 c 1.037 0 1.88 -0.844 1.88 -1.881 v -7.371 c 0 -1.036 -0.844 -1.88 -1.88 -1.88 H 42.52 V 81.953 z"
+          style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(255,255,255)", fillRule: "nonzero", opacity: 1 }}
+          transform=" matrix(1 0 0 1 0 0) "
+          strokeLinecap="round"
+        />
+        <path
+          d="M 61.282 68.321 H 54.07 c -0.69 0 -1.25 0.56 -1.25 1.25 v 13.632 c 0 0.69 0.56 1.25 1.25 1.25 s 1.25 -0.56 1.25 -1.25 v -5.566 h 3.473 c 0.69 0 1.25 -0.56 1.25 -1.25 s -0.56 -1.25 -1.25 -1.25 H 55.32 v -4.315 h 5.962 c 0.69 0 1.25 -0.56 1.25 -1.25 S 61.973 68.321 61.282 68.321 z"
+          style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(255,255,255)", fillRule: "nonzero", opacity: 1 }}
+          transform=" matrix(1 0 0 1 0 0) "
+          strokeLinecap="round"
+        />
+        <path
+          d="M 60.137 40.012 c -0.154 -0.374 -0.52 -0.617 -0.924 -0.617 h -4.805 V 27.616 c 0 -0.552 -0.447 -1 -1 -1 H 40.592 c -0.552 0 -1 0.448 -1 1 v 11.778 h -4.805 c -0.404 0 -0.769 0.244 -0.924 0.617 c -0.155 0.374 -0.069 0.804 0.217 1.09 l 12.213 12.213 c 0.195 0.195 0.451 0.293 0.707 0.293 s 0.512 -0.098 0.707 -0.293 L 59.92 41.102 C 60.206 40.815 60.292 40.386 60.137 40.012 z"
+          style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(230,230,230)", fillRule: "nonzero", opacity: 1 }}
+          transform=" matrix(1 0 0 1 0 0) "
+          strokeLinecap="round"
+        />
+        <path
+          d="M 58.137 38.012 c -0.154 -0.374 -0.52 -0.617 -0.924 -0.617 h -4.805 V 25.616 c 0 -0.552 -0.447 -1 -1 -1 H 38.592 c -0.552 0 -1 0.448 -1 1 v 11.778 h -4.805 c -0.404 0 -0.769 0.244 -0.924 0.617 c -0.155 0.374 -0.069 0.804 0.217 1.09 l 12.213 12.213 c 0.195 0.195 0.451 0.293 0.707 0.293 s 0.512 -0.098 0.707 -0.293 L 57.92 39.102 C 58.206 38.815 58.292 38.386 58.137 38.012 z"
+          style={{ stroke: "none", strokeWidth: 1, strokeDasharray: "none", strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 10, fill: "rgb(234,84,64)", fillRule: "nonzero", opacity: 1 }}
+          transform=" matrix(1 0 0 1 0 0) "
+          strokeLinecap="round"
+        />
+      </g>
     </svg>
   );
 }

@@ -19,6 +19,21 @@ interface TerminalSettings {
   allow_manual_entry: boolean;
 }
 
+function capitalizeWords(name?: string | null): string {
+  if (!name) return '';
+  return name.trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+}
+
+function formatEmployeeName(e: { first_name?: string | null; middle_name?: string | null; last_name?: string | null; suffix_name?: string | null }): string {
+  const first = capitalizeWords(e.first_name);
+  const last = capitalizeWords(e.last_name);
+  const mid = (e.middle_name || '').trim();
+  const mi = mid ? `${mid.charAt(0).toUpperCase()}.` : '';
+  const sufRaw = (e.suffix_name || '').trim();
+  const suf = sufRaw ? (/^[ivxlcdm]+\.?$/i.test(sufRaw) ? sufRaw.toUpperCase() : capitalizeWords(sufRaw)) : '';
+  return [first, mi, last, suf].filter(Boolean).join(' ');
+}
+
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
   return h * 60 + (m || 0);
@@ -79,7 +94,7 @@ serve(async (req) => {
 
     let employeeQuery = supabase
       .from('employees')
-      .select('id, first_name, last_name, employee_id, branch_id')
+      .select('id, first_name, middle_name, last_name, suffix_name, employee_id, branch_id')
       .eq('employment_status', 'active');
 
     if (rfid_card_number) {
@@ -183,7 +198,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'Currently on leave',
-          employee_name: `${employee.first_name} ${employee.last_name}`,
+          employee_name: formatEmployeeName(employee),
           message: `You are on ${activeLeave.leave_type} leave until ${activeLeave.end_date}. Attendance is not required.`,
         }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -203,7 +218,7 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({
             error: 'No schedule assigned',
-            employee_name: `${employee.first_name} ${employee.last_name}`,
+            employee_name: formatEmployeeName(employee),
             message: 'No time schedule has been assigned yet. Please contact HR.'
           }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -213,7 +228,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'No duty today',
-          employee_name: `${employee.first_name} ${employee.last_name}`,
+          employee_name: formatEmployeeName(employee),
           message: 'You are not scheduled to work today.'
         }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -224,7 +239,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'No duty today',
-          employee_name: `${employee.first_name} ${employee.last_name}`,
+          employee_name: formatEmployeeName(employee),
           message: 'You are not scheduled to work today.'
         }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -388,7 +403,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'Already completed attendance for today',
-          employee_name: `${employee.first_name} ${employee.last_name}`,
+          employee_name: formatEmployeeName(employee),
           morning_in: existingRecord.morning_in,
           morning_out: existingRecord.morning_out,
           afternoon_in: existingRecord.afternoon_in,
@@ -413,7 +428,7 @@ serve(async (req) => {
         action,
         action_label: actionLabels[action],
         employee_id: employee.employee_id,
-        employee_name: `${employee.first_name} ${employee.last_name}`,
+        employee_name: formatEmployeeName(employee),
         timestamp: currentTime,
         record: result,
       }),

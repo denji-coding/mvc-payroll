@@ -14,6 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { FileText, Download, Calendar, PhilippinePeso, TrendingUp, TrendingDown, Eye } from 'lucide-react';
 import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobilePayslipList } from '@/components/payslips/MobilePayslipList';
 
 const currentYear = new Date().getFullYear();
 const startYear = 2020;
@@ -23,6 +25,7 @@ export default function MyPayslips() {
   const { user } = useAuth();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [viewRecord, setViewRecord] = useState<any>(null);
+  const isMobile = useIsMobile();
 
   const { data: employee, isLoading: employeeLoading } = useQuery({
     queryKey: ['my-employee-record', user?.id],
@@ -130,7 +133,9 @@ export default function MyPayslips() {
       <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Payroll History</CardTitle><CardDescription>{approvedRecords.length} payslip(s) available for {selectedYear}</CardDescription></CardHeader>
         <CardContent>
-          {payrollLoading ? <div className="space-y-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}</div> : (
+          {payrollLoading ? <div className="space-y-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}</div> : isMobile ? (
+            <MobilePayslipList records={payrollRecords || []} selectedYear={selectedYear} onView={setViewRecord} onDownload={handleDownloadPayslip} />
+          ) : (
             <DataTable columns={columns} data={payrollRecords || []} searchable={false} emptyMessage={`No payslips found for ${selectedYear}`} />
           )}
         </CardContent>

@@ -17,6 +17,7 @@ export default function MyAttendance() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const { data, isLoading } = useTodayAttendance();
+  const isMobile = useIsMobile();
 
   const employeeId = data?.employeeId;
   const filterStart = format(startOfMonth(selectedMonth), 'yyyy-MM-dd');
@@ -268,7 +269,16 @@ export default function MyAttendance() {
           </div>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={recentAttendance || []} searchPlaceholder="Search attendance..." emptyMessage="No attendance records found" />
+          {isMobile ? (
+            <MobileAttendanceList
+              records={recentAttendance || []}
+              formatTime={formatTime}
+              getStatusBadge={getStatusBadge}
+              isHalfDayRecord={isHalfDayRecord}
+            />
+          ) : (
+            <DataTable columns={columns} data={recentAttendance || []} searchPlaceholder="Search attendance..." emptyMessage="No attendance records found" />
+          )}
         </CardContent>
       </Card>
     </div>

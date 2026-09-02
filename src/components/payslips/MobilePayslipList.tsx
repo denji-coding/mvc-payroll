@@ -71,10 +71,10 @@ export function MobilePayslipList({ records, selectedYear, onView, onDownload }:
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               <Button variant="outline" className="w-full" onClick={() => onView(r)}>
-                <Eye className="h-4 w-4 mr-2" /> View Payslip
+                <Eye className="h-4 w-4 mr-2" /> View
               </Button>
               <Button className="w-full" disabled={!canDownload} onClick={() => onDownload(r)}>
-                <Download className="h-4 w-4 mr-2" /> {canDownload ? 'Download PDF' : 'Pending'}
+                <Download className="h-4 w-4 mr-2" /> {canDownload ? 'Download' : 'Pending'}
               </Button>
             </div>
           </div>

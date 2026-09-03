@@ -110,7 +110,6 @@ function MobileLeaveList({
                       disabled={!canOpenLetter}
                       onClick={() => onViewLetter(leave)}
                     >
-                      <img src={pdfViewIcon.url} alt="View" className="h-4 w-4 mr-2" />
                       View
                     </Button>
                   )}

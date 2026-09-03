@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { DataTable, ColumnDef } from "@/components/ui/data-table";
 import { useQuery } from "@tanstack/react-query";
 import { useCompanyInfo } from "@/hooks/useCompanyInfo";
-import { LeaveLetterPdfIcon } from "@/components/icons/LeaveLetterPdfIcon";
+import pdfViewIcon from "@/assets/pdf-view-icon.png.asset.json";
 import { LeaveApprovalLetterDialog } from "@/components/leaves/LeaveApprovalLetterDialog";
 import type { GenerateLeaveApprovalLetterParams } from "@/lib/generateLeaveApprovalLetter";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -110,8 +110,8 @@ function MobileLeaveList({
                       disabled={!canOpenLetter}
                       onClick={() => onViewLetter(leave)}
                     >
-                      <LeaveLetterPdfIcon className="h-4 w-4 mr-2" />
-                      View PDF
+                      <img src={pdfViewIcon.url} alt="View" className="h-4 w-4 mr-2" />
+                      View
                     </Button>
                   )}
                   {canCancel && (
@@ -504,7 +504,7 @@ export default function Leaves() {
               disabled={!myEmployee}
               onClick={() => openLetter(leave)}
             >
-              <LeaveLetterPdfIcon className="h-5 w-5" />
+              <img src={pdfViewIcon.url} alt="View Leave Approval Letter" className="h-5 w-5" />
             </Button>
           );
 

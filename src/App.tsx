@@ -8,6 +8,7 @@ import { ViewModeProvider } from "@/hooks/useViewMode";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import companyLogo from "@/assets/company-logo.png";
 
 // Pages

@@ -6,12 +6,7 @@ import { Download, Loader2, ExternalLink } from 'lucide-react';
 import { PdfReportDocument, PdfReportProps } from './PdfReportDocument';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
-// @ts-ignore
-import * as pdfjsLib from 'pdfjs-dist';
-// @ts-ignore
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+import { loadPdfJs } from '@/lib/pdfjs';
 
 interface Props extends PdfReportProps {
   open: boolean;
@@ -68,6 +63,8 @@ export function PdfReportPreviewDialog({ open, onOpenChange, fileName, ...docPro
     (async () => {
       try {
         const buffer = await blob.arrayBuffer();
+        if (cancelled) return;
+        const pdfjsLib = await loadPdfJs();
         if (cancelled) return;
         const pdfDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
         const container = canvasContainerRef.current;

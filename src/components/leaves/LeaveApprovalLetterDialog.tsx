@@ -8,12 +8,7 @@ import {
   generateLeaveApprovalLetterBlob,
   leaveApprovalLetterFileName,
 } from '@/lib/generateLeaveApprovalLetter';
-// @ts-ignore
-import * as pdfjsLib from 'pdfjs-dist';
-// @ts-ignore
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+import { loadPdfJs } from '@/lib/pdfjs';
 
 interface Props {
   open: boolean;
@@ -70,6 +65,8 @@ export function LeaveApprovalLetterDialog({ open, onOpenChange, params }: Props)
     (async () => {
       try {
         const buffer = await blob.arrayBuffer();
+        if (cancelled) return;
+        const pdfjsLib = await loadPdfJs();
         if (cancelled) return;
         const pdfDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
         const container = canvasContainerRef.current;

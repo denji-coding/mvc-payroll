@@ -503,7 +503,7 @@ export default function Leaves() {
               disabled={!myEmployee}
               onClick={() => openLetter(leave)}
             >
-              <img src={pdfViewIcon.url} alt="View Leave Approval Letter" className="h-5 w-5" />
+              <LeaveLetterPdfIcon className="h-5 w-5" />
             </Button>
           );
 

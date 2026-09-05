@@ -66,7 +66,7 @@ export default function Positions() {
         const position = row.original;
         return (
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" onClick={() => openEditDialog(position)}><Edit className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => openEditDialog(position)}><Edit className="h-4 w-4 text-primary" /></Button>
             <AlertDialog>
               <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
               <AlertDialogContent>

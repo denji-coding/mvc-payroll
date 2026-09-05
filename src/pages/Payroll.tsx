@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2, Printer } from 'lucide-react';
 import { generatePayrollSummaryPdf } from '@/lib/generatePayrollSummaryPdf';
+import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { SalaryCalculator } from '@/components/payroll/SalaryCalculator';
 import { ManualPayrollDialog } from '@/components/payroll/ManualPayrollDialog';
 import { usePayrollPeriods, usePayrollRecords, useCreatePayrollPeriod, useRunPayroll, useApprovePayroll, useDeletePayrollPeriod, useDeletePayrollRecord } from '@/hooks/usePayroll';
@@ -269,7 +270,7 @@ export default function Payroll() {
               ) : <p className="text-muted-foreground text-center py-8">Select a payroll period</p>}
             </CardContent>
           </Card>
-          {viewPayslip && <PayslipDialog record={viewPayslip} onClose={() => setViewPayslip(null)} formatCurrency={formatCurrency} periodStatus={selectedPeriodData?.status} />}
+          {viewPayslip && <PayslipDialog record={viewPayslip} onClose={() => setViewPayslip(null)} formatCurrency={formatCurrency} periodStatus={selectedPeriodData?.status} period={selectedPeriodData} />}
           {selectedPeriod && <ManualPayrollDialog periodId={selectedPeriod} open={manualPayrollOpen} onClose={() => { setManualPayrollOpen(false); setEditingRecord(null); }} editRecord={editingRecord} />}
         </TabsContent>
 
@@ -283,7 +284,7 @@ export default function Payroll() {
   );
 }
 
-function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { record: any; onClose: () => void; formatCurrency: (n: number | null) => string; periodStatus?: string }) {
+function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus, period }: { record: any; onClose: () => void; formatCurrency: (n: number | null) => string; periodStatus?: string; period?: any }) {
   const canDownload = periodStatus === 'approved' || periodStatus === 'paid';
 
   // Parse allowances_breakdown for LWP display
@@ -307,13 +308,39 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus }: { r
   const lwopEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('without pay'));
 
   const handleDownload = () => {
-    const lateHtml = lateEntries.length > 0
-      ? lateEntries.map(([key, value]) => `<div class="row"><span>${key}</span><span>${formatCurrency(value)}</span></div>`).join('')
-      : (r.other_deductions || 0) > 0 ? `<div class="row"><span>Late Deduction</span><span>${formatCurrency(r.other_deductions)}</span></div>` : '';
-    const employeeName = formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name);
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip - ${employeeName}</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto}.header{text-align:center;margin-bottom:30px;border-bottom:2px solid #333;padding-bottom:20px}.header h1{margin:0;color:#333}.section{margin-bottom:20px}.section h3{margin:0 0 10px;padding:5px;background:#f5f5f5}.details{margin-bottom:20px;font-size:13px}.details div{padding:3px 0}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee}.row.total{font-weight:bold;border-top:2px solid #333;margin-top:10px;padding-top:10px}.net-pay{text-align:center;background:#f0f7ff;padding:20px;border-radius:8px;margin-top:20px}.net-pay .amount{font-size:28px;font-weight:bold;color:#0066cc}</style></head><body><div class="header"><h1>MVC Corporation</h1><p>PAYSLIP</p></div><div class="details"><div><strong>Employee:</strong> ${employeeName}</div><div><strong>Employee ID:</strong> ${r.employees?.employee_id || 'N/A'}</div><div><strong>Days Worked:</strong> ${Number(r.days_worked || 0)}</div><div><strong>Leave with Pay:</strong> ${lwpDaysLabel}</div></div><div class="section"><h3 style="color:#22c55e">Earnings</h3><div class="row"><span>Basic Pay</span><span>${formatCurrency(r.basic_pay)}</span></div><div class="row"><span>Leave with Pay (${lwpDaysLabel})</span><span>${formatCurrency(lwpAmount)}</span></div><div class="row total"><span>Gross</span><span>${formatCurrency(r.gross_pay)}</span></div></div><div class="section"><h3 style="color:#ef4444">Deductions</h3><div class="row"><span>SSS</span><span>${formatCurrency(r.sss_contribution)}</span></div><div class="row"><span>PhilHealth</span><span>${formatCurrency(r.philhealth_contribution)}</span></div><div class="row"><span>Pag-IBIG</span><span>${formatCurrency(r.pagibig_contribution)}</span></div>${lateHtml}<div class="row total"><span>Total</span><span>${formatCurrency(r.total_deductions)}</span></div></div><div class="net-pay"><p style="margin:0 0 5px;color:#666">Net Pay</p><p class="amount" style="margin:0">${formatCurrency(r.net_pay)}</p></div></body></html>`;
-    const blob = new Blob([html], { type: 'text/html' }); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `payslip-${r.employees?.last_name || 'employee'}.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    const emp = r.employees || {};
+    generatePayslipPdf({
+      employee: {
+        employee_id: emp.employee_id,
+        first_name: emp.first_name,
+        middle_name: emp.middle_name,
+        last_name: emp.last_name,
+        suffix_name: emp.suffix_name,
+        position: emp.position,
+      },
+      payroll: {
+        period_start: period?.period_start || r.payroll_periods?.period_start,
+        period_end: period?.period_end || r.payroll_periods?.period_end,
+        pay_date: period?.pay_date || r.payroll_periods?.pay_date,
+        basic_pay: Number(r.basic_pay || 0),
+        days_worked: Number(r.days_worked || 0),
+        overtime_pay: Number(r.overtime_pay || 0),
+        holiday_pay: Number(r.holiday_pay || 0),
+        night_differential: Number(r.night_differential || 0),
+        total_allowances: Number(r.total_allowances || 0),
+        allowances_breakdown: allowancesBreakdown,
+        gross_pay: Number(r.gross_pay || 0),
+        sss_contribution: Number(r.sss_contribution || 0),
+        philhealth_contribution: Number(r.philhealth_contribution || 0),
+        pagibig_contribution: Number(r.pagibig_contribution || 0),
+        withholding_tax: Number(r.withholding_tax || 0),
+        other_deductions: Number(r.other_deductions || 0),
+        deductions_breakdown: deductionsBreakdown,
+        total_deductions: Number(r.total_deductions || 0),
+        net_pay: Number(r.net_pay || 0),
+      },
+      dailyRate: emp.basic_salary ? Number(emp.basic_salary) : undefined,
+    });
   };
 
   return (

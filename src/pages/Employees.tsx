@@ -128,11 +128,11 @@ export default function Employees() {
         return (
           <div className="flex gap-1">
             <Button variant="ghost" size="icon" title="View" onClick={() => setSelectedEmployee(emp)} disabled={!!deletingId}>
-              <Eye className="h-4 w-4" />
+              <Eye className="h-4 w-4 text-primary" />
             </Button>
             {(role === 'hr_admin' || role === 'super_admin') && (
               <Button variant="ghost" size="icon" asChild disabled={!!deletingId}>
-                <Link to={`/employees/${emp.id}`}><Edit className="h-4 w-4" /></Link>
+                <Link to={`/employees/${emp.id}`}><Edit className="h-4 w-4 text-primary" /></Link>
               </Button>
             )}
             {(role === 'hr_admin' || role === 'super_admin') && isDeleted && (

@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2, Printer } from 'lucide-react';
 import { generatePayrollSummaryPdf } from '@/lib/generatePayrollSummaryPdf';
 import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
+import { generateBulkPayslipsPdf } from '@/lib/generateBulkPayslipsPdf';
 import { SalaryCalculator } from '@/components/payroll/SalaryCalculator';
 import { ManualPayrollDialog } from '@/components/payroll/ManualPayrollDialog';
 import { usePayrollPeriods, usePayrollRecords, useCreatePayrollPeriod, useRunPayroll, useApprovePayroll, useDeletePayrollPeriod, useDeletePayrollRecord } from '@/hooks/usePayroll';
@@ -70,6 +71,60 @@ export default function Payroll() {
       });
     } catch (err) {
       console.error('Failed to generate summary PDF:', err);
+    }
+  };
+
+  const [bulkPeriodId, setBulkPeriodId] = useState<string | null>(null);
+  const handleDownloadBulkPayslips = async (period: any) => {
+    setBulkPeriodId(period.id);
+    try {
+      const { data: periodRecords, error } = await supabase
+        .from('payroll_records')
+        .select('*, employees(employee_id, first_name, middle_name, last_name, suffix_name, position, basic_salary)')
+        .eq('payroll_period_id', period.id)
+        .order('employees(last_name)', { ascending: true });
+
+      if (error) throw error;
+
+      const items = (periodRecords || []).map((r: any) => {
+        const emp = r.employees || {};
+        return {
+          employee: {
+            employee_id: emp.employee_id,
+            first_name: emp.first_name,
+            middle_name: emp.middle_name,
+            last_name: emp.last_name,
+            suffix_name: emp.suffix_name,
+            position: emp.position,
+          },
+          payroll: {
+            period_start: period.period_start,
+            period_end: period.period_end,
+            pay_date: period.pay_date,
+            basic_pay: Number(r.basic_pay || 0),
+            days_worked: Number(r.days_worked || 0),
+            total_allowances: Number(r.total_allowances || 0),
+            allowances_breakdown: (r.allowances_breakdown && typeof r.allowances_breakdown === 'object') ? r.allowances_breakdown : {},
+            gross_pay: Number(r.gross_pay || 0),
+            sss_contribution: Number(r.sss_contribution || 0),
+            philhealth_contribution: Number(r.philhealth_contribution || 0),
+            pagibig_contribution: Number(r.pagibig_contribution || 0),
+            withholding_tax: Number(r.withholding_tax || 0),
+            other_deductions: Number(r.other_deductions || 0),
+            deductions_breakdown: (r.deductions_breakdown && typeof r.deductions_breakdown === 'object') ? r.deductions_breakdown : {},
+            total_deductions: Number(r.total_deductions || 0),
+            net_pay: Number(r.net_pay || 0),
+          },
+          dailyRate: emp.basic_salary ? Number(emp.basic_salary) : undefined,
+        };
+      });
+
+      if (items.length === 0) return;
+      await generateBulkPayslipsPdf({ items, periodStart: period.period_start, periodEnd: period.period_end });
+    } catch (err) {
+      console.error('Failed to generate bulk payslips PDF:', err);
+    } finally {
+      setBulkPeriodId(null);
     }
   };
   

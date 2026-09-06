@@ -185,6 +185,11 @@ export default function Payroll() {
             {(p.status === 'approved' || p.status === 'paid') && (
               <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><Download className="h-4 w-4" /></Button>
             )}
+            {(p.status === 'approved' || p.status === 'paid') && (
+              <Button size="sm" variant="outline" onClick={() => handleDownloadBulkPayslips(p)} disabled={bulkPeriodId === p.id} title="Download Bulk Payslips">
+                {bulkPeriodId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+              </Button>
+            )}
             {isHR && p.status === 'draft' && (
               <Button size="sm" onClick={() => { setRunningPeriodId(p.id); runPayroll.mutate({ periodId: p.id }, { onSettled: () => setRunningPeriodId(null) }); }} disabled={runPayroll.isPending}>
                 {runningPeriodId === p.id && runPayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><Calculator className="mr-1 h-4 w-4" />Run</>}

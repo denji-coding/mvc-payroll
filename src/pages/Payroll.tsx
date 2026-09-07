@@ -185,7 +185,7 @@ export default function Payroll() {
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => handleViewPeriod(p.id)}><Eye className="h-4 w-4" /></Button>
             {(p.status === 'approved' || p.status === 'paid') && (
-              <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><Download className="h-4 w-4" /></Button>
+              <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><PayrollSummaryIcon className="h-4 w-4" /></Button>
             )}
             {(p.status === 'approved' || p.status === 'paid') && (
               <Button size="sm" variant="outline" onClick={() => handleDownloadBulkPayslips(p)} disabled={bulkPeriodId === p.id} title="Download Bulk Payslips">

@@ -189,7 +189,7 @@ export default function Payroll() {
             )}
             {(p.status === 'approved' || p.status === 'paid') && (
               <Button size="sm" variant="outline" onClick={() => handleDownloadBulkPayslips(p)} disabled={bulkPeriodId === p.id} title="Download Bulk Payslips">
-                {bulkPeriodId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+                {bulkPeriodId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <BulkPayslipsIcon className="h-4 w-4" />}
               </Button>
             )}
             {isHR && p.status === 'draft' && (

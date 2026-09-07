@@ -10,7 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2, Printer } from 'lucide-react';
+import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2 } from 'lucide-react';
+import { PayrollSummaryIcon } from '@/components/icons/PayrollSummaryIcon';
+import { BulkPayslipsIcon } from '@/components/icons/BulkPayslipsIcon';
 import { generatePayrollSummaryPdf } from '@/lib/generatePayrollSummaryPdf';
 import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { generateBulkPayslipsPdf } from '@/lib/generateBulkPayslipsPdf';
@@ -183,11 +185,11 @@ export default function Payroll() {
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => handleViewPeriod(p.id)}><Eye className="h-4 w-4" /></Button>
             {(p.status === 'approved' || p.status === 'paid') && (
-              <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><Download className="h-4 w-4" /></Button>
+              <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><PayrollSummaryIcon className="h-4 w-4" /></Button>
             )}
             {(p.status === 'approved' || p.status === 'paid') && (
               <Button size="sm" variant="outline" onClick={() => handleDownloadBulkPayslips(p)} disabled={bulkPeriodId === p.id} title="Download Bulk Payslips">
-                {bulkPeriodId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+                {bulkPeriodId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <BulkPayslipsIcon className="h-4 w-4" />}
               </Button>
             )}
             {isHR && p.status === 'draft' && (

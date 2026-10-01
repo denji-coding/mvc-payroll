@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format, isWeekend, getDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { formatFullName } from '@/lib/formatName';
+import companyLogo from '@/assets/company-logo.png';
 
 export interface DtrLeaveInfo {
   label: string;
@@ -47,6 +48,9 @@ interface MonthData {
 }
 
 interface GenerateDTRPdfParams {
+  companyName?: string;
+  companyAddress?: string;
+  companyLogoUrl?: string | null;
   employee: Employee;
   daysInMonth: Date[];
   attendanceMap: Map<string, AttendanceRecord>;
@@ -65,6 +69,9 @@ interface GenerateDTRPdfParams {
 }
 
 interface GenerateMultiMonthDTRPdfParams {
+  companyName?: string;
+  companyAddress?: string;
+  companyLogoUrl?: string | null;
   employee: Employee;
   monthsData: MonthData[];
   employeeCreatedAt?: string;
@@ -76,6 +83,25 @@ const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
+
+const DEFAULT_COMPANY_ADDRESS = 'Vasquez Bldg. Lapu-Lapu St. Corner Sobrecary St. Magugpo South, Tagum City, Davao del Norte';
+
+async function loadLogo(url?: string | null): Promise<string> {
+  if (!url) return companyLogo;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return companyLogo;
+    const blob = await response.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return companyLogo;
+  }
+}
 
 const formatTime = (timestamp: string | null): string => {
   if (!timestamp) return '-';
@@ -100,6 +126,9 @@ const getRemarks = (record: AttendanceRecord | undefined, isRestDay: boolean, is
 
 function addMonthPage(
   doc: jsPDF,
+  companyName: string,
+  companyAddress: string,
+  logo: string,
   employee: Employee,
   daysInMonth: Date[],
   attendanceMap: Map<string, AttendanceRecord>,
@@ -120,18 +149,30 @@ function addMonthPage(
   const margin = 15;
   let yPos = 15;
 
-  // Header
-  doc.setFontSize(14);
+  // Company header, matching the report PDF.
+  try {
+    doc.addImage(logo, 'PNG', margin, 15, 16, 16);
+  } catch {
+    doc.addImage(companyLogo, 'PNG', margin, 15, 16, 16);
+  }
+  doc.setTextColor(22, 101, 52);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('DAILY TIME RECORD', pageWidth / 2, yPos, { align: 'center' });
-  
-  yPos += 6;
-  doc.setFontSize(10);
+  doc.text(companyName.toUpperCase(), margin + 20, 20.5);
+  doc.setTextColor(55, 65, 81);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
-  doc.text('Migrants Venture Corporation', pageWidth / 2, yPos, { align: 'center' });
+  doc.text(doc.splitTextToSize(companyAddress, pageWidth - margin * 2 - 20), margin + 20, 25);
+  doc.setDrawColor(22, 101, 52);
+  doc.setLineWidth(0.6);
+  doc.line(margin, 36, pageWidth - margin, 36);
+  doc.setTextColor(17, 24, 39);
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DAILY TIME RECORD', pageWidth / 2, 47, { align: 'center' });
 
   // Employee Information
-  yPos += 10;
+  yPos = 57;
   doc.setFontSize(9);
   
   const leftCol = margin;
@@ -275,8 +316,9 @@ function addMonthPage(
   doc.text(`Generated on: ${format(new Date(), 'MMMM dd, yyyy hh:mm a')}`, pageWidth / 2, yPos, { align: 'center' });
 }
 
-export function generateDTRPdf(params: GenerateDTRPdfParams): void {
+export async function generateDTRPdf(params: GenerateDTRPdfParams): Promise<void> {
   const { employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt, weekendDutyDays, getLeaveForDate } = params;
+  const logo = await loadLogo(params.companyLogoUrl);
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -284,14 +326,15 @@ export function generateDTRPdf(params: GenerateDTRPdfParams): void {
     format: 'a4'
   });
 
-  addMonthPage(doc, employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt, weekendDutyDays, getLeaveForDate);
+  addMonthPage(doc, params.companyName || 'Migrants Venture Corporation', params.companyAddress || DEFAULT_COMPANY_ADDRESS, logo, employee, daysInMonth, attendanceMap, summary, month, year, employeeCreatedAt, weekendDutyDays, getLeaveForDate);
 
   const fileName = `DTR_${employee.last_name}_${employee.first_name}_${month}_${year}.pdf`;
   doc.save(fileName);
 }
 
-export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams): void {
+export async function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams): Promise<void> {
   const { employee, monthsData, employeeCreatedAt, weekendDutyDays, getLeaveForDate } = params;
+  const logo = await loadLogo(params.companyLogoUrl);
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -307,6 +350,9 @@ export function generateMultiMonthDTRPdf(params: GenerateMultiMonthDTRPdfParams)
     const monthName = months[monthData.month];
     addMonthPage(
       doc, 
+      params.companyName || 'Migrants Venture Corporation',
+      params.companyAddress || DEFAULT_COMPANY_ADDRESS,
+      logo,
       employee, 
       monthData.daysInMonth, 
       monthData.attendanceMap, 

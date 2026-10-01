@@ -22,6 +22,7 @@ import { usePayrollPeriods, usePayrollRecords, useCreatePayrollPeriod, useRunPay
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useSalaryComponents, useCreateSalaryComponent, useUpdateSalaryComponent, useDeleteSalaryComponent } from '@/hooks/useSalaryComponents';
 import { useAuth } from '@/hooks/useAuth';
+import { useCompanyInfo } from '@/hooks/useCompanyInfo';
 import { format, isSameMonth } from 'date-fns';
 import { DateInput } from '@/components/ui/date-picker';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
@@ -30,6 +31,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 export default function Payroll() {
   const { role } = useAuth();
+  const { data: companyInfo } = useCompanyInfo();
   const isHR = (role === 'hr_admin' || role === 'super_admin');
   const { data: periods, isLoading: periodsLoading } = usePayrollPeriods();
   const { data: components, isLoading: componentsLoading } = useSalaryComponents();
@@ -122,7 +124,7 @@ export default function Payroll() {
       });
 
       if (items.length === 0) return;
-      await generateBulkPayslipsPdf({ items, periodStart: period.period_start, periodEnd: period.period_end });
+      await generateBulkPayslipsPdf({ items, periodStart: period.period_start, periodEnd: period.period_end, companyLogoUrl: companyInfo?.company_logo_url });
     } catch (err) {
       console.error('Failed to generate bulk payslips PDF:', err);
     } finally {

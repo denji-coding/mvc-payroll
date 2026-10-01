@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useCompanyInfo } from '@/hooks/useCompanyInfo';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +50,7 @@ function SummaryCard({ icon, label, value, decimal }: { icon: React.ReactNode; l
 
 export default function DailyTimeRecord() {
   const { user } = useAuth();
+  const { data: companyInfo } = useCompanyInfo();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(currentYear);
   
@@ -251,7 +253,9 @@ export default function DailyTimeRecord() {
   const handleExportPDF = async () => {
     if (!isRangeMode) {
       // Single month export
-      generateDTRPdf({
+      await generateDTRPdf({
+        companyName: companyInfo?.company_name,
+        companyLogoUrl: companyInfo?.company_logo_url,
         employee,
         daysInMonth,
         attendanceMap,
@@ -307,7 +311,9 @@ export default function DailyTimeRecord() {
         })
       );
 
-      generateMultiMonthDTRPdf({
+      await generateMultiMonthDTRPdf({
+        companyName: companyInfo?.company_name,
+        companyLogoUrl: companyInfo?.company_logo_url,
         employee,
         monthsData,
         employeeCreatedAt: employee.created_at || undefined,
@@ -322,6 +328,8 @@ export default function DailyTimeRecord() {
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Printable DTR - Hidden on screen, visible when printing */}
       <PrintableDTR
+        companyName={companyInfo?.company_name}
+        companyLogoUrl={companyInfo?.company_logo_url}
         employee={employee}
         daysInMonth={daysInMonth}
         attendanceMap={attendanceMap}

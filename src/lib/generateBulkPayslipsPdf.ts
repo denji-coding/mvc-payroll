@@ -1,7 +1,8 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Image, StyleSheet, pdf } from "@react-pdf/renderer";
 import { format } from "date-fns";
 import { formatFullName } from "@/lib/formatName";
+import companyLogo from "@/assets/company-logo.png";
 
 export interface BulkPayslipItem {
   employee: {
@@ -47,6 +48,7 @@ const s = StyleSheet.create({
   cutLine: { flexGrow: 1, borderBottomWidth: 1, borderBottomColor: "#666", borderBottomStyle: "dashed" },
   cutText: { fontSize: 5, color: "#666", marginHorizontal: 4, fontFamily: "Helvetica-Bold" },
   center: { alignItems: "center" },
+  logo: { width: 18, height: 18, objectFit: "contain", marginBottom: 2 },
   title: { fontSize: 8, fontFamily: "Helvetica-Bold", letterSpacing: 1 },
   company: { fontSize: 6.5, fontFamily: "Helvetica-Bold", marginTop: 1 },
   addr: { fontSize: 5, marginTop: 0.5 },
@@ -77,7 +79,7 @@ const Cell = (
   opts: { bold?: boolean; right?: boolean } = {},
 ) => React.createElement(Text, { key, style: td(width, opts) }, value);
 
-const Slip: React.FC<{ item: BulkPayslipItem }> = ({ item }) => {
+const Slip: React.FC<{ item: BulkPayslipItem; logoUrl: string }> = ({ item, logoUrl }) => {
   const { employee: e, payroll: p, dailyRate } = item;
   const start = new Date(p.period_start);
   const end = new Date(p.period_end);
@@ -116,6 +118,7 @@ const Slip: React.FC<{ item: BulkPayslipItem }> = ({ item }) => {
 
   return React.createElement(View, { style: s.slip },
     React.createElement(View, { style: s.center },
+      React.createElement(Image, { src: logoUrl, style: s.logo }),
       React.createElement(Text, { style: s.title }, "PAYSLIP"),
       React.createElement(Text, { style: s.company }, "Migrants Venture Corporation"),
       React.createElement(Text, { style: s.addr }, "Lapu-Lapu St. Tagum City, Davao del Norte"),
@@ -197,7 +200,7 @@ const CutLine = () => React.createElement(View, { style: s.cutRow },
   React.createElement(View, { style: s.cutLine }),
 );
 
-const BulkDocument: React.FC<{ items: BulkPayslipItem[] }> = ({ items }) => {
+const BulkDocument: React.FC<{ items: BulkPayslipItem[]; logoUrl: string }> = ({ items, logoUrl }) => {
   // chunk into pages of 6 (3 rows x 2 columns)
   const pages: BulkPayslipItem[][] = [];
   for (let i = 0; i < items.length; i += 6) pages.push(items.slice(i, i + 6));
@@ -210,7 +213,7 @@ const BulkDocument: React.FC<{ items: BulkPayslipItem[] }> = ({ items }) => {
       rows.forEach((row, ri) => {
         children.push(
           React.createElement(View, { style: s.gridRow, key: `r${ri}` },
-            ...row.map((item, ci) => React.createElement(Slip, { item, key: `s${ri}-${ci}` })),
+            ...row.map((item, ci) => React.createElement(Slip, { item, logoUrl, key: `s${ri}-${ci}` })),
           ),
         );
         if (ri < rows.length - 1) children.push(React.createElement(CutLine, { key: `c${ri}` } as any));
@@ -224,8 +227,9 @@ export async function generateBulkPayslipsPdf(params: {
   items: BulkPayslipItem[];
   periodStart: string;
   periodEnd: string;
+  companyLogoUrl?: string | null;
 }): Promise<void> {
-  const doc = React.createElement(BulkDocument, { items: params.items }) as any;
+  const doc = React.createElement(BulkDocument, { items: params.items, logoUrl: params.companyLogoUrl || companyLogo }) as any;
   const blob = await pdf(doc).toBlob();
   const periodStr = `${format(new Date(params.periodStart), "MMMdd")}-${format(new Date(params.periodEnd), "MMMdd_yyyy")}`;
   const url = URL.createObjectURL(blob);

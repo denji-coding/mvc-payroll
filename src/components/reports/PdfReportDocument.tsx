@@ -35,7 +35,7 @@ export interface PdfReportProps {
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 90,
+    paddingTop: 110,
     paddingBottom: 70,
     paddingHorizontal: 24,
     fontSize: 9,
@@ -47,6 +47,8 @@ const styles = StyleSheet.create({
     top: 18,
     left: 24,
     right: 24,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1.5,
@@ -57,9 +59,8 @@ const styles = StyleSheet.create({
   companyBlock: { flex: 1 },
   companyName: { fontSize: 13, fontWeight: 'bold', color: '#166534' },
   companyMeta: { fontSize: 7.5, color: '#374151', marginTop: 1 },
-  reportTitleBlock: { alignItems: 'flex-end' },
-  reportTitle: { fontSize: 11, fontWeight: 'bold', color: '#111827' },
-  reportMeta: { fontSize: 7.5, color: '#6b7280', marginTop: 2 },
+  reportTitle: { fontSize: 15, fontWeight: 'bold', color: '#111827', textAlign: 'center', marginTop: 12 },
+  reportMeta: { fontSize: 8, color: '#6b7280', marginTop: 3 },
 
   table: { width: '100%', borderWidth: 0.5, borderColor: '#9ca3af' },
   tableHeader: {
@@ -113,44 +114,43 @@ const styles = StyleSheet.create({
   emptyState: { padding: 20, textAlign: 'center', color: '#6b7280', fontSize: 9 },
 });
 
-function ReportHeader({ company, reportTitle, generatedAt }: { company: CompanyHeaderInfo; reportTitle: string; generatedAt: Date }) {
+function ReportHeader({ company, reportTitle }: { company: CompanyHeaderInfo; reportTitle: string }) {
   return (
     <View style={styles.header} fixed>
-      <Image src={company.logoUrl || companyLogo} style={styles.logo} />
-      <View style={styles.companyBlock}>
-        <Text style={styles.companyName}>{company.name.toUpperCase()}</Text>
-        {company.address && <Text style={styles.companyMeta}>{company.address}</Text>}
-        {(company.phone || company.email) && (
-          <Text style={styles.companyMeta}>
-            {[company.phone, company.email].filter(Boolean).join('  •  ')}
-          </Text>
-        )}
+      <View style={styles.headerRow}>
+        <Image src={company.logoUrl || companyLogo} style={styles.logo} />
+        <View style={styles.companyBlock}>
+          <Text style={styles.companyName}>{company.name.toUpperCase()}</Text>
+          {company.address && <Text style={styles.companyMeta}>{company.address}</Text>}
+          {(company.phone || company.email) && (
+            <Text style={styles.companyMeta}>
+              {[company.phone, company.email].filter(Boolean).join('  •  ')}
+            </Text>
+          )}
+        </View>
       </View>
-      <View style={styles.reportTitleBlock}>
-        <Text style={styles.reportTitle}>{reportTitle}</Text>
-        <Text style={styles.reportMeta}>Generated: {format(generatedAt, 'MMM d, yyyy hh:mm a')}</Text>
-      </View>
+      <Text style={styles.reportTitle}>{reportTitle}</Text>
     </View>
   );
 }
 
-function ReportFooter({ company, generatedAt }: { company: CompanyHeaderInfo; generatedAt: Date }) {
+function ReportFooter({ generatedAt }: { generatedAt: Date }) {
   return (
     <View style={styles.footer} fixed>
-      <Text>{company.name} • HRM & Payroll System</Text>
       <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
       <Text>{format(generatedAt, 'yyyy-MM-dd HH:mm')}</Text>
     </View>
   );
 }
 
-function PreparedBySection({ preparedBy }: { preparedBy: PreparedByInfo }) {
+function PreparedBySection({ preparedBy, generatedAt }: { preparedBy: PreparedByInfo; generatedAt: Date }) {
   return (
     <View style={styles.preparedBy} wrap={false}>
       <Text style={styles.preparedByLabel}>Prepared by:</Text>
       <View style={styles.signatureLine} />
       <Text style={styles.preparedByName}>{preparedBy.name || '—'}</Text>
       {preparedBy.role && <Text style={styles.preparedByRole}>{preparedBy.role}</Text>}
+      <Text style={styles.reportMeta}>Generated: {format(generatedAt, 'MMM d, yyyy hh:mm a')}</Text>
     </View>
   );
 }
@@ -168,7 +168,7 @@ export function PdfReportDocument({
   return (
     <Document title={reportTitle} author={preparedBy.name}>
       <Page size="A4" orientation={orientation} style={styles.page}>
-        <ReportHeader company={company} reportTitle={reportTitle} generatedAt={generatedAt} />
+        <ReportHeader company={company} reportTitle={reportTitle} />
 
         {subtitle && <Text style={{ fontSize: 9, marginBottom: 6, color: '#374151' }}>{subtitle}</Text>}
 
@@ -202,9 +202,9 @@ export function PdfReportDocument({
           )}
         </View>
 
-        <PreparedBySection preparedBy={preparedBy} />
+        <PreparedBySection preparedBy={preparedBy} generatedAt={generatedAt} />
 
-        <ReportFooter company={company} generatedAt={generatedAt} />
+        <ReportFooter generatedAt={generatedAt} />
       </Page>
     </Document>
   );

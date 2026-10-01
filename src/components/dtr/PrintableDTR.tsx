@@ -1,5 +1,6 @@
 import { format, isWeekend, getDay } from 'date-fns';
 import { formatFullName } from '@/lib/formatName';
+import companyLogo from '@/assets/company-logo.png';
 
 interface AttendanceRecord {
   date: string;
@@ -36,6 +37,9 @@ export interface DtrLeaveInfo {
 }
 
 interface PrintableDTRProps {
+  companyName?: string;
+  companyAddress?: string;
+  companyLogoUrl?: string | null;
   employee: Employee;
   daysInMonth: Date[];
   attendanceMap: Map<string, AttendanceRecord>;
@@ -48,6 +52,9 @@ interface PrintableDTRProps {
 }
 
 export function PrintableDTR({ 
+  companyName = 'Migrants Venture Corporation',
+  companyAddress = 'Vasquez Bldg. Lapu-Lapu St. Corner Sobrecary St. Magugpo South, Tagum City, Davao del Norte',
+  companyLogoUrl,
   employee, 
   daysInMonth, 
   attendanceMap, 
@@ -98,9 +105,15 @@ export function PrintableDTR({
       fontSize: '9pt'
     }}>
       {/* Header */}
-      <div className="text-center mb-3">
-        <h1 className="text-base font-bold uppercase tracking-wide">Daily Time Record</h1>
-        <p className="text-xs mt-0.5">Migrants Venture Corporation</p>
+      <div className="mb-3">
+        <div className="flex items-center gap-3 border-b-2 border-[#166534] pb-2">
+          <img src={companyLogoUrl || companyLogo} alt="" className="h-[16mm] w-[16mm] object-contain" />
+          <div>
+            <p className="text-[12pt] font-bold text-[#166534] uppercase">{companyName}</p>
+            <p className="text-[7.5pt] text-[#374151]">{companyAddress}</p>
+          </div>
+        </div>
+        <h1 className="text-center text-[13pt] font-bold uppercase mt-2">Daily Time Record</h1>
       </div>
 
       {/* Employee Info */}

@@ -109,14 +109,14 @@ const formatTime = (timestamp: string | null): string => {
 };
 
 const getRemarks = (record: AttendanceRecord | undefined, isRestDay: boolean, isFuture: boolean, leave: DtrLeaveInfo | null): string => {
-  if (isRestDay) return 'Weekend';
+  if (isRestDay) return '';
   if (leave) {
     if (leave.pay_type === 'with_pay') return 'Leave with Pay';
     if (leave.pay_type === 'without_pay') return 'Leave without Pay';
     return leave.label || 'On Leave';
   }
   if (isFuture) return '-';
-  if (!record) return 'Absent';
+  if (!record || record.status === 'absent') return '';
   if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) return 'Late';
   if (record.status === 'on_leave') return 'On Leave';
   if (record.status === 'half_day') return 'Half Day';
@@ -261,11 +261,9 @@ function addMonthPage(
     didParseCell: function(data) {
       if (data.section === 'body') {
         const remarks = String(data.row.raw?.[7] ?? '');
-        if (remarks === 'Weekend') {
+        if (daysInMonth[data.row.index] && isRestDay(daysInMonth[data.row.index])) {
           data.cell.styles.fillColor = [248, 248, 248];
           data.cell.styles.textColor = [128, 128, 128];
-        } else if (remarks === 'Absent') {
-          data.cell.styles.textColor = [220, 38, 38];
         } else if (remarks === 'Late') {
           data.cell.styles.textColor = [217, 119, 6];
         } else if (remarks.startsWith('Leave')) {

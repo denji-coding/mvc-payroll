@@ -373,6 +373,7 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-2">
         <div className="relative">
           <button
+            title="Account menu"
             onClick={() => setFooterMenuOpen((v) => !v)}
             className={`w-full flex items-center gap-3 rounded-lg hover:bg-sidebar-accent transition-colors ${collapsed ? "justify-center p-2" : "p-2"}`}
           >

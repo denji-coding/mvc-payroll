@@ -511,7 +511,7 @@ export default function Leaves() {
         return (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={cancelLeave.isPending}>
+              <Button variant="ghost" size="icon" title="Cancel leave request" className="text-destructive hover:text-destructive" disabled={cancelLeave.isPending}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>

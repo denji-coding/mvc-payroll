@@ -110,10 +110,10 @@ export default function Branches() {
       id: 'actions', header: 'Actions', enableSorting: false,
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)}><Edit className="h-4 w-4 text-primary" /></Button>
+          <Button variant="ghost" size="icon" title="Edit branch" onClick={() => openEdit(row.original)}><Edit className="h-4 w-4 text-primary" /></Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+              <Button variant="ghost" size="icon" title="Delete branch" disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4 text-destructive" /></Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>

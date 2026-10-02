@@ -160,6 +160,7 @@ export function EmployeeAvatarUpload({
               type="button"
               size="icon"
               variant="ghost"
+              title="Upload employee photo"
               className="h-10 w-10 text-white hover:text-white hover:bg-white/20"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}

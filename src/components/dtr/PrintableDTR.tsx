@@ -77,7 +77,7 @@ export function PrintableDTR({
   };
 
   const getRemarks = (record: AttendanceRecord | undefined, restDay: boolean, isFuture: boolean, leave: DtrLeaveInfo | null) => {
-    if (restDay) return 'Weekend';
+    if (restDay) return '';
     if (leave) {
       const pay = leave.pay_type === 'with_pay' ? 'Leave with Pay'
         : leave.pay_type === 'without_pay' ? 'Leave without Pay'
@@ -85,7 +85,7 @@ export function PrintableDTR({
       return pay;
     }
     if (isFuture) return '';
-    if (!record) return 'Absent';
+    if (!record || record.status === 'absent') return '';
     if (record.status === 'late' || (record.late_minutes && record.late_minutes > 0)) {
       return `Late (${record.late_minutes}m)`;
     }

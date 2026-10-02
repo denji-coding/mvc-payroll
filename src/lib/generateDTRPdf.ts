@@ -261,11 +261,9 @@ function addMonthPage(
     didParseCell: function(data) {
       if (data.section === 'body') {
         const remarks = String(data.row.raw?.[7] ?? '');
-        if (isWeekend(new Date(String(data.row.raw?.[0] ?? ''))) && remarks === '') {
+        if (daysInMonth[data.row.index] && isRestDay(daysInMonth[data.row.index])) {
           data.cell.styles.fillColor = [248, 248, 248];
           data.cell.styles.textColor = [128, 128, 128];
-        } else if (remarks === 'Absent') {
-          data.cell.styles.textColor = [220, 38, 38];
         } else if (remarks === 'Late') {
           data.cell.styles.textColor = [217, 119, 6];
         } else if (remarks.startsWith('Leave')) {

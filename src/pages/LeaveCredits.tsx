@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Eye, EyeOff, Trash2, Edit, Settings, X } from 'lucide-react';
+import { Plus, CircleCheck, CircleOff, Trash2, Edit, Settings, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { LeaveTypeFormFields, LeaveTypeForm, defaultForm } from '@/components/leave-credits/LeaveTypeFormFields';
@@ -144,7 +144,7 @@ export default function LeaveCredits() {
           <div className="flex items-center gap-1">
             <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:text-primary" onClick={() => openEditDialog(lt)} title="Edit"><Edit className="h-4 w-4" /></Button>
             <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:text-primary" onClick={() => handleToggleActive(lt.id, lt.is_active)} title={lt.is_active ? 'Deactivate' : 'Activate'}>
-              {lt.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              {lt.is_active ? <CircleOff className="h-4 w-4" /> : <CircleCheck className="h-4 w-4" />}
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild><Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" title="Delete"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
@@ -186,7 +186,7 @@ export default function LeaveCredits() {
               <DrawerDescription className="text-sm text-muted-foreground mt-1">Configure LWP credit limits and refresh cycle.</DrawerDescription>
             </div>
             <DrawerClose asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" title="Close settings" aria-label="Close settings"><X className="h-4 w-4" /></Button>
             </DrawerClose>
           </div>
           <div className="p-6 space-y-6 flex-1 overflow-y-auto">

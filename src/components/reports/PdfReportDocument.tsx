@@ -96,8 +96,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderTopColor: '#d1d5db',
     paddingTop: 6,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    textAlign: 'center',
     fontSize: 7.5,
     color: '#6b7280',
   },
@@ -134,11 +133,10 @@ function ReportHeader({ company, reportTitle }: { company: CompanyHeaderInfo; re
   );
 }
 
-function ReportFooter({ generatedAt }: { generatedAt: Date }) {
+function ReportFooter() {
   return (
     <View style={styles.footer} fixed>
       <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-      <Text>{format(generatedAt, 'yyyy-MM-dd HH:mm')}</Text>
     </View>
   );
 }
@@ -204,7 +202,7 @@ export function PdfReportDocument({
 
         <PreparedBySection preparedBy={preparedBy} generatedAt={generatedAt} />
 
-        <ReportFooter generatedAt={generatedAt} />
+        <ReportFooter />
       </Page>
     </Document>
   );

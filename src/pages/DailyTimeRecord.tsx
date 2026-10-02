@@ -214,7 +214,7 @@ export default function DailyTimeRecord() {
       case 'late':
         return <Badge variant="secondary" className="bg-accent text-accent-foreground">Late</Badge>;
       case 'absent':
-        return <Badge variant="destructive">Absent</Badge>;
+        return null;
       case 'on_leave':
         return <Badge variant="outline">On Leave</Badge>;
       case 'half_day':
@@ -539,7 +539,7 @@ export default function DailyTimeRecord() {
                           {isBeforeCreation ? (
                             <span className="text-muted-foreground">-</span>
                           ) : isRestDay ? (
-                            <Badge variant="outline">Weekend</Badge>
+                            null
                           ) : isFuture ? (
                             <Badge variant="outline">-</Badge>
                           ) : leave ? (
@@ -560,9 +560,7 @@ export default function DailyTimeRecord() {
                               }
                               return getStatusBadge(record.status);
                             })()
-                          ) : (
-                            <Badge variant="destructive">Absent</Badge>
-                          )}
+                          ) : null}
                         </TableCell>
                       </TableRow>
                     );

@@ -66,9 +66,9 @@ export default function Positions() {
         const position = row.original;
         return (
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" onClick={() => openEditDialog(position)}><Edit className="h-4 w-4 text-primary" /></Button>
+            <Button variant="ghost" size="icon" title="Edit position" onClick={() => openEditDialog(position)}><Edit className="h-4 w-4 text-primary" /></Button>
             <AlertDialog>
-              <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+              <AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Delete position" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader><AlertDialogTitle>Delete Position?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the position "{position.name}".</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePosition.mutate(position.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter>

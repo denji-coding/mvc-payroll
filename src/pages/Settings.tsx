@@ -767,10 +767,10 @@ function HolidayManagement() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(holiday)}>
+                      <Button variant="ghost" size="icon" title="Edit holiday" onClick={() => handleEdit(holiday)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(holiday.id)}>
+                      <Button variant="ghost" size="icon" title="Delete holiday" onClick={() => setDeleteId(holiday.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -952,10 +952,10 @@ function AnnouncementManagement() {
                       >
                         {announcement.is_published ? 'Unpublish' : 'Publish'}
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(announcement)}>
+                      <Button variant="ghost" size="icon" title="Edit announcement" onClick={() => handleEdit(announcement)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(announcement.id)}>
+                      <Button variant="ghost" size="icon" title="Delete announcement" onClick={() => setDeleteId(announcement.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -1209,7 +1209,7 @@ function UserRoleManagement() {
                           {format(new Date(manager.assigned_at), 'MMM dd, yyyy')}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => setRemoveManagerId(manager.id)}>
+                          <Button variant="ghost" size="icon" title="Remove manager" onClick={() => setRemoveManagerId(manager.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TableCell>

@@ -91,6 +91,7 @@ export function DatePicker({
           <Button
             variant="ghost"
             size="icon"
+            title="Previous month"
             className="h-7 w-7 shrink-0"
             onClick={() => setCalendarDate(setMonth(calendarDate, calendarDate.getMonth() - 1))}
           >
@@ -131,6 +132,7 @@ export function DatePicker({
           <Button
             variant="ghost"
             size="icon"
+            title="Next month"
             className="h-7 w-7 shrink-0"
             onClick={() => setCalendarDate(setMonth(calendarDate, calendarDate.getMonth() + 1))}
           >

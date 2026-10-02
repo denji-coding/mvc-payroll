@@ -156,6 +156,7 @@ export function SalaryAdjustmentsCard({ employeeId }: SalaryAdjustmentsCardProps
                     <Button 
                       variant="ghost" 
                       size="icon" 
+                      title="Delete salary adjustment"
                       onClick={() => handleDelete(adj.id)}
                       disabled={deleteMutation.isPending}
                     >

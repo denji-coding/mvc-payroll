@@ -136,7 +136,7 @@ function ReportHeader({ company, reportTitle }: { company: CompanyHeaderInfo; re
 function ReportFooter() {
   return (
     <View style={styles.footer} fixed>
-      <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+      <Text style={{ width: '100%', textAlign: 'center' }} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
     </View>
   );
 }

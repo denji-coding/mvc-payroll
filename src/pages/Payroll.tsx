@@ -318,25 +318,6 @@ export default function Payroll() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="records" className="mt-4">
-          <Card>
-            <CardHeader><CardTitle>Payroll Records</CardTitle><CardDescription>{selectedPeriod ? 'Employee payslips' : 'Select a period first'}</CardDescription></CardHeader>
-            <CardContent>
-              {selectedPeriod ? (
-                <>
-                  {!isPeriodProcessed && (
-                    <div className="bg-warning/10 text-warning p-4 rounded-lg mb-4 text-center"><p className="text-sm font-medium">Payroll is not yet processed. View and download will be available after processing.</p></div>
-                  )}
-                  {recordsLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
-                    <DataTable columns={recordColumns} data={records || []} searchPlaceholder="Search records..." emptyMessage="No records" />
-                  )}
-                </>
-              ) : <p className="text-muted-foreground text-center py-8">Select a payroll period</p>}
-            </CardContent>
-          </Card>
-          {viewPayslip && <PayslipDialog record={viewPayslip} onClose={() => setViewPayslip(null)} formatCurrency={formatCurrency} periodStatus={selectedPeriodData?.status} period={selectedPeriodData} />}
-          {selectedPeriod && <ManualPayrollDialog periodId={selectedPeriod} open={manualPayrollOpen} onClose={() => { setManualPayrollOpen(false); setEditingRecord(null); }} editRecord={editingRecord} />}
-        </TabsContent>
 
         <TabsContent value="components" className="mt-4">
           <SalaryComponentsTab earnings={earnings} deductions={deductions} isLoading={componentsLoading} isHR={isHR} />
@@ -344,6 +325,30 @@ export default function Payroll() {
 
         {isHR && <TabsContent value="calculator" className="mt-4"><SalaryCalculator /></TabsContent>}
       </Tabs>
+
+      {/* Payroll Records modal (opened from the periods table eye icon) */}
+      <Dialog open={recordsModalOpen} onOpenChange={setRecordsModalOpen}>
+        <DialogContent className="max-w-5xl w-[95vw]">
+          <DialogHeader>
+            <DialogTitle>Payroll Records</DialogTitle>
+            {selectedPeriodData && (
+              <DialogDescription>
+                {format(new Date(selectedPeriodData.period_start), 'MMM d')} - {format(new Date(selectedPeriodData.period_end), 'MMM d, yyyy')}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          <div className="max-h-[65vh] overflow-auto">
+            {!isPeriodProcessed && (
+              <div className="bg-warning/10 text-warning p-4 rounded-lg mb-4 text-center"><p className="text-sm font-medium">Payroll is not yet processed. View and download will be available after processing.</p></div>
+            )}
+            {recordsLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
+              <DataTable columns={recordColumns} data={records || []} searchPlaceholder="Search records..." emptyMessage="No records" />
+            )}
+          </div>
+          {viewPayslip && <PayslipDialog record={viewPayslip} onClose={() => setViewPayslip(null)} formatCurrency={formatCurrency} periodStatus={selectedPeriodData?.status} period={selectedPeriodData} />}
+          {selectedPeriod && <ManualPayrollDialog periodId={selectedPeriod} open={manualPayrollOpen} onClose={() => { setManualPayrollOpen(false); setEditingRecord(null); }} editRecord={editingRecord} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

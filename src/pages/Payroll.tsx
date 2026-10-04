@@ -185,7 +185,7 @@ export default function Payroll() {
         const p = row.original;
         return (
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => handleViewPeriod(p.id)}><Eye className="h-4 w-4" /></Button>
+            <Button size="sm" variant="outline" title="View period details" onClick={() => handleViewPeriod(p.id)}><Eye className="h-4 w-4" /></Button>
             {(p.status === 'approved' || p.status === 'paid') && (
               <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><PayrollSummaryIcon className="h-4 w-4 text-foreground hover:text-primary" /></Button>
             )}
@@ -206,7 +206,7 @@ export default function Payroll() {
             )}
             {isHR && (p.status === 'draft' || p.status === 'processing') && (
               <AlertDialog>
-                <AlertDialogTrigger asChild><Button size="sm" variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                <AlertDialogTrigger asChild><Button size="sm" variant="outline" title="Delete payroll period" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
                 <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Period?</AlertDialogTitle><AlertDialogDescription>This will delete the period and all records.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollPeriod.mutate(p.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
               </AlertDialog>
             )}
@@ -229,15 +229,15 @@ export default function Payroll() {
         const r = row.original;
         return (
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => setViewPayslip(r)} disabled={!isPeriodProcessed}><Eye className="h-4 w-4" /></Button>
+            <Button size="sm" variant="outline" title="View payslip details" onClick={() => setViewPayslip(r)} disabled={!isPeriodProcessed}><Eye className="h-4 w-4" /></Button>
             {isHR && isPeriodNotApproved && (
-              <Button size="sm" variant="outline" onClick={() => { setEditingRecord(r); setManualPayrollOpen(true); }}>
+              <Button size="sm" variant="outline" title="Edit payroll record" onClick={() => { setEditingRecord(r); setManualPayrollOpen(true); }}>
                 <Pencil className="h-4 w-4" />
               </Button>
             )}
             {isHR && isPeriodNotApproved && (
               <AlertDialog>
-                <AlertDialogTrigger asChild><Button size="sm" variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                <AlertDialogTrigger asChild><Button size="sm" variant="outline" title="Delete payroll record" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
                 <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete Payroll Record?</AlertDialogTitle><AlertDialogDescription>Delete record for {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name)}?</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deletePayrollRecord.mutate(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
               </AlertDialog>
             )}

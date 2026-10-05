@@ -10,3 +10,7 @@
 - [x] Leave absent and rest-day remarks blank in the DTR table, print view, and PDF.
 - [x] Center the report footer page count.
 - [x] Label icon-only actions on hover and replace the Leave Credits visibility icons with activation controls.
+
+# Payroll records modal
+
+- [x] Remove the Payroll Records tab; the periods table eye icon now opens payroll records in a modal.

@@ -17,7 +17,7 @@
 
 # Report and DTR refinements
 
-- [ ] Replace government EE/ER columns with payroll deduction columns and rename payroll Days.
-- [ ] Remove the DTR absent summary and equalize Remarks column width.
-- [ ] Match the downloaded payroll summary header to Reports.
-- [ ] Rename the employee payslips download title and verify PDF layouts.
+- [x] Replace government EE/ER columns with payroll deduction columns and rename payroll Days.
+- [x] Remove the DTR absent summary and equalize Remarks column width.
+- [x] Match the downloaded payroll summary header to Reports.
+- [x] Rename the employee payslips download title and verify sample PDF layouts; authenticated page verification unavailable because no requesting-user session could be minted.

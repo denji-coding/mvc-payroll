@@ -177,7 +177,7 @@ export function PdfReportDocument({
                 key={c.key}
                 style={[styles.tableHeaderCell, { width: c.width as any, textAlign: c.align || 'left' }]}
               >
-                {c.label}
+                {c.label.replace(' Payroll Deduction', '\nPayroll Deduction')}
               </Text>
             ))}
           </View>

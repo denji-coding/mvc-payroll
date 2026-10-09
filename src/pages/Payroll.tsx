@@ -69,10 +69,12 @@ export default function Payroll() {
       
       if (error) throw error;
       
-      generatePayrollSummaryPdf({
+      await generatePayrollSummaryPdf({
         records: periodRecords || [],
         periodStart: period.period_start,
         periodEnd: period.period_end,
+        companyName: companyInfo?.company_name,
+        companyLogoUrl: companyInfo?.company_logo_url,
       });
     } catch (err) {
       console.error('Failed to generate summary PDF:', err);
@@ -191,7 +193,7 @@ export default function Payroll() {
               <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><PayrollSummaryIcon className="h-4 w-4 text-foreground hover:text-primary" /></Button>
             )}
             {(p.status === 'approved' || p.status === 'paid') && (
-              <Button size="sm" variant="outline" onClick={() => handleDownloadBulkPayslips(p)} disabled={bulkPeriodId === p.id} title="Download Bulk Payslips">
+              <Button size="sm" variant="outline" onClick={() => handleDownloadBulkPayslips(p)} disabled={bulkPeriodId === p.id} title="Download Employee Payslips">
                 {bulkPeriodId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <BulkPayslipsIcon className="h-4 w-4 text-foreground hover:text-primary" />}
               </Button>
             )}

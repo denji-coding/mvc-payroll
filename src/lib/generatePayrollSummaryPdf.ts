@@ -23,51 +23,60 @@ interface GeneratePayrollSummaryParams {
   records: PayrollSummaryRecord[];
   periodStart: string;
   periodEnd: string;
+  companyName?: string;
+  companyLogoUrl?: string | null;
 }
 
 const fmtCur = (n: number): string =>
   n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export function generatePayrollSummaryPdf({ records, periodStart, periodEnd }: GeneratePayrollSummaryParams): void {
+async function loadLogo(url?: string | null): Promise<string> {
+  if (!url) return companyLogo;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return companyLogo;
+    const blob = await response.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return companyLogo;
+  }
+}
+
+export async function generatePayrollSummaryPdf({ records, periodStart, periodEnd, companyName = 'Migrants Venture Corporation', companyLogoUrl }: GeneratePayrollSummaryParams): Promise<void> {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 12;
-  let yPos = 14;
-
-  // Header - company name
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(220, 38, 38);
-  doc.text('MIGRANTS VENTURE CORPORATION', pageWidth / 2, yPos, { align: 'center' });
-
-  yPos += 6;
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(0, 0, 0);
-  doc.text(
-    'Vasquez Bldg. Lapu-Lapu St. Corner Sobrecary St. Magugpo South Tagum City Davao del Norte',
-    pageWidth / 2,
-    yPos,
-    { align: 'center' }
-  );
-
-  // Period info
-  yPos += 8;
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
+  const logo = await loadLogo(companyLogoUrl);
   const periodLabel = `${format(new Date(periodStart), 'MMMM d')}-${format(new Date(periodEnd), 'd, yyyy')}`.toUpperCase();
-  doc.text('Salary Period:', margin + 20, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.text(periodLabel, margin + 52, yPos);
-
-  yPos += 5;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Department:', margin + 20, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Migrants Venture Corporation', margin + 52, yPos);
+  const drawHeader = () => {
+    try { doc.addImage(logo, margin, 6.5, 17.6, 17.6); }
+    catch { doc.addImage(companyLogo, margin, 6.5, 17.6, 17.6); }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(22, 101, 52);
+    doc.text(companyName.toUpperCase(), margin + 22, 13);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(55, 65, 81);
+    doc.text('Vasquez Bldg. Lapu-Lapu St. Corner Sobrecary St. Magugpo South, Tagum City, Davao del Norte', margin + 22, 18);
+    doc.setDrawColor(22, 101, 52);
+    doc.setLineWidth(0.53);
+    doc.line(margin, 27, pageWidth - margin, 27);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.setTextColor(17, 24, 39);
+    doc.text('Payroll Summary', pageWidth / 2, 36, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(`Salary Period: ${periodLabel}`, margin, 44);
+  };
 
   // Build table data
-  yPos += 8;
   const bodyData: (string | number)[][] = [];
 
   records.forEach((r, idx) => {
@@ -95,7 +104,8 @@ export function generatePayrollSummaryPdf({ records, periodStart, periodEnd }: G
   const totalNet = records.reduce((s, r) => s + (r.net_pay || 0), 0);
 
   autoTable(doc, {
-    startY: yPos,
+    startY: 49,
+    didDrawPage: drawHeader,
     head: [
       [
         { content: '', styles: { halign: 'center' } },
@@ -136,18 +146,18 @@ export function generatePayrollSummaryPdf({ records, periodStart, periodEnd }: G
     },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 45 },
+      1: { cellWidth: 43 },
       2: { cellWidth: 22, halign: 'right' },
       3: { cellWidth: 18, halign: 'center' },
-      4: { cellWidth: 28, halign: 'right' },
-      5: { cellWidth: 22, halign: 'right' },
-      6: { cellWidth: 22, halign: 'right' },
-      7: { cellWidth: 22, halign: 'right' },
-      8: { cellWidth: 22, halign: 'right' },
-      9: { cellWidth: 28, halign: 'right' },
-      10: { cellWidth: 30 },
+      4: { cellWidth: 26, halign: 'right' },
+      5: { cellWidth: 20, halign: 'right' },
+      6: { cellWidth: 20, halign: 'right' },
+      7: { cellWidth: 20, halign: 'right' },
+      8: { cellWidth: 20, halign: 'right' },
+      9: { cellWidth: 26, halign: 'right' },
+      10: { cellWidth: 28 },
     },
-    margin: { left: margin, right: margin },
+    margin: { left: margin, right: margin, top: 49, bottom: 50 },
     theme: 'grid',
   });
 

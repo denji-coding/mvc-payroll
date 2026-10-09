@@ -247,14 +247,14 @@ function addMonthPage(
       halign: 'center'
     },
     columnStyles: {
-      0: { cellWidth: 12, halign: 'center' },
-      1: { cellWidth: 14, halign: 'center' },
-      2: { cellWidth: 22, halign: 'center' },
-      3: { cellWidth: 22, halign: 'center' },
-      4: { cellWidth: 22, halign: 'center' },
-      5: { cellWidth: 22, halign: 'center' },
-      6: { cellWidth: 16, halign: 'center' },
-      7: { cellWidth: 'auto', halign: 'center' }
+      0: { cellWidth: 22.5, halign: 'center' },
+      1: { cellWidth: 22.5, halign: 'center' },
+      2: { cellWidth: 22.5, halign: 'center' },
+      3: { cellWidth: 22.5, halign: 'center' },
+      4: { cellWidth: 22.5, halign: 'center' },
+      5: { cellWidth: 22.5, halign: 'center' },
+      6: { cellWidth: 22.5, halign: 'center' },
+      7: { cellWidth: 22.5, halign: 'center' }
     },
     theme: 'grid',
     margin: { left: margin, right: margin },
@@ -283,12 +283,11 @@ function addMonthPage(
   doc.setTextColor(0, 0, 0);
   
   const summaryY = yPos;
-  const colWidth = (pageWidth - 2 * margin) / 4;
+  const colWidth = (pageWidth - 2 * margin) / 3;
   
   doc.text(`No. of Days Worked: ${summary.daysWorked}`, margin, summaryY);
   doc.text(`Total Hours Worked: ${summary.totalHours.toFixed(1)}`, margin + colWidth, summaryY);
   doc.text(`No. of Minutes Late: ${summary.lateMinutes ?? 0}`, margin + colWidth * 2, summaryY);
-  doc.text(`No. of Days Absent: ${summary.absentDays}`, margin + colWidth * 3, summaryY);
 
   // Signature lines
   yPos = summaryY + 15;

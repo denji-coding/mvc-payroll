@@ -14,3 +14,10 @@
 # Payroll records modal
 
 - [x] Remove the Payroll Records tab; the periods table eye icon now opens payroll records in a modal.
+
+# Report and DTR refinements
+
+- [x] Replace government EE/ER columns with payroll deduction columns and rename payroll Days.
+- [x] Remove the DTR absent summary and equalize Remarks column width.
+- [x] Match the downloaded payroll summary header to Reports.
+- [x] Rename the employee payslips download title and verify sample PDF layouts; authenticated page verification unavailable because no requesting-user session could be minted.

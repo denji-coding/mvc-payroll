@@ -137,16 +137,16 @@ export function PrintableDTR({
       </div>
 
       {/* DTR Table - Compact for single page */}
-      <table className="w-full border-collapse mb-3" style={{ fontSize: '8pt' }}>
+      <table className="w-full table-fixed border-collapse mb-3" style={{ fontSize: '8pt' }}>
         <thead>
           <tr style={{ backgroundColor: '#f3f4f6' }}>
-            <th className="border border-black px-1 py-0.5" style={{ width: '28px' }}>Date</th>
-            <th className="border border-black px-1 py-0.5" style={{ width: '28px' }}>Day</th>
-            <th className="border border-black px-1 py-0.5" style={{ width: '52px' }}>AM In</th>
-            <th className="border border-black px-1 py-0.5" style={{ width: '52px' }}>AM Out</th>
-            <th className="border border-black px-1 py-0.5" style={{ width: '52px' }}>PM In</th>
-            <th className="border border-black px-1 py-0.5" style={{ width: '52px' }}>PM Out</th>
-            <th className="border border-black px-1 py-0.5" style={{ width: '36px' }}>Hours</th>
+            <th className="border border-black px-1 py-0.5">Date</th>
+            <th className="border border-black px-1 py-0.5">Day</th>
+            <th className="border border-black px-1 py-0.5">AM In</th>
+            <th className="border border-black px-1 py-0.5">AM Out</th>
+            <th className="border border-black px-1 py-0.5">PM In</th>
+            <th className="border border-black px-1 py-0.5">PM Out</th>
+            <th className="border border-black px-1 py-0.5">Hours</th>
             <th className="border border-black px-1 py-0.5">Remarks</th>
           </tr>
         </thead>
@@ -180,7 +180,7 @@ export function PrintableDTR({
       </table>
 
       {/* Summary - Compact */}
-      <div className="grid grid-cols-4 gap-2 text-xs mb-4 p-2 border border-black">
+      <div className="grid grid-cols-3 gap-2 text-xs mb-4 p-2 border border-black">
         <div className="text-center">
           <p className="font-semibold text-xs">No. of Days Worked</p>
           <p className="text-sm font-bold">{summary.daysWorked}</p>
@@ -192,10 +192,6 @@ export function PrintableDTR({
         <div className="text-center">
           <p className="font-semibold text-xs">No. of Minutes Late</p>
           <p className="text-sm font-bold">{summary.lateMinutes ?? 0}</p>
-        </div>
-        <div className="text-center">
-          <p className="font-semibold text-xs">No. of Days Absent</p>
-          <p className="text-sm font-bold">{summary.absentDays}</p>
         </div>
       </div>
 

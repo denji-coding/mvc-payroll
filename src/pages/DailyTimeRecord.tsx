@@ -467,11 +467,10 @@ export default function DailyTimeRecord() {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 print-hide">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 print-hide">
         <SummaryCard icon={<Clock className="h-4 w-4 text-primary" />} label="Days Worked" value={summary.daysWorked} />
         <SummaryCard icon={<Clock className="h-4 w-4 text-primary" />} label="Total Hours" value={summary.totalHours} decimal />
         <SummaryCard icon={<AlertCircle className="h-4 w-4 text-accent-foreground" />} label="Late Days" value={summary.lateDays} />
-        <SummaryCard icon={<AlertCircle className="h-4 w-4 text-destructive" />} label="Absent Days" value={summary.absentDays} />
       </div>
 
 
@@ -491,11 +490,11 @@ export default function DailyTimeRecord() {
             </div>
           ) : (
             <div className="overflow-auto max-h-[600px] relative rounded-md border">
-              <table className="w-full caption-bottom text-sm">
+              <table className="w-full min-w-[800px] table-fixed caption-bottom text-sm">
                 <thead className="sticky top-0 z-30 bg-card [&_tr]:border-b shadow-sm">
                   <tr className="border-b bg-card">
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px] bg-card">Date</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[80px] bg-card">Day</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">Date</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">Day</th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">AM In</th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">AM Out</th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground bg-card">PM In</th>
@@ -544,7 +543,7 @@ export default function DailyTimeRecord() {
                             <Badge variant="outline">-</Badge>
                           ) : leave ? (
                             <div className="flex flex-col items-center gap-1">
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              <Badge variant="outline" className="max-w-full whitespace-normal break-words bg-blue-50 text-blue-700 border-blue-200">
                                 {leave.label}
                               </Badge>
                               <span className="text-xs text-muted-foreground">

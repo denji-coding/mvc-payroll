@@ -91,7 +91,8 @@ export default function Reports() {
 
   const generateReport = async (reportId: ReportType) => {
     setLoadingReport(reportId);
-    const reportMeta = reports.find(r => r.id === reportId)!;
+    const reportMeta = reports.find(r => r.id === reportId);
+    if (!reportMeta) { setLoadingReport(null); return; }
     try {
       switch (reportId) {
         case 'employee-masterlist': {
@@ -182,7 +183,7 @@ export default function Reports() {
             { key: 'paydate', label: 'Pay Date', width: '8%', align: 'center' },
             { key: 'eid', label: 'Emp ID', width: '8%' },
             { key: 'name', label: 'Name', width: '16%' },
-            { key: 'days', label: 'Days', width: '6%', align: 'right' },
+            { key: 'days', label: 'Piece of Work', width: '6%', align: 'right' },
             { key: 'basic', label: 'Basic Pay', width: '9%', align: 'right' },
             { key: 'gross', label: 'Gross Pay', width: '9%', align: 'right' },
             { key: 'sss', label: 'SSS', width: '6%', align: 'right' },
@@ -221,17 +222,14 @@ export default function Reports() {
           if (error) throw error;
           const columns: ReportColumn[] = [
             { key: 'period', label: 'Period', width: '14%' },
-            { key: 'eid', label: 'Emp ID', width: '8%' },
-            { key: 'name', label: 'Name', width: '16%' },
+            { key: 'eid', label: 'Emp ID', width: '9%' },
+            { key: 'name', label: 'Name', width: '17%' },
             { key: 'sssno', label: 'SSS No.', width: '10%' },
-            { key: 'sssee', label: 'SSS (EE)', width: '7%', align: 'right' },
-            { key: 'ssser', label: 'SSS (ER)', width: '7%', align: 'right' },
+            { key: 'sssee', label: 'SSS Payroll Deduction', width: '10%', align: 'right' },
             { key: 'phno', label: 'PhilHealth No.', width: '10%' },
-            { key: 'phee', label: 'PH (EE)', width: '6%', align: 'right' },
-            { key: 'pher', label: 'PH (ER)', width: '6%', align: 'right' },
-            { key: 'pino', label: 'Pag-IBIG No.', width: '8%' },
-            { key: 'piee', label: 'PI (EE)', width: '4%', align: 'right' },
-            { key: 'pier', label: 'PI (ER)', width: '4%', align: 'right' },
+            { key: 'phee', label: 'PhilHealth Payroll Deduction', width: '10%', align: 'right' },
+            { key: 'pino', label: 'Pag-IBIG No.', width: '10%' },
+            { key: 'piee', label: 'Pag-IBIG Payroll Deduction', width: '10%', align: 'right' },
           ];
           const rows = (data || []).map((r: any) => [
             `${r.payroll_periods?.period_start || ''} – ${r.payroll_periods?.period_end || ''}`,
@@ -239,12 +237,9 @@ export default function Reports() {
             formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name),
             r.employees?.sss_number || '',
             fmtMoney(Number(r.sss_contribution || 0)),
-            fmtMoney(Number((r.sss_contribution || 0) * 1.5)),
             r.employees?.philhealth_number || '',
             fmtMoney(Number(r.philhealth_contribution || 0)),
-            fmtMoney(Number(r.philhealth_contribution || 0)),
             r.employees?.pagibig_number || '',
-            fmtMoney(Number(r.pagibig_contribution || 0)),
             fmtMoney(Number(r.pagibig_contribution || 0)),
           ]);
           openPreview({

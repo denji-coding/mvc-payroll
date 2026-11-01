@@ -49,7 +49,9 @@ export default function Auth() {
       const { data, error } = await supabase.rpc("has_any_admin");
       if (cancelled) return;
       if (error) {
-        setNeedsSetup(false);
+        // Server re-checks before creating anything, so showing the form is safe.
+        console.warn("has_any_admin check failed:", error.message);
+        setNeedsSetup(true);
         return;
       }
       setNeedsSetup(data === false);
@@ -180,7 +182,18 @@ export default function Auth() {
         body: { first_name, last_name, email: setupEmail, password: setupPassword },
       });
       if (error || (data && (data as any).error)) {
-        throw new Error(((data as any)?.error) || error?.message || "Setup failed");
+        let message = (data as any)?.error as string | undefined;
+        const ctx = (error as any)?.context;
+        if (!message && ctx && typeof ctx.json === "function") {
+          try {
+            const body = await ctx.json();
+            message = body?.error;
+          } catch {
+            /* ignore */
+          }
+        }
+        if (message?.toLowerCase().includes("already completed")) setNeedsSetup(false);
+        throw new Error(message || error?.message || "Setup failed");
       }
       toast({ title: "Setup complete", description: "Your HR account has been created. Please sign in." });
       setNeedsSetup(false);

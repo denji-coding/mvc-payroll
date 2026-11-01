@@ -21,3 +21,4 @@
 - [x] Remove the DTR absent summary and equalize Remarks column width.
 - [x] Match the downloaded payroll summary header to Reports.
 - [x] Rename the employee payslips download title and verify sample PDF layouts; authenticated page verification unavailable because no requesting-user session could be minted.
+- [x] Fix first-time admin setup on a fresh system

@@ -501,6 +501,16 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
   )
 $$;
 
+-- Used by the login page (signed out) to decide whether to show First-Time Setup.
+CREATE OR REPLACE FUNCTION public.has_any_admin()
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.user_roles
+    WHERE role::text IN ('hr_admin','super_admin')
+  )
+$$;
+GRANT EXECUTE ON FUNCTION public.has_any_admin() TO anon, authenticated, service_role;
+
 CREATE OR REPLACE FUNCTION public.get_employee_by_user(_user_id uuid)
 RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   SELECT id FROM public.employees WHERE user_id = _user_id LIMIT 1

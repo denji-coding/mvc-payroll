@@ -2,64 +2,49 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-interface SetupPayload {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-}
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { autoRefreshToken: false, persistSession: false } },
+    );
 
-    // Re-check no admin exists (server-side, cannot be spoofed)
+    // Server-side re-check: setup is allowed only when no admin exists.
     const { data: existing, error: existingErr } = await admin
       .from("user_roles")
       .select("user_id")
       .in("role", ["hr_admin", "super_admin"])
       .limit(1);
-
-    if (existingErr) {
-      return new Response(JSON.stringify({ error: existingErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
+    if (existingErr) return json({ error: `Could not check existing admins: ${existingErr.message}` }, 500);
     if (existing && existing.length > 0) {
-      return new Response(
-        JSON.stringify({ error: "Setup already completed. An admin account already exists." }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return json({ error: "Setup already completed. An admin account already exists." }, 403);
     }
 
-    const body = (await req.json()) as SetupPayload;
-    const { first_name, last_name, email, password } = body ?? {} as SetupPayload;
+    let body: any = {};
+    try { body = await req.json(); } catch { /* empty */ }
+    const first_name = String(body?.first_name ?? "").trim();
+    const last_name = String(body?.last_name ?? "").trim();
+    const email = String(body?.email ?? "").trim().toLowerCase();
+    const password = String(body?.password ?? "");
 
     if (!first_name || !last_name || !email || !password) {
-      return new Response(
-        JSON.stringify({ error: "First name, last name, email and password are required." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return json({ error: "First name, last name, email and password are required." }, 400);
     }
-    if (password.length < 8) {
-      return new Response(
-        JSON.stringify({ error: "Password must be at least 8 characters." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Please enter a valid email address." }, 400);
+    if (password.length < 8) return json({ error: "Password must be at least 8 characters." }, 400);
 
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,
@@ -67,45 +52,41 @@ Deno.serve(async (req) => {
       email_confirm: true,
       user_metadata: { first_name, last_name },
     });
-
     if (createErr || !created?.user) {
-      return new Response(
-        JSON.stringify({ error: createErr?.message ?? "Failed to create account" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      const msg = createErr?.message ?? "Failed to create account";
+      const friendly = /already|registered|exists/i.test(msg)
+        ? "This email is already registered. Please use a different email or sign in."
+        : msg;
+      return json({ error: friendly }, 400);
     }
-
     const userId = created.user.id;
 
-    // Promote to hr_admin (handle_new_user trigger created default 'employee')
-    const { error: roleErr } = await admin
-      .from("user_roles")
-      .update({ role: "hr_admin" })
-      .eq("user_id", userId);
-
-    if (roleErr) {
+    const rollback = async (message: string) => {
+      await admin.from("user_roles").delete().eq("user_id", userId);
+      await admin.from("profiles").delete().eq("id", userId);
       await admin.auth.admin.deleteUser(userId);
-      return new Response(JSON.stringify({ error: roleErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+      return json({ error: message }, 500);
+    };
 
-    // Ensure must_change_password is false — this is a self-created account
-    await admin
-      .from("profiles")
-      .update({ must_change_password: false })
-      .eq("id", userId);
+    // Ensure profile exists (normally created by the signup trigger).
+    const { error: profErr } = await admin.from("profiles").upsert(
+      { id: userId, email, first_name, last_name, must_change_password: false },
+      { onConflict: "id" },
+    );
+    if (profErr) return await rollback(`Could not save profile: ${profErr.message}`);
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Make the first account the protected Super Admin.
+    const { data: roleRows, error: roleSelErr } = await admin
+      .from("user_roles").select("id").eq("user_id", userId);
+    if (roleSelErr) return await rollback(`Could not read role: ${roleSelErr.message}`);
+
+    const roleRes = roleRows && roleRows.length > 0
+      ? await admin.from("user_roles").update({ role: "super_admin" }).eq("user_id", userId)
+      : await admin.from("user_roles").insert({ user_id: userId, role: "super_admin" });
+    if (roleRes.error) return await rollback(`Could not assign admin role: ${roleRes.error.message}`);
+
+    return json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
   }
 });

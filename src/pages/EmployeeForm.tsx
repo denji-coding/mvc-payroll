@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { RefreshCw } from "lucide-react";
 import { SalaryAdjustmentsCard } from "@/components/employees/SalaryAdjustmentsCard";
 import { EmployeeAvatarUpload } from "@/components/employees/EmployeeAvatarUpload";
@@ -192,7 +192,7 @@ export default function EmployeeForm() {
       { field: "position", label: "Position" },
       { field: "branch_id", label: "Branch" },
       { field: "date_hired", label: "Date Hired" },
-      { field: "basic_salary", label: "Basic Salary" },
+      { field: "basic_salary", label: "Daily Salary" },
       { field: "emergency_contact_name", label: "Emergency Contact Name" },
       { field: "emergency_contact_phone", label: "Emergency Contact Phone" },
       { field: "rfid_card_number", label: "RFID Card Number" },
@@ -222,7 +222,7 @@ export default function EmployeeForm() {
     // Validate government IDs if provided
     const govIdErrors = validateGovernmentIds();
     if (govIdErrors.length > 0) {
-      govIdErrors.forEach((err) => toast.error(err));
+      toast.error("Please check the government ID fields", { description: govIdErrors.join(" ") });
       return false;
     }
 
@@ -544,12 +544,12 @@ export default function EmployeeForm() {
               <DateInput value={form.date_hired} onChange={(v) => updateField("date_hired", v)} />
             </div>
             <div>
-              <RequiredLabel>Basic Salary (₱)</RequiredLabel>
+              <RequiredLabel>Daily Salary (₱)</RequiredLabel>
               <Input
                 type="number"
                 value={form.basic_salary}
                 onChange={(e) => updateField("basic_salary", e.target.value)}
-                placeholder="e.g. 25000"
+                placeholder="e.g. 600.00"
               />
             </div>
             <div>
@@ -702,7 +702,7 @@ export default function EmployeeForm() {
             Cancel
           </Button>
           <Button type="submit" disabled={loading}>
-            <Save className="mr-2 h-4 w-4" />
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             {loading ? "Saving..." : "Save Employee"}
           </Button>
         </div>

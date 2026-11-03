@@ -157,6 +157,16 @@ Deno.serve(async (req) => {
 
     const userId = authData.user.id;
 
+    // Force password change on first login — the initial password is the Employee ID
+    const { error: flagError } = await supabaseAdmin
+      .from('profiles')
+      .update({ must_change_password: true })
+      .eq('id', userId);
+    if (flagError) {
+      console.error("Failed to set must_change_password flag:", flagError);
+    }
+
+
     // Set role if not employee
     if (employeeData.role !== 'employee') {
       await supabaseAdmin.from('user_roles').update({ role: employeeData.role }).eq('user_id', userId);

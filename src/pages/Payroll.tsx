@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2 } from 'lucide-react';
+import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2, CalendarDays } from 'lucide-react';
 import { PayrollSummaryIcon } from '@/components/icons/PayrollSummaryIcon';
 import { BulkPayslipsIcon } from '@/components/icons/BulkPayslipsIcon';
 import { generatePayrollSummaryPdf } from '@/lib/generatePayrollSummaryPdf';
@@ -18,6 +18,7 @@ import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { generateBulkPayslipsPdf } from '@/lib/generateBulkPayslipsPdf';
 import { SalaryCalculator } from '@/components/payroll/SalaryCalculator';
 import { ManualPayrollDialog } from '@/components/payroll/ManualPayrollDialog';
+import { RecordDtrDialog } from '@/components/payroll/RecordDtrDialog';
 import { usePayrollPeriods, usePayrollRecords, useCreatePayrollPeriod, useRunPayroll, useApprovePayroll, useDeletePayrollPeriod, useDeletePayrollRecord } from '@/hooks/usePayroll';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useSalaryComponents, useCreateSalaryComponent, useUpdateSalaryComponent, useDeleteSalaryComponent } from '@/hooks/useSalaryComponents';
@@ -56,6 +57,7 @@ export default function Payroll() {
   const [editingRecord, setEditingRecord] = useState<any>(null);
   const [periodForm, setPeriodForm] = useState({ period_start: '', period_end: '', pay_date: '' });
   const [viewPayslip, setViewPayslip] = useState<any>(null);
+  const [viewDtr, setViewDtr] = useState<any>(null);
 
   const handleViewPeriod = (periodId: string) => { setSelectedPeriod(periodId); setRecordsModalOpen(true); };
 
@@ -232,6 +234,7 @@ export default function Payroll() {
         const r = row.original;
         return (
           <div className="flex gap-2">
+            <Button size="sm" variant="outline" title="View DTR" onClick={() => setViewDtr(r)}><CalendarDays className="h-4 w-4" /></Button>
             <Button size="sm" variant="outline" title="View payslip details" onClick={() => setViewPayslip(r)} disabled={!isPeriodProcessed}><Eye className="h-4 w-4" /></Button>
             {isHR && isPeriodNotApproved && (
               <Button size="sm" variant="outline" title="Edit payroll record" onClick={() => { setEditingRecord(r); setManualPayrollOpen(true); }}>
@@ -348,6 +351,7 @@ export default function Payroll() {
             )}
           </div>
           {viewPayslip && <PayslipDialog record={viewPayslip} onClose={() => setViewPayslip(null)} formatCurrency={formatCurrency} periodStatus={selectedPeriodData?.status} period={selectedPeriodData} />}
+          {viewDtr && <RecordDtrDialog record={viewDtr} period={selectedPeriodData} onClose={() => setViewDtr(null)} />}
           {selectedPeriod && <ManualPayrollDialog periodId={selectedPeriod} open={manualPayrollOpen} onClose={() => { setManualPayrollOpen(false); setEditingRecord(null); }} editRecord={editingRecord} />}
         </DialogContent>
       </Dialog>
@@ -417,7 +421,10 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus, perio
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name)}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name)}</DialogTitle>
+          <DialogDescription>Piece of work: {r.days_worked ?? 0} days</DialogDescription>
+        </DialogHeader>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h4 className="font-semibold text-success mb-2">Earnings</h4>

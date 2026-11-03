@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Camera, Upload, X, User, Loader2, CheckCircle2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
@@ -34,7 +34,6 @@ export function EmployeeAvatarUpload({
   onAvatarChange,
   disabled = false,
 }: EmployeeAvatarUploadProps) {
-  const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [justUploaded, setJustUploaded] = useState(false);
@@ -55,9 +54,7 @@ export function EmployeeAvatarUpload({
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid file type',
+      toast.error('Invalid file type', {
         description: 'Please upload a JPG, PNG, or WebP image.',
       });
       return;
@@ -65,9 +62,7 @@ export function EmployeeAvatarUpload({
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      toast({
-        variant: 'destructive',
-        title: 'File too large',
+      toast.error('File too large', {
         description: 'Please upload an image smaller than 2MB.',
       });
       return;
@@ -103,14 +98,12 @@ export function EmployeeAvatarUpload({
       setProgress(100);
       onAvatarChange(publicUrl);
       setJustUploaded(true);
-      toast({ title: 'Photo uploaded successfully' });
+      toast.success('Photo uploaded successfully');
       setTimeout(() => setJustUploaded(false), 2500);
     } catch (error: any) {
       clearInterval(progressInterval);
       console.error('Upload error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Upload failed',
+      toast.error('Upload failed', {
         description: error.message || 'Failed to upload image.',
       });
     } finally {
@@ -126,7 +119,7 @@ export function EmployeeAvatarUpload({
 
   const handleRemove = () => {
     onAvatarChange(null);
-    toast({ title: 'Photo removed' });
+    toast('Photo removed');
   };
 
   return (

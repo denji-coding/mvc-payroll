@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
 
@@ -110,12 +110,13 @@ export function useUpdatePermission() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
-      toast.success('Permission updated');
+      notifySuccess(context, 'Permission updated');
     },
-    onError: () => {
-      toast.error('Failed to update permission');
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Permissions', 'Failed to update permission', 'save');
     },
   });
 }
@@ -146,12 +147,13 @@ export function useBulkUpdatePermissions() {
         }
       }
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
-      toast.success('Permissions updated');
+      notifySuccess(context, 'Permissions updated');
     },
-    onError: () => {
-      toast.error('Failed to update permissions');
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Permissions', 'Failed to update permissions', 'save');
     },
   });
 }

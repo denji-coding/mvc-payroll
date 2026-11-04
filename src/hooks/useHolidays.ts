@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { getSafeErrorMessage } from '@/lib/errorHandler';
 
 export interface Holiday {
@@ -44,14 +44,13 @@ export function useCreateHoliday() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['holidays'] });
-      toast.success('Holiday created successfully');
+      notifySuccess(context, 'Holiday created successfully');
     },
-    onError: (error: Error) => {
-      toast.error('Error creating holiday', {
-        description: getSafeErrorMessage(error, 'Failed to create holiday'),
-      });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Holiday', getSafeErrorMessage(error, 'Failed to create holiday'), 'save');
     },
   });
 }
@@ -71,14 +70,13 @@ export function useUpdateHoliday() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['holidays'] });
-      toast.success('Holiday updated successfully');
+      notifySuccess(context, 'Holiday updated successfully');
     },
-    onError: (error: Error) => {
-      toast.error('Error updating holiday', {
-        description: getSafeErrorMessage(error, 'Failed to update holiday'),
-      });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Holiday', getSafeErrorMessage(error, 'Failed to update holiday'), 'save');
     },
   });
 }
@@ -95,14 +93,13 @@ export function useDeleteHoliday() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['holidays'] });
-      toast.success('Holiday deleted successfully');
+      notifySuccess(context, 'Holiday deleted successfully');
     },
-    onError: (error: Error) => {
-      toast.error('Error deleting holiday', {
-        description: getSafeErrorMessage(error, 'Failed to delete holiday'),
-      });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Holiday', getSafeErrorMessage(error, 'Failed to delete holiday'), 'delete');
     },
   });
 }

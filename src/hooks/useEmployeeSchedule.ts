@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 
 export interface EmployeeSchedule {
   id: string;
@@ -103,13 +103,13 @@ export function useSaveEmployeeSchedule() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['employee-schedules'] });
-      toast.success('Schedule saved successfully');
+      notifySuccess(context, 'Schedule saved successfully');
     },
-    onError: (error) => {
-      console.error('Save schedule error:', error);
-      toast.error('Failed to save schedule');
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Schedule', 'Failed to save schedule', 'save');
     },
   });
 }
@@ -127,12 +127,13 @@ export function useDeleteEmployeeSchedule() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['employee-schedules'] });
-      toast.success('Schedule deleted');
+      notifySuccess(context, 'Schedule deleted');
     },
-    onError: () => {
-      toast.error('Failed to delete schedule');
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Schedule', 'Failed to delete schedule', 'delete');
     },
   });
 }

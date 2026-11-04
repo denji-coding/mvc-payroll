@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 
 export interface CompanyInfo {
   company_name: string;
@@ -54,12 +54,13 @@ export function useUpdateCompanyInfo() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'company_info'] });
-      toast.success('Company information updated');
+      notifySuccess(context, 'Company information updated');
     },
-    onError: () => {
-      toast.error('Failed to update company information');
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Company information', 'Failed to update company information', 'save');
     },
   });
 }

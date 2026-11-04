@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { getSafeErrorMessage } from '@/lib/errorHandler';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -55,12 +55,13 @@ export function useCreateBranch() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['branches'] });
-      toast.success('Branch created successfully');
+      notifySuccess(context, 'Branch created successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to create branch'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Branch', getSafeErrorMessage(error, 'Failed to create branch'), 'save');
     },
   });
 }
@@ -80,12 +81,13 @@ export function useUpdateBranch() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['branches'] });
-      toast.success('Branch updated successfully');
+      notifySuccess(context, 'Branch updated successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to update branch'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Branch', getSafeErrorMessage(error, 'Failed to update branch'), 'save');
     },
   });
 }
@@ -102,12 +104,13 @@ export function useDeleteBranch() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['branches'] });
-      toast.success('Branch deleted successfully');
+      notifySuccess(context, 'Branch deleted successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to delete branch'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Branch', getSafeErrorMessage(error, 'Failed to delete branch'), 'delete');
     },
   });
 }

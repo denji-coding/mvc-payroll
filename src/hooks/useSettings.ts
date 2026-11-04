@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 
 export interface TerminalSettings {
   terminal_enabled: boolean;
@@ -40,12 +40,13 @@ export function useUpdateTerminalSettings() {
         .eq('key', 'terminal');
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'terminal'] });
-      toast.success('Terminal settings updated');
+      notifySuccess(context, 'Terminal settings updated');
     },
-    onError: () => {
-      toast.error('Failed to update settings');
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Settings', 'Failed to update settings', 'save');
     },
   });
 }
@@ -90,12 +91,13 @@ export function useUpdateLwpConfig() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'lwp_config'] });
-      toast.success('Leave With Pay settings saved successfully');
+      notifySuccess(context, 'Leave With Pay settings saved successfully');
     },
-    onError: () => {
-      toast.error('Failed to save Leave With Pay settings');
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Settings', 'Failed to save Leave With Pay settings', 'save');
     },
   });
 }

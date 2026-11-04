@@ -68,7 +68,7 @@ export function useUpdateBenefitRates() {
       queryClient.invalidateQueries({ queryKey: ['settings', 'benefit_rates'] });
       notifySuccess(context, 'Benefit rates updated');
     },
-    onError: (error: Error, _vars, context) => {
+    onError: (_error: Error, _vars, context) => {
       notifyError(context, 'Benefit rates', 'Failed to update benefit rates', 'save');
     },
   });

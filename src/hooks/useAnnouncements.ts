@@ -120,7 +120,7 @@ export function useToggleAnnouncementPublish() {
       if (error) throw error;
       return data;
     },
-    onMutate: () => notifyProcessing('Deleting...'),
+    onMutate: () => notifyProcessing('Saving...'),
     onSuccess: (_data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
       notifySuccess(context, variables.is_published ? 'Announcement published' : 'Announcement unpublished');

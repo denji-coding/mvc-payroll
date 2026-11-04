@@ -45,7 +45,7 @@ export function useUpdateTerminalSettings() {
       queryClient.invalidateQueries({ queryKey: ['settings', 'terminal'] });
       notifySuccess(context, 'Terminal settings updated');
     },
-    onError: (error: Error, _vars, context) => {
+    onError: (_error: Error, _vars, context) => {
       notifyError(context, 'Settings', 'Failed to update settings', 'save');
     },
   });
@@ -96,7 +96,7 @@ export function useUpdateLwpConfig() {
       queryClient.invalidateQueries({ queryKey: ['settings', 'lwp_config'] });
       notifySuccess(context, 'Leave With Pay settings saved successfully');
     },
-    onError: (error: Error, _vars, context) => {
+    onError: (_error: Error, _vars, context) => {
       notifyError(context, 'Settings', 'Failed to save Leave With Pay settings', 'save');
     },
   });

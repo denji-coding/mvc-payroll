@@ -59,7 +59,7 @@ export function useUpdateCompanyInfo() {
       queryClient.invalidateQueries({ queryKey: ['settings', 'company_info'] });
       notifySuccess(context, 'Company information updated');
     },
-    onError: (error: Error, _vars, context) => {
+    onError: (_error: Error, _vars, context) => {
       notifyError(context, 'Company information', 'Failed to update company information', 'save');
     },
   });

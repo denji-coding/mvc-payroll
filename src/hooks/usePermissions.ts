@@ -115,7 +115,7 @@ export function useUpdatePermission() {
       queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
       notifySuccess(context, 'Permission updated');
     },
-    onError: (error: Error, _vars, context) => {
+    onError: (_error: Error, _vars, context) => {
       notifyError(context, 'Permissions', 'Failed to update permission', 'save');
     },
   });
@@ -152,7 +152,7 @@ export function useBulkUpdatePermissions() {
       queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
       notifySuccess(context, 'Permissions updated');
     },
-    onError: (error: Error, _vars, context) => {
+    onError: (_error: Error, _vars, context) => {
       notifyError(context, 'Permissions', 'Failed to update permissions', 'save');
     },
   });

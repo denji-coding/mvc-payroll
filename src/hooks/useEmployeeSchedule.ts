@@ -108,7 +108,7 @@ export function useSaveEmployeeSchedule() {
       queryClient.invalidateQueries({ queryKey: ['employee-schedules'] });
       notifySuccess(context, 'Schedule saved successfully');
     },
-    onError: (error: Error, _vars, context) => {
+    onError: (_error: Error, _vars, context) => {
       notifyError(context, 'Schedule', 'Failed to save schedule', 'save');
     },
   });
@@ -132,7 +132,7 @@ export function useDeleteEmployeeSchedule() {
       queryClient.invalidateQueries({ queryKey: ['employee-schedules'] });
       notifySuccess(context, 'Schedule deleted');
     },
-    onError: (error: Error, _vars, context) => {
+    onError: (_error: Error, _vars, context) => {
       notifyError(context, 'Schedule', 'Failed to delete schedule', 'delete');
     },
   });

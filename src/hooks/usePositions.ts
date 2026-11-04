@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 export type Position = Tables<'positions'>;
@@ -48,12 +48,13 @@ export function useCreatePosition() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['positions'] });
-      toast.success('Position created successfully');
+      notifySuccess(context, 'Position created successfully');
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Position', error.message, 'save');
     },
   });
 }
@@ -71,12 +72,13 @@ export function useUpdatePosition() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['positions'] });
-      toast.success('Position updated successfully');
+      notifySuccess(context, 'Position updated successfully');
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Position', error.message, 'save');
     },
   });
 }
@@ -91,12 +93,13 @@ export function useDeletePosition() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['positions'] });
-      toast.success('Position deleted successfully');
+      notifySuccess(context, 'Position deleted successfully');
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Position', error.message, 'delete');
     },
   });
 }

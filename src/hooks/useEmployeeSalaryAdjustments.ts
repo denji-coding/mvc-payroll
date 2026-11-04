@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 
 export interface EmployeeSalaryAdjustment {
   id: string;
@@ -60,12 +60,13 @@ export function useCreateEmployeeSalaryAdjustment() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['employee-salary-adjustments', variables.employee_id] });
-      toast.success('Salary adjustment added');
+      notifySuccess(context, 'Salary adjustment added');
     },
-    onError: (error) => {
-      toast.error('Failed to add adjustment: ' + error.message);
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary adjustment', 'Failed to add adjustment: ' + error.message, 'save');
     },
   });
 }
@@ -92,12 +93,13 @@ export function useUpdateEmployeeSalaryAdjustment() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['employee-salary-adjustments', variables.employee_id] });
-      toast.success('Salary adjustment updated');
+      notifySuccess(context, 'Salary adjustment updated');
     },
-    onError: (error) => {
-      toast.error('Failed to update adjustment: ' + error.message);
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary adjustment', 'Failed to update adjustment: ' + error.message, 'save');
     },
   });
 }
@@ -114,12 +116,13 @@ export function useDeleteEmployeeSalaryAdjustment() {
       
       if (error) throw error;
     },
-    onSuccess: (_, variables) => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['employee-salary-adjustments', variables.employee_id] });
-      toast.success('Salary adjustment deleted');
+      notifySuccess(context, 'Salary adjustment deleted');
     },
-    onError: (error) => {
-      toast.error('Failed to delete adjustment: ' + error.message);
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary adjustment', 'Failed to delete adjustment: ' + error.message, 'delete');
     },
   });
 }

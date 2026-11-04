@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { getSafeErrorMessage } from '@/lib/errorHandler';
 
 export interface LeaveType {
@@ -75,13 +75,14 @@ export function useCreateLeaveType() {
 
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['leave-types'] });
       queryClient.invalidateQueries({ queryKey: ['all-leave-credits'] });
-      toast.success('Leave type created successfully');
+      notifySuccess(context, 'Leave type created successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to create leave type'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Leave type', getSafeErrorMessage(error, 'Failed to create leave type'), 'save');
     },
   });
 }
@@ -99,12 +100,13 @@ export function useUpdateLeaveType() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['leave-types'] });
-      toast.success('Leave type updated successfully');
+      notifySuccess(context, 'Leave type updated successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to update leave type'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Leave type', getSafeErrorMessage(error, 'Failed to update leave type'), 'save');
     },
   });
 }
@@ -119,12 +121,13 @@ export function useDeleteLeaveType() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['leave-types'] });
-      toast.success('Leave type deleted successfully');
+      notifySuccess(context, 'Leave type deleted successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to delete leave type'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Leave type', getSafeErrorMessage(error, 'Failed to delete leave type'), 'delete');
     },
   });
 }

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { getSafeErrorMessage } from '@/lib/errorHandler';
 
 export interface Announcement {
@@ -65,14 +65,13 @@ export function useCreateAnnouncement() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast.success('Announcement created successfully');
+      notifySuccess(context, 'Announcement created successfully');
     },
-    onError: (error: Error) => {
-      toast.error('Error creating announcement', {
-        description: getSafeErrorMessage(error, 'Failed to create announcement'),
-      });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Announcement', getSafeErrorMessage(error, 'Failed to create announcement'), 'save');
     },
   });
 }
@@ -92,14 +91,13 @@ export function useUpdateAnnouncement() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast.success('Announcement updated successfully');
+      notifySuccess(context, 'Announcement updated successfully');
     },
-    onError: (error: Error) => {
-      toast.error('Error updating announcement', {
-        description: getSafeErrorMessage(error, 'Failed to update announcement'),
-      });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Announcement', getSafeErrorMessage(error, 'Failed to update announcement'), 'save');
     },
   });
 }
@@ -122,14 +120,13 @@ export function useToggleAnnouncementPublish() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast.success(variables.is_published ? 'Announcement published' : 'Announcement unpublished');
+      notifySuccess(context, variables.is_published ? 'Announcement published' : 'Announcement unpublished');
     },
-    onError: (error: Error) => {
-      toast.error('Error updating announcement', {
-        description: getSafeErrorMessage(error, 'Failed to update announcement'),
-      });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Announcement', getSafeErrorMessage(error, 'Failed to update announcement'), 'save');
     },
   });
 }
@@ -146,14 +143,13 @@ export function useDeleteAnnouncement() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast.success('Announcement deleted successfully');
+      notifySuccess(context, 'Announcement deleted successfully');
     },
-    onError: (error: Error) => {
-      toast.error('Error deleting announcement', {
-        description: getSafeErrorMessage(error, 'Failed to delete announcement'),
-      });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Announcement', getSafeErrorMessage(error, 'Failed to delete announcement'), 'delete');
     },
   });
 }

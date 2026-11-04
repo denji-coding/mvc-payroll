@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { getSafeErrorMessage } from '@/lib/errorHandler';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -55,12 +55,13 @@ export function useCreateEmployee() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Employee created successfully');
+      notifySuccess(context, 'Employee created successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to create employee'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Employee', getSafeErrorMessage(error, 'Failed to create employee'), 'save');
     },
   });
 }
@@ -80,12 +81,13 @@ export function useUpdateEmployee() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Employee updated successfully');
+      notifySuccess(context, 'Employee updated successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to update employee'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Employee', getSafeErrorMessage(error, 'Failed to update employee'), 'save');
     },
   });
 }
@@ -102,12 +104,13 @@ export function useDeleteEmployee() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Employee deleted successfully');
+      notifySuccess(context, 'Employee deleted successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to delete employee'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Employee', getSafeErrorMessage(error, 'Failed to delete employee'), 'delete');
     },
   });
 }

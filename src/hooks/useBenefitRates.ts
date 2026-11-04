@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 
 export interface BenefitRates {
   sss_contribution: number;
@@ -63,12 +63,13 @@ export function useUpdateBenefitRates() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'benefit_rates'] });
-      toast.success('Benefit rates updated');
+      notifySuccess(context, 'Benefit rates updated');
     },
-    onError: () => {
-      toast.error('Failed to update benefit rates');
+    onError: (_error: Error, _vars, context) => {
+      notifyError(context, 'Benefit rates', 'Failed to update benefit rates', 'save');
     },
   });
 }

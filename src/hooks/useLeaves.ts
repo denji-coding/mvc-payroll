@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { useAuth } from './useAuth';
 import { getSafeErrorMessage } from '@/lib/errorHandler';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
@@ -267,13 +267,14 @@ export function useCreateLeaveCredit() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['leave-credits'] });
       queryClient.invalidateQueries({ queryKey: ['all-leave-credits'] });
-      toast.success('Leave credit added successfully');
+      notifySuccess(context, 'Leave credit added successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to add leave credit'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Leave credit', getSafeErrorMessage(error, 'Failed to add leave credit'), 'save');
     },
   });
 }
@@ -301,13 +302,14 @@ export function useUpdateLeaveCredit() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['leave-credits'] });
       queryClient.invalidateQueries({ queryKey: ['all-leave-credits'] });
-      toast.success('Leave credit updated successfully');
+      notifySuccess(context, 'Leave credit updated successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to update leave credit'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Leave credit', getSafeErrorMessage(error, 'Failed to update leave credit'), 'save');
     },
   });
 }
@@ -335,13 +337,14 @@ export function useCreateLeaveRequest() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
       queryClient.invalidateQueries({ queryKey: ['my-leave-requests'] });
-      toast.success('Leave request submitted successfully');
+      notifySuccess(context, 'Leave request submitted successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to submit leave request'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to submit leave request'), 'save');
     },
   });
 }
@@ -395,14 +398,15 @@ export function useApproveLeaveRequest() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onMutate: () => notifyProcessing('Processing...'),
+    onSuccess: (_, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
       queryClient.invalidateQueries({ queryKey: ['leave-credits'] });
       queryClient.invalidateQueries({ queryKey: ['all-leave-credits'] });
-      toast.success(`Leave request ${variables.action === 'approve' ? 'approved' : 'rejected'}`);
+      notifySuccess(context, `Leave request ${variables.action === 'approve' ? 'approved' : 'rejected'}`);
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to process leave request'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to process leave request'), 'process');
     },
   });
 }
@@ -422,13 +426,14 @@ export function useCancelLeaveRequest() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
       queryClient.invalidateQueries({ queryKey: ['my-leave-requests'] });
-      toast.success('Leave request cancelled');
+      notifySuccess(context, 'Leave request cancelled');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to cancel leave request'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to cancel leave request'), 'delete');
     },
   });
 }

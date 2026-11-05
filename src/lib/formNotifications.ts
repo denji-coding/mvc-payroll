@@ -23,7 +23,7 @@ const startedAt = new Map<string, number>();
 
 /** Start the persistent "Processing" pop-up. Returns the toast id. */
 export function notifyProcessing(message = 'Saving...'): string {
-  const id = toast.loading(message, { duration: Infinity });
+  const id = String(toast.loading(message, { duration: Infinity }));
   startedAt.set(id, Date.now());
   return id;
 }

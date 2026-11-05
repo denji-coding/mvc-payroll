@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { getSafeErrorMessage } from '@/lib/errorHandler';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
@@ -104,12 +104,13 @@ export function useCreatePayrollPeriod() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['payroll-periods'] });
-      toast.success('Payroll period created');
+      notifySuccess(context, 'Payroll period created');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to create payroll period'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Payroll period', getSafeErrorMessage(error, 'Failed to create payroll period'), 'save'));
     },
   });
 }
@@ -126,13 +127,14 @@ export function useRunPayroll() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Processing...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['payroll-periods'] });
       queryClient.invalidateQueries({ queryKey: ['payroll-records'] });
-      toast.success('Payroll computed successfully');
+      notifySuccess(context, 'Payroll computed successfully');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to compute payroll'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Payroll', getSafeErrorMessage(error, 'Failed to compute payroll'), 'process'));
     },
   });
 }
@@ -170,12 +172,13 @@ export function useApprovePayroll() {
       
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Processing...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['payroll-periods'] });
-      toast.success('Payroll approved and employees notified');
+      notifySuccess(context, 'Payroll approved and employees notified');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to approve payroll'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Payroll', getSafeErrorMessage(error, 'Failed to approve payroll'), 'process'));
     },
   });
 }
@@ -216,13 +219,14 @@ export function useDeletePayrollPeriod() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['payroll-periods'] });
       queryClient.invalidateQueries({ queryKey: ['payroll-records'] });
-      toast.success('Payroll period deleted');
+      notifySuccess(context, 'Payroll period deleted');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to delete payroll period'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Payroll period', getSafeErrorMessage(error, 'Failed to delete payroll period'), 'delete'));
     },
   });
 }
@@ -239,12 +243,13 @@ export function useDeletePayrollRecord() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['payroll-records'] });
-      toast.success('Payroll record deleted');
+      notifySuccess(context, 'Payroll record deleted');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to delete payroll record'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Payroll record', getSafeErrorMessage(error, 'Failed to delete payroll record'), 'delete'));
     },
   });
 }
@@ -307,12 +312,13 @@ export function useCreateManualPayroll() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['payroll-records'] });
-      toast.success('Manual payroll record created');
+      notifySuccess(context, 'Manual payroll record created');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to create manual payroll'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Manual payroll record', getSafeErrorMessage(error, 'Failed to create manual payroll'), 'save'));
     },
   });
 }
@@ -356,12 +362,13 @@ export function useUpdatePayrollRecord() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['payroll-records'] });
-      toast.success('Payroll record updated');
+      notifySuccess(context, 'Payroll record updated');
     },
-    onError: (error) => {
-      toast.error(getSafeErrorMessage(error, 'Failed to update payroll record'));
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Payroll record', getSafeErrorMessage(error, 'Failed to update payroll record'), 'save'));
     },
   });
 }

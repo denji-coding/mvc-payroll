@@ -110,7 +110,7 @@ export function useCreatePayrollPeriod() {
       notifySuccess(context, 'Payroll period created');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Payroll period', getSafeErrorMessage(error, 'Failed to create payroll period'), 'save'));
+      notifyError(context, 'Payroll period', getSafeErrorMessage(error, 'Failed to create payroll period'), 'save');
     },
   });
 }
@@ -134,7 +134,7 @@ export function useRunPayroll() {
       notifySuccess(context, 'Payroll computed successfully');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Payroll', getSafeErrorMessage(error, 'Failed to compute payroll'), 'process'));
+      notifyError(context, 'Payroll', getSafeErrorMessage(error, 'Failed to compute payroll'), 'process');
     },
   });
 }
@@ -178,7 +178,7 @@ export function useApprovePayroll() {
       notifySuccess(context, 'Payroll approved and employees notified');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Payroll', getSafeErrorMessage(error, 'Failed to approve payroll'), 'process'));
+      notifyError(context, 'Payroll', getSafeErrorMessage(error, 'Failed to approve payroll'), 'process');
     },
   });
 }
@@ -226,7 +226,7 @@ export function useDeletePayrollPeriod() {
       notifySuccess(context, 'Payroll period deleted');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Payroll period', getSafeErrorMessage(error, 'Failed to delete payroll period'), 'delete'));
+      notifyError(context, 'Payroll period', getSafeErrorMessage(error, 'Failed to delete payroll period'), 'delete');
     },
   });
 }
@@ -249,7 +249,7 @@ export function useDeletePayrollRecord() {
       notifySuccess(context, 'Payroll record deleted');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Payroll record', getSafeErrorMessage(error, 'Failed to delete payroll record'), 'delete'));
+      notifyError(context, 'Payroll record', getSafeErrorMessage(error, 'Failed to delete payroll record'), 'delete');
     },
   });
 }
@@ -318,7 +318,7 @@ export function useCreateManualPayroll() {
       notifySuccess(context, 'Manual payroll record created');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Manual payroll record', getSafeErrorMessage(error, 'Failed to create manual payroll'), 'save'));
+      notifyError(context, 'Manual payroll record', getSafeErrorMessage(error, 'Failed to create manual payroll'), 'save');
     },
   });
 }
@@ -368,7 +368,7 @@ export function useUpdatePayrollRecord() {
       notifySuccess(context, 'Payroll record updated');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Payroll record', getSafeErrorMessage(error, 'Failed to update payroll record'), 'save'));
+      notifyError(context, 'Payroll record', getSafeErrorMessage(error, 'Failed to update payroll record'), 'save');
     },
   });
 }

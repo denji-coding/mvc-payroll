@@ -274,7 +274,7 @@ export function useCreateLeaveCredit() {
       notifySuccess(context, 'Leave credit added successfully');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Leave credit', getSafeErrorMessage(error, 'Failed to add leave credit'), 'save'));
+      notifyError(context, 'Leave credit', getSafeErrorMessage(error, 'Failed to add leave credit'), 'save');
     },
   });
 }
@@ -309,7 +309,7 @@ export function useUpdateLeaveCredit() {
       notifySuccess(context, 'Leave credit updated successfully');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Leave credit', getSafeErrorMessage(error, 'Failed to update leave credit'), 'save'));
+      notifyError(context, 'Leave credit', getSafeErrorMessage(error, 'Failed to update leave credit'), 'save');
     },
   });
 }
@@ -344,7 +344,7 @@ export function useCreateLeaveRequest() {
       notifySuccess(context, 'Leave request submitted successfully');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to submit leave request'), 'save'));
+      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to submit leave request'), 'save');
     },
   });
 }
@@ -406,7 +406,7 @@ export function useApproveLeaveRequest() {
       notifySuccess(context, `Leave request ${variables.action === 'approve' ? 'approved' : 'rejected'}`);
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to process leave request'), 'process'));
+      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to process leave request'), 'process');
     },
   });
 }
@@ -433,7 +433,7 @@ export function useCancelLeaveRequest() {
       notifySuccess(context, 'Leave request cancelled');
     },
     onError: (error: Error, _vars, context) => {
-      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to cancel leave request'), 'delete'));
+      notifyError(context, 'Leave request', getSafeErrorMessage(error, 'Failed to cancel leave request'), 'delete');
     },
   });
 }

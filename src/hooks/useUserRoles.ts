@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
@@ -78,8 +78,6 @@ export function useBranchManagers() {
 
 export function useUpdateUserRole() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({ userId, role, existingRoleId }: { userId: string; role: AppRole; existingRoleId: string | null }) => {
       if (existingRoleId) {
@@ -105,20 +103,19 @@ export function useUpdateUserRole() {
         return data;
       }
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
-      toast({ title: 'User role updated successfully' });
+      notifySuccess(context, 'User role updated successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error updating user role', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'User role', error.message, 'save');
     },
   });
 }
 
 export function useAssignBranchManager() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({ userId, branchId }: { userId: string; branchId: string }) => {
       // First check if user is already a manager for this branch
@@ -142,20 +139,19 @@ export function useAssignBranchManager() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['branch-managers'] });
-      toast({ title: 'Branch manager assigned successfully' });
+      notifySuccess(context, 'Branch manager assigned successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error assigning branch manager', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Branch manager', error.message, 'save');
     },
   });
 }
 
 export function useRemoveBranchManager() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -165,12 +161,13 @@ export function useRemoveBranchManager() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['branch-managers'] });
-      toast({ title: 'Branch manager removed successfully' });
+      notifySuccess(context, 'Branch manager removed successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error removing branch manager', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Branch manager', error.message, 'delete');
     },
   });
 }

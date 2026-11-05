@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 
 export interface SalaryComponent {
   id: string;
@@ -47,8 +47,6 @@ export function useSalaryComponents() {
 
 export function useCreateSalaryComponent() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (component: {
       name: string;
@@ -66,20 +64,19 @@ export function useCreateSalaryComponent() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['salary-components'] });
-      toast({ title: 'Salary component created successfully' });
+      notifySuccess(context, 'Salary component created successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error creating salary component', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary component', error.message, 'save');
     },
   });
 }
 
 export function useUpdateSalaryComponent() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<SalaryComponent> & { id: string }) => {
       const { data, error } = await supabase
@@ -92,20 +89,19 @@ export function useUpdateSalaryComponent() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['salary-components'] });
-      toast({ title: 'Salary component updated successfully' });
+      notifySuccess(context, 'Salary component updated successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error updating salary component', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary component', error.message, 'save');
     },
   });
 }
 
 export function useDeleteSalaryComponent() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -115,12 +111,13 @@ export function useDeleteSalaryComponent() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['salary-components'] });
-      toast({ title: 'Salary component deleted successfully' });
+      notifySuccess(context, 'Salary component deleted successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error deleting salary component', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary component', error.message, 'delete');
     },
   });
 }
@@ -154,8 +151,6 @@ export function useEmployeeSalaryAdjustments(employeeId?: string) {
 
 export function useCreateEmployeeSalaryAdjustment() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (adjustment: {
       employee_id: string;
@@ -174,20 +169,19 @@ export function useCreateEmployeeSalaryAdjustment() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['employee-salary-adjustments'] });
-      toast({ title: 'Salary adjustment created successfully' });
+      notifySuccess(context, 'Salary adjustment created successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error creating salary adjustment', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary adjustment', error.message, 'save');
     },
   });
 }
 
 export function useUpdateEmployeeSalaryAdjustment() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<EmployeeSalaryAdjustment> & { id: string }) => {
       const { data, error } = await supabase
@@ -200,20 +194,19 @@ export function useUpdateEmployeeSalaryAdjustment() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Saving...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['employee-salary-adjustments'] });
-      toast({ title: 'Salary adjustment updated successfully' });
+      notifySuccess(context, 'Salary adjustment updated successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error updating salary adjustment', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary adjustment', error.message, 'save');
     },
   });
 }
 
 export function useDeleteEmployeeSalaryAdjustment() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -223,12 +216,13 @@ export function useDeleteEmployeeSalaryAdjustment() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: () => notifyProcessing('Deleting...'),
+    onSuccess: (_data, _vars, context) => {
       queryClient.invalidateQueries({ queryKey: ['employee-salary-adjustments'] });
-      toast({ title: 'Salary adjustment deleted successfully' });
+      notifySuccess(context, 'Salary adjustment deleted successfully');
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error deleting salary adjustment', description: error.message, variant: 'destructive' });
+    onError: (error: Error, _vars, context) => {
+      notifyError(context, 'Salary adjustment', error.message, 'delete');
     },
   });
 }

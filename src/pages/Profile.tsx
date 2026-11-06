@@ -15,8 +15,6 @@ import { formatFullName } from '@/lib/formatName';
 
 export default function Profile() {
   const { profile, user, refreshProfile } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
   const [suffixName, setSuffixName] = useState('');
   const [middleName, setMiddleName] = useState('');
   const [form, setForm] = useState({

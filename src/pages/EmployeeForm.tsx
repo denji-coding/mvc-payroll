@@ -27,7 +27,6 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
 export default function EmployeeForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isSubmitting] = [false];
   const { data: branches = [] } = useBranches();
   const { data: positions } = usePositions();
   const [employeeLoaded, setEmployeeLoaded] = useState(false);

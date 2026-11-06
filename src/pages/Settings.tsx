@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -130,7 +130,7 @@ function GeneralSettings() {
   const [companyName, setCompanyName] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [savingCompany, setSavingCompany] = useState(false);
+  const savingCompanyRef = useRef(false);
 
   useEffect(() => {
     if (companyInfo) {
@@ -149,7 +149,8 @@ function GeneralSettings() {
   };
 
   const handleSaveCompany = async () => {
-    setSavingCompany(true);
+    if (savingCompanyRef.current) return;
+    savingCompanyRef.current = true;
     try {
       let logoUrl = companyInfo?.company_logo_url || null;
 
@@ -160,7 +161,12 @@ function GeneralSettings() {
           .from('employee-avatars')
           .upload(filePath, logoFile, { upsert: true });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          toast.error('Failed to save Company information. Please try again.', {
+            description: uploadError.message,
+          });
+          return;
+        }
 
         const { data: urlData } = supabase.storage
           .from('employee-avatars')
@@ -176,10 +182,10 @@ function GeneralSettings() {
       setEditingCompany(false);
       setLogoFile(null);
       setLogoPreview(null);
-    } catch (err) {
-      toast.error('Failed to save company information');
+    } catch {
+      // The save flow already shows the error notification
     } finally {
-      setSavingCompany(false);
+      savingCompanyRef.current = false;
     }
   };
 
@@ -226,8 +232,8 @@ function GeneralSettings() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleSaveCompany} disabled={savingCompany || !companyName.trim()}>
-                  {savingCompany ? 'Saving...' : 'Save Changes'}
+                <Button onClick={handleSaveCompany} disabled={!companyName.trim()}>
+                  Save Changes
                 </Button>
                 <Button variant="outline" onClick={() => {
                   setEditingCompany(false);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,13 +9,12 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Save, User, Lock, Phone, Mail, Loader2 } from 'lucide-react';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
+import { Save, User, Lock, Phone, Mail } from 'lucide-react';
 import { formatFullName } from '@/lib/formatName';
 
 export default function Profile() {
   const { profile, user, refreshProfile } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
   const [suffixName, setSuffixName] = useState('');
   const [middleName, setMiddleName] = useState('');
   const [form, setForm] = useState({
@@ -70,20 +69,28 @@ export default function Profile() {
     return 'U';
   };
 
+  const profileSubmittingRef = useRef(false);
+  const passwordSubmittingRef = useRef(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-    setLoading(true);
+    if (!user || profileSubmittingRef.current) return;
+    profileSubmittingRef.current = true;
+    const toastId = notifyProcessing();
     const { error } = await supabase.from('profiles').update(form).eq('id', user.id);
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      notifyError(toastId, 'Profile', error);
+      profileSubmittingRef.current = false;
+      return;
+    }
     await refreshProfile();
-    toast.success('Profile Updated');
+    profileSubmittingRef.current = false;
+    notifySuccess(toastId, 'Profile Updated');
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || passwordSubmittingRef.current) return;
 
     if (passwordForm.new_password !== passwordForm.confirm_password) {
       toast.error('New passwords do not match');
@@ -95,8 +102,9 @@ export default function Profile() {
       return;
     }
 
-    setPasswordLoading(true);
-    
+    passwordSubmittingRef.current = true;
+    const toastId = notifyProcessing();
+
     // First verify current password by attempting to sign in
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: profile?.email || '',
@@ -104,8 +112,8 @@ export default function Profile() {
     });
 
     if (signInError) {
-      setPasswordLoading(false);
-      toast.error('Current password is incorrect');
+      notifyError(toastId, 'Password', 'Current password is incorrect');
+      passwordSubmittingRef.current = false;
       return;
     }
 
@@ -114,14 +122,14 @@ export default function Profile() {
       password: passwordForm.new_password,
     });
 
-    setPasswordLoading(false);
-
     if (error) {
-      toast.error(error.message);
+      notifyError(toastId, 'Password', error);
+      passwordSubmittingRef.current = false;
       return;
     }
 
-    toast.success('Password updated successfully');
+    passwordSubmittingRef.current = false;
+    notifySuccess(toastId, 'Password updated successfully');
     setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
   };
 
@@ -195,18 +203,9 @@ export default function Profile() {
                   />
                 </div>
               </div>
-              <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Changes
-                  </>
-                )}
+              <Button type="submit" className="w-full sm:w-auto">
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
               </Button>
             </form>
           </CardContent>
@@ -253,18 +252,9 @@ export default function Profile() {
                   placeholder="Confirm your new password"
                 />
               </div>
-              <Button type="submit" variant="secondary" disabled={passwordLoading} className="w-full sm:w-auto">
-                {passwordLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="mr-2 h-4 w-4" />
-                    Update Password
-                  </>
-                )}
+              <Button type="submit" variant="secondary" className="w-full sm:w-auto">
+                <Lock className="mr-2 h-4 w-4" />
+                Update Password
               </Button>
             </form>
           </CardContent>

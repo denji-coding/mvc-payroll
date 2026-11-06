@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, RotateCcw, Eye, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, RotateCcw, Eye } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { formatFullName } from '@/lib/formatName';
 import { EmployeeAvatar } from '@/components/employees/EmployeeAvatar';
@@ -46,37 +47,57 @@ export default function Employees() {
     setLoading(false);
   };
 
+  const statusActionRef = useRef(false);
+
   const handleSoftDelete = async (id: string, name: string) => {
+    if (statusActionRef.current) return;
+    statusActionRef.current = true;
+    const toastId = notifyProcessing('Deleting...');
     const { error } = await supabase
       .from('employees')
       .update({ employment_status: 'terminated' })
       .eq('id', id);
-    if (error) { toast.error('Failed to delete employee'); return; }
-    toast.success(`${name} has been deactivated`);
+    if (error) {
+      notifyError(toastId, 'Employee', 'Failed to delete employee', 'delete');
+      statusActionRef.current = false;
+      return;
+    }
+    notifySuccess(toastId, `${name} has been deactivated`);
+    statusActionRef.current = false;
     fetchEmployees();
   };
 
   const handleRestore = async (id: string, name: string) => {
+    if (statusActionRef.current) return;
+    statusActionRef.current = true;
+    const toastId = notifyProcessing('Restoring...');
     const { error } = await supabase
       .from('employees')
       .update({ employment_status: 'active' })
       .eq('id', id);
-    if (error) { toast.error('Failed to restore employee'); return; }
-    toast.success(`${name} has been restored`);
+    if (error) {
+      notifyError(toastId, 'Employee', 'Failed to restore employee', 'restore');
+      statusActionRef.current = false;
+      return;
+    }
+    notifySuccess(toastId, `${name} has been restored`);
+    statusActionRef.current = false;
     fetchEmployees();
   };
 
   const handlePermanentDelete = async (id: string, name: string) => {
+    if (deletingId) return;
     setDeletingId(id);
+    const toastId = notifyProcessing('Deleting...');
     const { data, error } = await supabase.functions.invoke('delete-employee', {
       body: { employee_id: id },
     });
     setDeletingId(null);
     if (error || data?.error) {
-      toast.error(data?.error || error?.message || 'Failed to permanently delete employee');
+      notifyError(toastId, 'Employee', data?.error || error?.message || 'Failed to permanently delete employee', 'delete');
       return;
     }
-    toast.success(`${name} has been permanently deleted`);
+    notifySuccess(toastId, `${name} has been permanently deleted`);
     fetchEmployees();
   };
 
@@ -149,7 +170,7 @@ export default function Employees() {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" title="Permanently delete employee" className="text-destructive hover:text-destructive" disabled={deletingId === emp.id}>
-                       {deletingId === emp.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                       <Trash2 className="h-4 w-4" />
                      </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>

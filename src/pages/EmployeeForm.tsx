@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { notifyError, notifyProcessing, notifySuccess } from "@/lib/formNotifications";
+import { ArrowLeft, Save } from "lucide-react";
 import { RefreshCw } from "lucide-react";
 import { SalaryAdjustmentsCard } from "@/components/employees/SalaryAdjustmentsCard";
 import { EmployeeAvatarUpload } from "@/components/employees/EmployeeAvatarUpload";
@@ -26,7 +27,6 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
 export default function EmployeeForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const { data: branches = [] } = useBranches();
   const { data: positions } = usePositions();
   const [employeeLoaded, setEmployeeLoaded] = useState(false);
@@ -229,12 +229,16 @@ export default function EmployeeForm() {
     return true;
   };
 
+  const submittingRef = useRef(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (submittingRef.current) return;
     if (!validateRequiredFields()) return;
 
-    setLoading(true);
+    submittingRef.current = true;
+    const toastId = notifyProcessing();
 
     if (id) {
       const { password, role, ...payload } = form;
@@ -252,15 +256,15 @@ export default function EmployeeForm() {
       // Check for duplicates
       const duplicateError = await checkDuplicatesOnEdit(cleanPayload, id);
       if (duplicateError) {
-        toast.error(duplicateError);
-        setLoading(false);
+        notifyError(toastId, "Employee", duplicateError);
+        submittingRef.current = false;
         return;
       }
 
       const { error } = await supabase.from("employees").update(cleanPayload).eq("id", id);
       if (error) {
-        setLoading(false);
-        toast.error(error.message);
+        notifyError(toastId, "Employee", error);
+        submittingRef.current = false;
         return;
       }
 
@@ -282,14 +286,14 @@ export default function EmployeeForm() {
           .eq("id", emp.user_id);
       }
 
-      setLoading(false);
-      toast.success("Employee updated successfully");
+      submittingRef.current = false;
+      notifySuccess(toastId, "Employee updated successfully");
       navigate("/employees");
     } else {
       // Create new employee with user account via edge function
       if (!form.password || form.password.length < 6) {
-        toast.error("Password must be at least 6 characters");
-        setLoading(false);
+        notifyError(toastId, "Employee", "Password must be at least 6 characters");
+        submittingRef.current = false;
         return;
       }
 
@@ -302,7 +306,6 @@ export default function EmployeeForm() {
         body: payload,
       });
 
-      setLoading(false);
       if (error) {
         // Edge function returns error details in the response body
         let errorMessage = "Failed to create employee";
@@ -319,14 +322,17 @@ export default function EmployeeForm() {
         } catch {
           errorMessage = error.message || errorMessage;
         }
-        toast.error(errorMessage);
+        notifyError(toastId, "Employee", errorMessage);
+        submittingRef.current = false;
         return;
       }
       if (data?.error) {
-        toast.error(data.error);
+        notifyError(toastId, "Employee", data.error);
+        submittingRef.current = false;
         return;
       }
-      toast.success("Employee created successfully");
+      submittingRef.current = false;
+      notifySuccess(toastId, "Employee created successfully");
       navigate("/employees");
     }
   };
@@ -701,9 +707,9 @@ export default function EmployeeForm() {
           <Button type="button" variant="outline" onClick={() => navigate("/employees")}>
             Cancel
           </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            {loading ? "Saving..." : "Save Employee"}
+          <Button type="submit">
+            <Save className="mr-2 h-4 w-4" />
+            Save Employee
           </Button>
         </div>
       </form>

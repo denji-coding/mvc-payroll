@@ -205,18 +205,9 @@ export default function Profile() {
                   />
                 </div>
               </div>
-              <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Changes
-                  </>
-                )}
+              <Button type="submit" className="w-full sm:w-auto">
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
               </Button>
             </form>
           </CardContent>
@@ -263,18 +254,9 @@ export default function Profile() {
                   placeholder="Confirm your new password"
                 />
               </div>
-              <Button type="submit" variant="secondary" disabled={passwordLoading} className="w-full sm:w-auto">
-                {passwordLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="mr-2 h-4 w-4" />
-                    Update Password
-                  </>
-                )}
+              <Button type="submit" variant="secondary" className="w-full sm:w-auto">
+                <Lock className="mr-2 h-4 w-4" />
+                Update Password
               </Button>
             </form>
           </CardContent>

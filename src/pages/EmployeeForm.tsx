@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { notifyError, notifyProcessing, notifySuccess } from "@/lib/formNotifications";
+import { ArrowLeft, Save } from "lucide-react";
 import { RefreshCw } from "lucide-react";
 import { SalaryAdjustmentsCard } from "@/components/employees/SalaryAdjustmentsCard";
 import { EmployeeAvatarUpload } from "@/components/employees/EmployeeAvatarUpload";

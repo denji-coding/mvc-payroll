@@ -45,7 +45,7 @@ export function notifyError(
   id: string,
   entityLabel: string,
   error?: unknown,
-  verb: 'save' | 'delete' | 'process' = 'save',
+  verb: 'save' | 'delete' | 'process' | 'restore' | 'generate' = 'save',
 ): void {
   const delay = remainingDelay(id);
   const detail =

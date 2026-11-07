@@ -19,17 +19,19 @@ const MIN_PROCESSING_MS = 600;
 const SUCCESS_DURATION_MS = 4000;
 const ERROR_DURATION_MS = 5000;
 
-const startedAt = new Map<string, number>();
+export type NotifyId = string | number;
+
+const startedAt = new Map<NotifyId, number>();
 
 /** Start the persistent "Processing" pop-up. Returns the toast id. */
-export function notifyProcessing(message = 'Saving...'): string {
-  const id = String(toast.loading(message, { duration: Infinity }));
+export function notifyProcessing(message = 'Saving...'): NotifyId {
+  const id = toast.loading(message, { duration: Infinity });
   startedAt.set(id, Date.now());
   return id;
 }
 
 /** Transition a processing toast to its success state. */
-export function notifySuccess(id: string, message: string, description?: string): void {
+export function notifySuccess(id: NotifyId, message: string, description?: string): void {
   const delay = remainingDelay(id);
   window.setTimeout(() => {
     toast.success(message, { id, duration: SUCCESS_DURATION_MS, description });
@@ -42,7 +44,7 @@ export function notifySuccess(id: string, message: string, description?: string)
  * `verb` is "save" by default; use "delete" or "process" where it reads better.
  */
 export function notifyError(
-  id: string,
+  id: NotifyId,
   entityLabel: string,
   error?: unknown,
   verb: 'save' | 'delete' | 'process' | 'restore' | 'generate' = 'save',
@@ -64,7 +66,7 @@ export function notifyError(
   }, delay);
 }
 
-function remainingDelay(id: string): number {
+function remainingDelay(id: NotifyId): number {
   const start = startedAt.get(id) ?? Date.now();
   return Math.max(0, MIN_PROCESSING_MS - (Date.now() - start));
 }

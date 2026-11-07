@@ -479,8 +479,8 @@ function BenefitsSettingsTab() {
           </p>
         </div>
         
-        <Button onClick={handleSave} disabled={updateRates.isPending}>
-          {updateRates.isPending ? 'Saving...' : 'Save Rates'}
+        <Button onClick={handleSave} disabled={updateRates.isPending} aria-busy={updateRates.isPending}>
+          {'Save Rates'}
         </Button>
       </CardContent>
     </Card>
@@ -606,8 +606,8 @@ function TerminalSettingsTab() {
           />
         </div>
         
-        <Button onClick={handleSave} disabled={updateSettings.isPending}>
-          {updateSettings.isPending ? 'Saving...' : 'Save Settings'}
+        <Button onClick={handleSave} disabled={updateSettings.isPending} aria-busy={updateSettings.isPending}>
+          {'Save Settings'}
         </Button>
       </CardContent>
     </Card>
@@ -1288,7 +1288,7 @@ function PermissionsManagement() {
                         <Switch
                           checked={getPermissionEnabled(perm.key, role)}
                           onCheckedChange={(checked) => handleToggle(perm.key, role, checked)}
-                          disabled={updatePermission.isPending}
+                          disabled={updatePermission.isPending} aria-busy={updatePermission.isPending}
                         />
                       </TableCell>
                     ))}

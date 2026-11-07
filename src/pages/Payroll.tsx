@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2, CalendarDays } from 'lucide-react';
+import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { PayrollSummaryIcon } from '@/components/icons/PayrollSummaryIcon';
 import { BulkPayslipsIcon } from '@/components/icons/BulkPayslipsIcon';
 import { generatePayrollSummaryPdf } from '@/lib/generatePayrollSummaryPdf';
@@ -85,7 +86,9 @@ export default function Payroll() {
 
   const [bulkPeriodId, setBulkPeriodId] = useState<string | null>(null);
   const handleDownloadBulkPayslips = async (period: any) => {
+    if (bulkPeriodId) return;
     setBulkPeriodId(period.id);
+    const toastId = notifyProcessing('Generating payslips...');
     try {
       const { data: periodRecords, error } = await supabase
         .from('payroll_records')
@@ -128,10 +131,15 @@ export default function Payroll() {
         };
       });
 
-      if (items.length === 0) return;
+      if (items.length === 0) {
+        notifyError(toastId, 'employee payslips', 'No payroll records found for this period', 'generate');
+        return;
+      }
       await generateBulkPayslipsPdf({ items, periodStart: period.period_start, periodEnd: period.period_end, companyLogoUrl: companyInfo?.company_logo_url });
+      notifySuccess(toastId, 'Employee payslips downloaded successfully');
     } catch (err) {
       console.error('Failed to generate bulk payslips PDF:', err);
+      notifyError(toastId, 'employee payslips', err, 'generate');
     } finally {
       setBulkPeriodId(null);
     }
@@ -195,18 +203,18 @@ export default function Payroll() {
               <Button size="sm" variant="outline" onClick={() => handleDownloadSummary(p)} title="Download Payroll Summary"><PayrollSummaryIcon className="h-4 w-4 text-foreground hover:text-primary" /></Button>
             )}
             {(p.status === 'approved' || p.status === 'paid') && (
-              <Button size="sm" variant="outline" onClick={() => handleDownloadBulkPayslips(p)} disabled={bulkPeriodId === p.id} title="Download Employee Payslips">
-                {bulkPeriodId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <BulkPayslipsIcon className="h-4 w-4 text-foreground hover:text-primary" />}
+              <Button size="sm" variant="outline" onClick={() => handleDownloadBulkPayslips(p)} title="Download Employee Payslips">
+                <BulkPayslipsIcon className="h-4 w-4 text-foreground hover:text-primary" />
               </Button>
             )}
             {isHR && p.status === 'draft' && (
-              <Button size="sm" onClick={() => { setRunningPeriodId(p.id); runPayroll.mutate({ periodId: p.id }, { onSettled: () => setRunningPeriodId(null) }); }} disabled={runPayroll.isPending}>
-                {runningPeriodId === p.id && runPayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><Calculator className="mr-1 h-4 w-4" />Run</>}
+              <Button size="sm" onClick={() => { if (runPayroll.isPending) return; setRunningPeriodId(p.id); runPayroll.mutate({ periodId: p.id }, { onSettled: () => setRunningPeriodId(null) }); }}>
+                <Calculator className="mr-1 h-4 w-4" />Run
               </Button>
             )}
             {isHR && p.status === 'processing' && (
-              <Button size="sm" variant="outline" onClick={() => { setApprovingPeriodId(p.id); approvePayroll.mutate(p.id, { onSettled: () => setApprovingPeriodId(null) }); }} disabled={approvePayroll.isPending}>
-                {approvingPeriodId === p.id && approvePayroll.isPending ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Processing...</> : <><CheckCircle className="mr-1 h-4 w-4" />Process</>}
+              <Button size="sm" variant="outline" onClick={() => { if (approvePayroll.isPending) return; setApprovingPeriodId(p.id); approvePayroll.mutate(p.id, { onSettled: () => setApprovingPeriodId(null) }); }}>
+                <CheckCircle className="mr-1 h-4 w-4" />Process
               </Button>
             )}
             {isHR && (p.status === 'draft' || p.status === 'processing') && (

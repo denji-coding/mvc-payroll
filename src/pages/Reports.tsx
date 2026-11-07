@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileText, Users, PhilippinePeso, HandCoins, Eye, Loader2, ShieldAlert } from 'lucide-react';
+import { FileText, Users, PhilippinePeso, HandCoins, Eye, ShieldAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { notifyError, notifyProcessing } from '@/lib/formNotifications';
 import { format } from 'date-fns';
 import { DateInput } from '@/components/ui/date-picker';
 import { useAuth } from '@/hooks/useAuth';
@@ -90,9 +91,15 @@ export default function Reports() {
   };
 
   const generateReport = async (reportId: ReportType) => {
-    setLoadingReport(reportId);
+    if (loadingReport) return;
     const reportMeta = reports.find(r => r.id === reportId);
-    if (!reportMeta) { setLoadingReport(null); return; }
+    if (!reportMeta) return;
+    if (reportId === 'attendance-summary' && (!dateRange.start || !dateRange.end)) {
+      toast.error('Please select a date range');
+      return;
+    }
+    setLoadingReport(reportId);
+    const toastId = notifyProcessing('Generating report...');
     try {
       switch (reportId) {
         case 'employee-masterlist': {
@@ -252,8 +259,9 @@ export default function Reports() {
           break;
         }
       }
+      toast.dismiss(toastId);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to generate report');
+      notifyError(toastId, 'report', error?.message || 'Failed to generate report', 'generate');
     } finally {
       setLoadingReport(null);
     }
@@ -291,19 +299,15 @@ export default function Reports() {
                         <div><Label>Start Date</Label><DateInput value={dateRange.start} onChange={(v) => setDateRange({ ...dateRange, start: v })} /></div>
                         <div><Label>End Date</Label><DateInput value={dateRange.end} onChange={(v) => setDateRange({ ...dateRange, end: v })} /></div>
                       </div>
-                      <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => generateReport(report.id)} disabled={loadingReport === report.id}>
-                        {loadingReport === report.id
-                          ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
-                          : <><Eye className="mr-2 h-4 w-4" /> Preview Report</>}
+                      <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => generateReport(report.id)}>
+                        <Eye className="mr-2 h-4 w-4" /> Preview Report
                       </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
               ) : (
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => generateReport(report.id)} disabled={loadingReport === report.id}>
-                  {loadingReport === report.id
-                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
-                    : <><Eye className="mr-2 h-4 w-4" /> Generate PDF Report</>}
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => generateReport(report.id)}>
+                  <Eye className="mr-2 h-4 w-4" /> Generate PDF Report
                 </Button>
               )}
             </CardContent>

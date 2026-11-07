@@ -226,7 +226,7 @@ export default function LeaveCredits() {
             </div>
           </div>
           <DrawerFooter className="border-t">
-            <Button onClick={handleSaveLwpConfig} disabled={updateLwpConfig.isPending} className_pending>
+            <Button onClick={handleSaveLwpConfig} disabled={updateLwpConfig.isPending} aria-busy={updateLwpConfig.isPending}>
               {'Save Settings'}
             </Button>
           </DrawerFooter>
@@ -246,7 +246,7 @@ export default function LeaveCredits() {
               <Checkbox id="applyToAll" checked={form.applyToAll} onCheckedChange={(checked) => setForm({ ...form, applyToAll: !!checked })} />
               <div><Label htmlFor="applyToAll" className="font-semibold cursor-pointer">Apply to all existing employees</Label><p className="text-xs text-muted-foreground">If checked, all employees will get leave credits for this type.</p></div>
             </div>
-            <DialogFooter><Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button type="submit" disabled={createLeaveType.isPending} className_pending><Plus className="mr-2 h-4 w-4" /> Add Leave Type</Button></DialogFooter>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button type="submit" disabled={createLeaveType.isPending} aria-busy={createLeaveType.isPending}><Plus className="mr-2 h-4 w-4" /> Add Leave Type</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
@@ -260,7 +260,7 @@ export default function LeaveCredits() {
           </DialogHeader>
           <form onSubmit={handleEditLeaveType} className="space-y-4">
             <LeaveTypeFormFields form={editForm} setForm={setEditForm} isEdit />
-            <DialogFooter><Button type="button" variant="outline" onClick={() => { setEditDialogOpen(false); setEditingType(null); }}>Cancel</Button><Button type="submit" disabled={updateLeaveType.isPending} className_pending>{'Save Changes'}</Button></DialogFooter>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => { setEditDialogOpen(false); setEditingType(null); }}>Cancel</Button><Button type="submit" disabled={updateLeaveType.isPending} aria-busy={updateLeaveType.isPending}>Save Changes</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

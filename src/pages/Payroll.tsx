@@ -279,7 +279,7 @@ export default function Payroll() {
                 {createDisabledReason && (
                   <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">{createDisabledReason}</div>
                 )}
-                <Button type="submit" className="w-full" disabled={createPeriod.isPending || !!createDisabledReason} className_pending>{'Create Period'}</Button>
+                <Button type="submit" className="w-full" disabled={createPeriod.isPending || !!createDisabledReason} aria-busy={createPeriod.isPending}>Create Period</Button>
               </form>
             </DialogContent>
           </Dialog>

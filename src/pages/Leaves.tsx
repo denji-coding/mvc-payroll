@@ -511,7 +511,7 @@ export default function Leaves() {
         return (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" title="Cancel leave request" className="text-destructive hover:text-destructive" disabled={cancelLeave.isPending} className_pending>
+              <Button variant="ghost" size="icon" title="Cancel leave request" className="text-destructive hover:text-destructive" disabled={cancelLeave.isPending} aria-busy={cancelLeave.isPending}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
@@ -701,7 +701,7 @@ export default function Leaves() {
                     !hasCredits ||
                     !!exceedsLimit ||
                     (showUploadField && !attachmentFile)
-                  } className_pending
+                  } aria-busy={createLeave.isPending}
                 >
                   {uploading ? "Uploading..." : "Submit Request"}
                 </Button>

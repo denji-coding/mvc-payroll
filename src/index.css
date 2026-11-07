@@ -337,3 +337,8 @@
     margin: 5mm;
   }
 }
+
+/* Buttons keep their normal look while a save is processing (the pop-up notification shows progress). */
+button[aria-busy="true"]:disabled {
+  opacity: 1;
+}

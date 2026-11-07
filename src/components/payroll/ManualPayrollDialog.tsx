@@ -440,7 +440,7 @@ export function ManualPayrollDialog({ periodId, open, onClose, editRecord }: Man
 
           <DialogFooter className="gap-2 sm:gap-2">
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={!currentEmployeeId || isPending} className_pending>
+            <Button type="submit" disabled={!currentEmployeeId || isPending} aria-busy={isPending}>
               {(isEditMode ? "Update Payroll" : "Create Payroll")}
             </Button>
           </DialogFooter>

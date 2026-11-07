@@ -511,7 +511,7 @@ export default function Leaves() {
         return (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" title="Cancel leave request" className="text-destructive hover:text-destructive" disabled={cancelLeave.isPending}>
+              <Button variant="ghost" size="icon" title="Cancel leave request" className="text-destructive hover:text-destructive" disabled={cancelLeave.isPending} className_pending>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
@@ -525,7 +525,7 @@ export default function Leaves() {
               <AlertDialogFooter>
                 <AlertDialogCancel>Keep Request</AlertDialogCancel>
                 <AlertDialogAction onClick={() => cancelLeave.mutate(leave.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  {cancelLeave.isPending ? "Cancelling..." : "Cancel Request"}
+                  Cancel Request
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -701,9 +701,9 @@ export default function Leaves() {
                     !hasCredits ||
                     !!exceedsLimit ||
                     (showUploadField && !attachmentFile)
-                  }
+                  } className_pending
                 >
-                  {uploading ? "Uploading..." : createLeave.isPending ? "Submitting..." : "Submit Request"}
+                  {uploading ? "Uploading..." : "Submit Request"}
                 </Button>
               </form>
             </div>

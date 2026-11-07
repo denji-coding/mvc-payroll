@@ -95,7 +95,7 @@ export default function Positions() {
                 <Label htmlFor="create-status">Active</Label>
                 <Switch id="create-status" checked={form.is_active} onCheckedChange={(checked) => setForm({ ...form, is_active: checked })} />
               </div>
-              <DialogFooter><Button type="submit" disabled={createPosition.isPending}>{createPosition.isPending ? 'Creating...' : 'Create Position'}</Button></DialogFooter>
+              <DialogFooter><Button type="submit" disabled={createPosition.isPending} className_pending>{'Create Position'}</Button></DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -131,7 +131,7 @@ export default function Positions() {
               <Label htmlFor="edit-status">Active</Label>
               <Switch id="edit-status" checked={form.is_active} onCheckedChange={(checked) => setForm({ ...form, is_active: checked })} />
             </div>
-            <DialogFooter><Button type="submit" disabled={updatePosition.isPending}>{updatePosition.isPending ? 'Saving...' : 'Save Changes'}</Button></DialogFooter>
+            <DialogFooter><Button type="submit" disabled={updatePosition.isPending} className_pending>{'Save Changes'}</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

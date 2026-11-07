@@ -194,8 +194,8 @@ export default function TimeSchedule() {
                 </div>
               )}
 
-              <Button onClick={handleSave} disabled={saveSchedule.isPending || !selectedEmployee} className="w-full sm:w-auto">
-                <Save className="mr-2 h-4 w-4" />{saveSchedule.isPending ? 'Saving...' : isEditing ? 'Update Schedule' : 'Save Schedule'}
+              <Button onClick={handleSave} disabled={saveSchedule.isPending || !selectedEmployee} className_pending className="w-full sm:w-auto">
+                <Save className="mr-2 h-4 w-4" />{isEditing ? 'Update Schedule' : 'Save Schedule'}
               </Button>
             </>
           )}

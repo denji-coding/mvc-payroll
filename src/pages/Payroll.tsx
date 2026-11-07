@@ -279,7 +279,7 @@ export default function Payroll() {
                 {createDisabledReason && (
                   <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">{createDisabledReason}</div>
                 )}
-                <Button type="submit" className="w-full" disabled={createPeriod.isPending || !!createDisabledReason}>{createPeriod.isPending ? 'Creating...' : 'Create Period'}</Button>
+                <Button type="submit" className="w-full" disabled={createPeriod.isPending || !!createDisabledReason} className_pending>{'Create Period'}</Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -291,7 +291,7 @@ export default function Payroll() {
         <Card className="mb-4 border-primary/50 bg-primary/5">
           <CardContent className="flex items-center justify-center gap-3 py-4">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <p className="text-sm font-medium text-primary">{runPayroll.isPending ? 'Computing payroll... This may take a moment.' : 'Processing payroll...'}</p>
+            <p className="text-sm font-medium text-primary">{'Processing payroll...'}</p>
           </CardContent>
         </Card>
       )}

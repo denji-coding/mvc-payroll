@@ -117,8 +117,8 @@ export function SalaryAdjustmentsCard({ employeeId }: SalaryAdjustmentsCardProps
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                {createMutation.isPending ? 'Adding...' : 'Add Adjustment'}
+              <Button type="submit" className="w-full" disabled={createMutation.isPending} className_pending>
+                {'Add Adjustment'}
               </Button>
             </form>
           </DialogContent>
@@ -158,7 +158,7 @@ export function SalaryAdjustmentsCard({ employeeId }: SalaryAdjustmentsCardProps
                       size="icon" 
                       title="Delete salary adjustment"
                       onClick={() => handleDelete(adj.id)}
-                      disabled={deleteMutation.isPending}
+                      disabled={deleteMutation.isPending} className_pending
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>

@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import companyLogo from '@/assets/company-logo.png';
 import { formatFullName } from '@/lib/formatName';
 import { terminalHeaders, setTerminalKey } from '@/lib/terminalKey';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AttendanceTerminal() {
   const [mode, setMode] = useState<'rfid' | 'manual'>('rfid');
@@ -34,7 +35,7 @@ export default function AttendanceTerminal() {
 
   // Fetch today's attendance records via edge function (bypasses RLS for kiosk mode)
   const [keyInput, setKeyInput] = useState('');
-  const { data: attendanceRecords, refetch: refetchAttendance, isError: terminalUnauthorized } = useQuery({
+  const { data: attendanceRecords, refetch: refetchAttendance, isError: terminalUnauthorized, isSuccess: terminalAuthorized } = useQuery({
     queryKey: ['terminal-attendance', format(new Date(), 'yyyy-MM-dd')],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('terminal-attendance-log', { headers: terminalHeaders() });
@@ -52,12 +53,15 @@ export default function AttendanceTerminal() {
     }
   }, [result, refetchAttendance]);
 
+  const { role } = useAuth();
+  const isAdminUser = role === 'super_admin' || role === 'hr_admin';
+  const showKeyPrompt = terminalUnauthorized && !isAdminUser;
   const isTerminalEnabled = settings?.terminal_enabled !== false;
   const isManualEntryAllowed = settings?.allow_manual_entry !== false;
 
   // Auto-focus RFID input
   useEffect(() => {
-    if (isTerminalEnabled && !result && !isLoading) {
+    if (isTerminalEnabled && terminalAuthorized && !result && !isLoading) {
       const focusInput = () => {
         if (mode === 'rfid' && rfidInputRef.current && document.activeElement !== rfidInputRef.current) {
           rfidInputRef.current.focus();
@@ -70,7 +74,7 @@ export default function AttendanceTerminal() {
       const focusInterval = setInterval(focusInput, 500);
       return () => clearInterval(focusInterval);
     }
-  }, [mode, result, isTerminalEnabled, isLoading]);
+  }, [mode, result, isTerminalEnabled, isLoading, terminalAuthorized]);
 
   useEffect(() => {
     if (!result) {
@@ -218,7 +222,7 @@ export default function AttendanceTerminal() {
           <p className="text-sm text-white/70 mt-1">Employee Attendance System</p>
         </div>
 
-        {terminalUnauthorized && (
+        {showKeyPrompt && (
           <form
             className="p-4 border-b border-white/10 space-y-2"
             onSubmit={(e) => { e.preventDefault(); setTerminalKey(keyInput); setKeyInput(''); refetchAttendance(); }}
@@ -236,7 +240,7 @@ export default function AttendanceTerminal() {
         )}
 
         {/* Input Section */}
-        <div className="flex-1 p-6">
+        <div className={`flex-1 p-6 ${terminalAuthorized ? '' : 'hidden'}`}>
           {/* Mode Switch - Moved to top */}
           {isManualEntryAllowed && (
             <div className="mb-6 pb-4 border-b border-white/10">

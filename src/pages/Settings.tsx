@@ -1,3 +1,4 @@
+import { getTerminalKey, setTerminalKey } from '@/lib/terminalKey';
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -560,6 +561,8 @@ function TerminalSettingsTab() {
             onCheckedChange={(v) => setForm({ ...form, terminal_enabled: v })}
           />
         </div>
+
+        <TerminalKeyField />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -1408,5 +1411,18 @@ function MedicalCertificatesTab() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+function TerminalKeyField() {
+  const [value, setValue] = useState(() => getTerminalKey());
+  return (
+    <div className="space-y-2">
+      <Label>Attendance Terminal Key</Label>
+      <div className="flex gap-2">
+        <Input type="password" value={value} onChange={(e) => setValue(e.target.value)} placeholder="Enter the terminal key" />
+        <Button type="button" title="Save terminal key" onClick={() => { setTerminalKey(value); toast.success('Terminal key saved on this device'); }}>Save Key</Button>
+      </div>
+      <p className="text-xs text-muted-foreground">Saves the key on this device so the attendance terminal works here without asking for it.</p>
+    </div>
   );
 }

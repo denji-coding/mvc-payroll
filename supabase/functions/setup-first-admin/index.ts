@@ -40,6 +40,12 @@ Deno.serve(async (req) => {
     const email = String(body?.email ?? "").trim().toLowerCase();
     const password = String(body?.password ?? "");
 
+    // Only the person who installed the system knows the setup key (stored as a server secret).
+    const expectedKey = Deno.env.get("FIRST_ADMIN_SETUP_KEY") ?? "";
+    const setupKey = String(body?.setup_key ?? "");
+    if (!expectedKey) return json({ error: "Setup is locked. Ask the system owner to configure the setup key." }, 403);
+    if (setupKey !== expectedKey) return json({ error: "Invalid setup key." }, 403);
+
     if (!first_name || !last_name || !email || !password) {
       return json({ error: "First name, last name, email and password are required." }, 400);
     }

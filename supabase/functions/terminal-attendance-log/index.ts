@@ -20,8 +20,19 @@ serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     const hasValidTerminalSecret = expectedSecret && terminalSecret === expectedSecret;
-    const hasValidAuthHeader = authHeader && authHeader.startsWith('Bearer ');
-    
+    // Without the terminal secret, the caller must be a signed-in HR admin
+    let hasValidAuthHeader = false;
+    if (!hasValidTerminalSecret && authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.slice(7).trim();
+      const url = Deno.env.get('SUPABASE_URL')!;
+      const { data: claimsData } = await createClient(url, anonKey!).auth.getClaims(token);
+      const sub = claimsData?.claims?.sub;
+      if (sub) {
+        const { data: isAdmin } = await createClient(url, serviceKey!).rpc('is_admin', { _user_id: sub });
+        hasValidAuthHeader = !!isAdmin;
+      }
+    }
+
     if (!hasValidTerminalSecret && !hasValidAuthHeader) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),

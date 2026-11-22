@@ -17,29 +17,27 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // Allow both cron (no real user) and authenticated HR admin calls
+    // Allow scheduled job (private cron token) or a signed-in HR admin
     const authHeader = req.headers.get('Authorization');
-    let isCronCall = false;
+    const cronToken = req.headers.get('x-cron-token');
+    const deny = (msg: string, status: number) => new Response(JSON.stringify({ error: msg }),
+      { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-
-      if (user && !userError) {
-        // Authenticated user — must be HR admin
-        const { data: roleData } = await supabaseAdmin
-          .from('user_roles').select('role').eq('user_id', user.id).single();
-        if (!['hr_admin', 'super_admin'].includes(roleData?.role ?? '')) {
-          return new Response(JSON.stringify({ error: 'Only HR admins can refresh leave credits' }),
-            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        }
-      } else {
-        // Token didn't resolve to a user — treat as cron/service call
-        isCronCall = true;
-      }
-    } else {
-      isCronCall = true;
+    let authorized = false;
+    if (cronToken) {
+      const { data: ok } = await supabaseAdmin.rpc('verify_cron_token', { _token: cronToken });
+      authorized = ok === true;
     }
+    if (!authorized && authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      if (user) {
+        const { data: isAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: user.id });
+        if (!isAdmin) return deny('Only HR admins can refresh leave credits', 403);
+        authorized = true;
+      }
+    }
+    if (!authorized) return deny('Unauthorized', 401);
 
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1; // 1-12

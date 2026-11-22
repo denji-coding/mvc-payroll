@@ -40,6 +40,7 @@ export default function Auth() {
     email: "",
     password: "",
     confirm_password: "",
+    setup_key: "",
   });
   const [setupLoading, setSetupLoading] = useState(false);
 
@@ -105,7 +106,20 @@ export default function Auth() {
     setShowExpiredBanner(false);
     clearSessionExpired();
     setLoading(true);
-    const { error } = await signIn(email, password);
+    let { error } = await signIn(email, password);
+    if (error) {
+      // The password may be a temporary reset code sent by email; activate it and retry.
+      try {
+        const { data: redeem } = await supabase.functions.invoke("forgot-password", {
+          body: { action: "redeem", email, code: password },
+        });
+        if ((redeem as any)?.success) {
+          ({ error } = await signIn(email, password));
+        }
+      } catch {
+        /* keep original error */
+      }
+    }
     setLoading(false);
 
     if (error) {
@@ -179,7 +193,7 @@ export default function Auth() {
     setSetupLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("setup-first-admin", {
-        body: { first_name, last_name, email: setupEmail, password: setupPassword },
+        body: { first_name, last_name, email: setupEmail, password: setupPassword, setup_key: setupForm.setup_key },
       });
       if (error || (data && (data as any).error)) {
         let message = (data as any)?.error as string | undefined;
@@ -255,6 +269,16 @@ export default function Auth() {
                         disabled={setupLoading}
                       />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="setup-key">Setup Key</Label>
+                    <Input
+                      id="setup-key"
+                      type="password"
+                      value={setupForm.setup_key}
+                      onChange={(e) => setSetupForm((f) => ({ ...f, setup_key: e.target.value }))}
+                      disabled={setupLoading}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="setup-email">Email</Label>

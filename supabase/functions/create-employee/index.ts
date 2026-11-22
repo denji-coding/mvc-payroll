@@ -123,7 +123,24 @@ Deno.serve(async (req) => {
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const employeeData: EmployeeData = await req.json();
+    const callerIsSuper = roleData?.role === 'super_admin';
+    const rawBody = await req.json();
+    const employeeData: EmployeeData = rawBody;
+
+    // Only allow known roles; super_admin can never be granted here.
+    const allowedRoles = ['employee', 'branch_manager', 'hr_admin'];
+    if (!allowedRoles.includes(employeeData.role)) {
+      return new Response(JSON.stringify({ error: 'Invalid role' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (employeeData.role === 'hr_admin' && !callerIsSuper && roleData?.role !== 'hr_admin') {
+      return new Response(JSON.stringify({ error: 'Not allowed to assign this role' }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (typeof employeeData.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(employeeData.email)) {
+      return new Response(JSON.stringify({ error: 'Invalid email address' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Validate phone numbers and government IDs
     const validationError = await validatePhoneAndGovIds(employeeData);
@@ -178,7 +195,16 @@ Deno.serve(async (req) => {
     }
 
     // Create employee record
-    const { password, role, ...employeeFields } = employeeData;
+    const ALLOWED_FIELDS = [
+      'employee_id', 'first_name', 'last_name', 'middle_name', 'suffix_name', 'email', 'phone',
+      'date_of_birth', 'gender', 'civil_status', 'address', 'position', 'date_hired', 'basic_salary',
+      'branch_id', 'sss_number', 'philhealth_number', 'pagibig_number', 'emergency_contact_name',
+      'emergency_contact_phone', 'rfid_card_number', 'avatar_url', 'employment_status',
+    ];
+    const employeeFields: Record<string, unknown> = {};
+    for (const key of ALLOWED_FIELDS) {
+      if (key in rawBody) employeeFields[key] = rawBody[key];
+    }
     const cleanedFields = cleanData(employeeFields);
     const insertData: Record<string, unknown> = { ...cleanedFields, user_id: userId, basic_salary: employeeData.basic_salary || 0 };
 

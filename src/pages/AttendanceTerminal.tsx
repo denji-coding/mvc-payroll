@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import companyLogo from '@/assets/company-logo.png';
 import { formatFullName } from '@/lib/formatName';
+import { terminalHeaders, setTerminalKey } from '@/lib/terminalKey';
 
 export default function AttendanceTerminal() {
   const [mode, setMode] = useState<'rfid' | 'manual'>('rfid');
@@ -32,10 +33,11 @@ export default function AttendanceTerminal() {
   } = useAttendanceTerminal();
 
   // Fetch today's attendance records via edge function (bypasses RLS for kiosk mode)
-  const { data: attendanceRecords, refetch: refetchAttendance } = useQuery({
+  const [keyInput, setKeyInput] = useState('');
+  const { data: attendanceRecords, refetch: refetchAttendance, isError: terminalUnauthorized } = useQuery({
     queryKey: ['terminal-attendance', format(new Date(), 'yyyy-MM-dd')],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('terminal-attendance-log');
+      const { data, error } = await supabase.functions.invoke('terminal-attendance-log', { headers: terminalHeaders() });
       
       if (error) throw error;
       return data?.records || [];
@@ -215,6 +217,23 @@ export default function AttendanceTerminal() {
           <h1 className="text-lg font-bold">Migrants Venture Corporation</h1>
           <p className="text-sm text-white/70 mt-1">Employee Attendance System</p>
         </div>
+
+        {terminalUnauthorized && (
+          <form
+            className="p-4 border-b border-white/10 space-y-2"
+            onSubmit={(e) => { e.preventDefault(); setTerminalKey(keyInput); setKeyInput(''); refetchAttendance(); }}
+          >
+            <p className="text-xs text-white/80">This device is not authorized. Enter the terminal key.</p>
+            <Input
+              type="password"
+              value={keyInput}
+              onChange={(e) => setKeyInput(e.target.value)}
+              placeholder="Terminal key"
+              className="bg-white text-foreground"
+            />
+            <Button type="submit" size="sm" className="w-full" title="Save terminal key">Save Key</Button>
+          </form>
+        )}
 
         {/* Input Section */}
         <div className="flex-1 p-6">

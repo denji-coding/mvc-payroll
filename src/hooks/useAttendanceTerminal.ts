@@ -1,3 +1,4 @@
+import { terminalHeaders } from '@/lib/terminalKey';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTerminalSettings } from './useSettings';
@@ -173,6 +174,7 @@ export function useAttendanceTerminal() {
     try {
       const { data, error } = await supabase.functions.invoke('rfid-attendance', {
         body: { rfid_card_number: trimmedInput },
+        headers: terminalHeaders(),
       });
 
       // For non-2xx responses, supabase puts the body in error.context
@@ -244,6 +246,7 @@ export function useAttendanceTerminal() {
     try {
       const { data, error } = await supabase.functions.invoke('rfid-attendance', {
         body: { employee_id: trimmedInput },
+        headers: terminalHeaders(),
       });
 
       let errorData = null;

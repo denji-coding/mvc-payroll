@@ -95,7 +95,31 @@ Deno.serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { email }: ForgotPasswordRequest = await req.json();
+    const body = await req.json();
+    const email: string = typeof body?.email === 'string' ? body.email.trim() : '';
+
+    // Step 2: the temporary password only takes effect once the mailbox owner uses it.
+    if (body?.action === 'redeem') {
+      const code = typeof body?.code === 'string' ? body.code : '';
+      if (!email || !code || code.length > 100) {
+        return new Response(JSON.stringify({ success: false }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const { data: uid } = await supabase.rpc('redeem_password_reset', { _email: email, _code: code });
+      if (!uid) {
+        return new Response(JSON.stringify({ success: false }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const { error: pwErr } = await supabase.auth.admin.updateUserById(uid as string, { password: code });
+      if (pwErr) {
+        console.error("Error applying temporary password");
+        return new Response(JSON.stringify({ success: false }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      await supabase.from('profiles').update({ must_change_password: true }).eq('id', uid);
+      return new Response(JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     if (!email) {
       return new Response(
@@ -104,7 +128,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log("Processing forgot password for:", email);
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -121,7 +144,6 @@ Deno.serve(async (req) => {
     }
 
     if (!profile) {
-      console.log("No profile found for email:", email);
       return new Response(
         JSON.stringify({ success: true, message: "If an account exists with this email, a password reset email will be sent." }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -131,45 +153,38 @@ Deno.serve(async (req) => {
     const tempPassword = generateTemporaryPassword();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    const { error: updateError } = await supabase.auth.admin.updateUserById(
-      profile.id,
-      { password: tempPassword }
-    );
-
-    if (updateError) {
-      console.error("Error updating password:", updateError);
-      return new Response(
-        JSON.stringify({ error: "Failed to reset password" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
+    // The account password is NOT changed here; the temporary code is stored hashed
+    // and only becomes the password when it is used to sign in (proof of mailbox access).
     await supabase
       .from('password_reset_tokens')
       .update({ is_used: true })
       .eq('user_id', profile.id)
       .eq('is_used', false);
 
+    const { data: codeHash, error: hashError } = await supabase.rpc('hash_reset_code', { _code: tempPassword });
+    if (hashError || !codeHash) {
+      console.error("Error hashing reset code");
+      return new Response(
+        JSON.stringify({ error: "Failed to reset password" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { error: tokenError } = await supabase
       .from('password_reset_tokens')
       .insert({
         user_id: profile.id,
-        temp_password_hash: 'reset_' + Date.now(),
+        temp_password_hash: codeHash as string,
         expires_at: expiresAt.toISOString(),
         is_used: false,
       });
 
     if (tokenError) {
-      console.error("Error storing token:", tokenError);
-    }
-
-    const { error: flagError } = await supabase
-      .from('profiles')
-      .update({ must_change_password: true })
-      .eq('id', profile.id);
-
-    if (flagError) {
-      console.error("Error setting must_change_password flag:", flagError);
+      console.error("Error storing token");
+      return new Response(
+        JSON.stringify({ error: "Failed to reset password" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const client = new SMTPClient({
@@ -197,7 +212,6 @@ Deno.serve(async (req) => {
 
     await client.close();
 
-    console.log("Password reset email sent to:", profile.email);
 
     return new Response(
       JSON.stringify({ success: true, message: "If an account exists with this email, a password reset email will be sent." }),
@@ -206,9 +220,8 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error("Error in forgot-password:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: "Something went wrong. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

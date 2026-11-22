@@ -149,11 +149,25 @@ Deno.serve(async (req) => {
   try {
     // Validate that the caller has a valid Authorization header
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const unauthorized = () => new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return unauthorized();
+    const token = authHeader.slice(7).trim();
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    // Only trusted server functions (service key) or signed-in HR admins may send email
+    if (!serviceKey || token !== serviceKey) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const anon = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!);
+      const { data: claimsData, error: claimsError } = await anon.auth.getClaims(token);
+      if (claimsError || !claimsData?.claims?.sub) return unauthorized();
+      const admin = createClient(supabaseUrl, serviceKey);
+      const { data: isAdmin } = await admin.rpc('is_admin', { _user_id: claimsData.claims.sub });
+      if (!isAdmin) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
     }
 
     const gmailUser = Deno.env.get("GMAIL_USER");
@@ -167,8 +181,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    const emailData: EmailRequest = await req.json();
-    console.log("Sending email:", emailData.type, "to:", emailData.to);
+    const rawData = await req.json();
+    const esc = (v: unknown) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const emailData = Object.fromEntries(
+      Object.entries(rawData ?? {}).map(([k, v]) => [k, k === 'type' || k === 'to' ? v : esc(v)])
+    ) as unknown as EmailRequest;
+    if (typeof emailData.to !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailData.to)) {
+      return new Response(JSON.stringify({ error: 'Invalid recipient' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     let subject = "";
     let html = "";

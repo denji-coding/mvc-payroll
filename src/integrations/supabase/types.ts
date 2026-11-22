@@ -965,8 +965,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_reset_code: { Args: { _code: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      redeem_password_reset: {
+        Args: { _code: string; _email: string }
+        Returns: string
+      }
+      verify_cron_token: { Args: { _token: string }; Returns: boolean }
     }
     Enums: {
       app_role: "hr_admin" | "branch_manager" | "employee" | "super_admin"

@@ -36,6 +36,13 @@
       "when": 1795338190569,
       "tag": "0004_restrict_payroll_periods_read",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795339278919,
+      "tag": "0005_security_hardening_functions_cron_selfpay",
+      "breakpoints": true
     }
   ]
 }

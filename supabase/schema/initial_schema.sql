@@ -1209,7 +1209,11 @@ CREATE POLICY "Users can manage own notifications" ON public.notifications
 -- settings --------------------------------------------------------------------
 DROP POLICY IF EXISTS "Authenticated can view settings" ON public.settings;
 CREATE POLICY "Authenticated can view settings" ON public.settings
-  FOR SELECT TO authenticated USING (true);
+  FOR SELECT TO authenticated
+  USING (
+    key IN ('company_info', 'lwp_config')
+    OR public.is_admin(auth.uid())
+  );
 
 DROP POLICY IF EXISTS "HR can manage settings" ON public.settings;
 CREATE POLICY "HR can manage settings" ON public.settings

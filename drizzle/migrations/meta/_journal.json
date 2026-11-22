@@ -22,6 +22,13 @@
       "when": 1795324884827,
       "tag": "0002_restrict_role_permissions_read",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795337103978,
+      "tag": "0003_restrict_settings_read",
+      "breakpoints": true
     }
   ]
 }

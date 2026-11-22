@@ -482,7 +482,9 @@ ALTER TABLE public.password_reset_tokens ENABLE ROW LEVEL SECURITY;
 
 CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role)
+  -- super_admin inherits every hr_admin check
+  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id
+    AND (role = _role OR (_role = 'hr_admin'::public.app_role AND role = 'super_admin'::public.app_role)))
 $$;
 
 CREATE OR REPLACE FUNCTION public.is_admin(_user_id uuid)

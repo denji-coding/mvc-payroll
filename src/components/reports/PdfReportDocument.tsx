@@ -148,7 +148,7 @@ function PreparedBySection({ preparedBy, generatedAt }: { preparedBy: PreparedBy
       <View style={styles.signatureLine} />
       <Text style={styles.preparedByName}>{preparedBy.name || '—'}</Text>
       {preparedBy.role && <Text style={styles.preparedByRole}>{preparedBy.role}</Text>}
-      <Text style={styles.reportMeta}>Generated: {format(generatedAt, 'MMM d, yyyy hh:mm a')}</Text>
+      <Text style={styles.reportMeta}>Date: {format(generatedAt, 'MMM d, yyyy hh:mm a')}</Text>
     </View>
   );
 }

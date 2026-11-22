@@ -162,7 +162,7 @@ serve(async (req) => {
       .eq('user_id', userId)
       .single();
 
-    if (roleError || roleData?.role !== 'hr_admin') {
+    if (roleError || !['hr_admin', 'super_admin'].includes(roleData?.role ?? '')) {
       return new Response(
         JSON.stringify({ error: 'Only HR admins can run payroll' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

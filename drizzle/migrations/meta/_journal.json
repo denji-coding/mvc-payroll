@@ -8,6 +8,13 @@
       "when": 1793537300177,
       "tag": "0000_ensure_has_any_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795324307363,
+      "tag": "0001_super_admin_inherits_hr_admin",
+      "breakpoints": true
     }
   ]
 }

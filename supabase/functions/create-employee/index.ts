@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
 
     const { data: roleData, error: roleError } = await supabaseAdmin
       .from('user_roles').select('role').eq('user_id', userId_caller).single();
-    if (roleError || roleData?.role !== 'hr_admin') {
+    if (roleError || !['hr_admin', 'super_admin'].includes(roleData?.role ?? '')) {
       return new Response(JSON.stringify({ error: 'Only HR admins can create employees' }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

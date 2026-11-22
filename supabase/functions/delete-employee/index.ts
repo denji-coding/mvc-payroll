@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     const { data: roleData } = await supabaseAdmin
       .from('user_roles').select('role').eq('user_id', userId).single();
-    if (roleData?.role !== 'hr_admin') {
+    if (!['hr_admin', 'super_admin'].includes(roleData?.role ?? '')) {
       return new Response(JSON.stringify({ error: 'Only HR admins can permanently delete employees' }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

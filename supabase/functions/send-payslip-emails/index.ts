@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", user.id).single();
-    if (roleData?.role !== "hr_admin") {
+    if (!['hr_admin', 'super_admin'].includes(roleData?.role ?? '')) {
       return new Response(JSON.stringify({ error: "Only HR admins can send payslip emails" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

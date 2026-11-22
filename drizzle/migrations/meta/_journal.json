@@ -29,6 +29,13 @@
       "when": 1795337103978,
       "tag": "0003_restrict_settings_read",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795338190569,
+      "tag": "0004_restrict_payroll_periods_read",
+      "breakpoints": true
     }
   ]
 }

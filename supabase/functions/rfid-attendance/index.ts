@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { normalizeEmployeeId, employeeEligibilityError } from './employeeLookup.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,7 +80,8 @@ serve(async (req) => {
 
     // Parse request body early (non-blocking)
     const body: AttendanceRequest = await req.json();
-    const { rfid_card_number, employee_id } = body;
+    const rfid_card_number = body.rfid_card_number?.trim();
+    const employee_id = body.employee_id ? normalizeEmployeeId(body.employee_id) : undefined;
 
     // Quick input validation before any DB calls
     if (!rfid_card_number && !employee_id) {
@@ -105,18 +107,17 @@ serve(async (req) => {
 
     let employeeQuery = supabase
       .from('employees')
-      .select('id, first_name, middle_name, last_name, suffix_name, employee_id, branch_id')
-      .eq('employment_status', 'active');
+      .select('id, first_name, middle_name, last_name, suffix_name, employee_id, branch_id, employment_status');
 
     if (rfid_card_number) {
       employeeQuery = employeeQuery.ilike('rfid_card_number', rfid_card_number);
-    } else {
-      employeeQuery = employeeQuery.ilike('employee_id', employee_id!);
+    } else if (employee_id) {
+      employeeQuery = employeeQuery.eq('employee_id', employee_id);
     }
 
     const [settingsResult, employeeResult] = await Promise.all([
       settingsPromise,
-      employeeQuery.single(),
+      employeeQuery.maybeSingle(),
     ]);
 
     const settings: TerminalSettings = settingsResult.data?.value || {
@@ -143,6 +144,20 @@ serve(async (req) => {
       );
     }
 
+    // Distinguish missing employees from existing employees who are not active.
+    if (employeeResult.error) throw employeeResult.error;
+    const employee = employeeResult.data;
+    const eligibilityError = employeeEligibilityError(employee);
+    if (eligibilityError || !employee) {
+      return new Response(
+        JSON.stringify({
+          error: eligibilityError || 'Employee not found',
+          employee_name: employee ? formatEmployeeName(employee) : undefined,
+        }),
+        { status: employee ? 403 : 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Validate shift hours
     const phTimeFormatter = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: false
@@ -161,15 +176,6 @@ serve(async (req) => {
       );
     }
 
-    // Validate employee found
-    if (employeeResult.error || !employeeResult.data) {
-      return new Response(
-        JSON.stringify({ error: 'Employee not found or inactive' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const employee = employeeResult.data;
     const now = new Date();
     const phFormatter = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit'

@@ -15,9 +15,10 @@ export interface LwpConfig {
   refresh_months: number;
 }
 
-export function useTerminalSettings() {
+export function useTerminalSettings(refetchOnWindowFocus = true) {
   return useQuery({
     queryKey: ['settings', 'terminal'],
+    refetchOnWindowFocus,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('settings')

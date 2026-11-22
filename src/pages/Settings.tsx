@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor, FileText, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, Megaphone, Users, Building, Clock, Shield, Sun, Moon, Monitor, FileText, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
@@ -1415,14 +1415,18 @@ function MedicalCertificatesTab() {
 }
 function TerminalKeyField() {
   const [value, setValue] = useState(() => getTerminalKey());
+  const [showKey, setShowKey] = useState(false);
   return (
     <div className="space-y-2">
-      <Label>Attendance Terminal Key</Label>
+      <Label htmlFor="attendance-terminal-key">Attendance Terminal Key</Label>
       <div className="flex gap-2">
-        <Input type="password" value={value} onChange={(e) => setValue(e.target.value)} placeholder="Enter the terminal key" />
+        <Input id="attendance-terminal-key" type={showKey ? 'text' : 'password'} value={value} onChange={(e) => setValue(e.target.value)} placeholder="Enter the terminal key" autoComplete="off" />
+        <Button type="button" variant="outline" size="icon" className="shrink-0" title={showKey ? 'Hide terminal key' : 'Show saved terminal key'} aria-label={showKey ? 'Hide terminal key' : 'Show saved terminal key'} aria-pressed={showKey} onClick={() => setShowKey((previous) => !previous)}>
+          {showKey ? <EyeOff /> : <Eye />}
+        </Button>
         <Button type="button" title="Save terminal key" onClick={() => { setTerminalKey(value); toast.success('Terminal key saved on this device'); }}>Save Key</Button>
       </div>
-      <p className="text-xs text-muted-foreground">Saves the key on this device so the attendance terminal works here without asking for it.</p>
+      <p className="text-xs text-muted-foreground">This field contains the key saved on this device, not the private server secret.</p>
     </div>
   );
 }

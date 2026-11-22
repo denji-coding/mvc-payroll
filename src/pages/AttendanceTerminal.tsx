@@ -40,6 +40,7 @@ export default function AttendanceTerminal() {
   const { data: attendanceRecords, refetch: refetchAttendance, isError: terminalUnauthorized, isSuccess: terminalAuthorized } = useQuery({
     queryKey: ['terminal-attendance', format(new Date(), 'yyyy-MM-dd'), authUser?.id ?? 'kiosk'],
     retry: false,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('terminal-attendance-log', { headers: terminalHeaders() });
       

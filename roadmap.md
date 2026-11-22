@@ -22,3 +22,10 @@
 - [x] Match the downloaded payroll summary header to Reports.
 - [x] Rename the employee payslips download title and verify sample PDF layouts; authenticated page verification unavailable because no requesting-user session could be minted.
 - [x] Fix first-time admin setup on a fresh system
+
+# Attendance terminal corrections
+
+- [x] Preserve terminal input when returning from another browser tab.
+- [x] Correct EMP-666075 lookup feedback without changing its employment status.
+- [x] Allow revealing the terminal key saved on this device in Settings.
+- [x] Verify terminal behavior and employee lookup.

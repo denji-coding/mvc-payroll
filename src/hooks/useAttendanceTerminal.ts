@@ -22,6 +22,9 @@ interface TerminalError {
 
 function getTerminalError(error: string, message?: string, mode?: 'rfid' | 'manual'): TerminalError {
   const lowerError = error.toLowerCase();
+  if (lowerError.includes('employee employment status is')) {
+    return { title: 'Employee Not Active', message: error };
+  }
   
   if (lowerError.includes('no schedule assigned') || lowerError.includes('no time schedule')) {
     return {
@@ -104,7 +107,7 @@ export function useAttendanceTerminal() {
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   
   // Fetch terminal settings
-  const { data: settings, isLoading: settingsLoading } = useTerminalSettings();
+  const { data: settings, isLoading: settingsLoading } = useTerminalSettings(false);
 
   // Cleanup expired cooldowns periodically
   useEffect(() => {

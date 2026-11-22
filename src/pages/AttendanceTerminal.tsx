@@ -35,8 +35,11 @@ export default function AttendanceTerminal() {
 
   // Fetch today's attendance records via edge function (bypasses RLS for kiosk mode)
   const [keyInput, setKeyInput] = useState('');
+  const { user: authUser, role } = useAuth();
+  const [keyError, setKeyError] = useState('');
   const { data: attendanceRecords, refetch: refetchAttendance, isError: terminalUnauthorized, isSuccess: terminalAuthorized } = useQuery({
-    queryKey: ['terminal-attendance', format(new Date(), 'yyyy-MM-dd')],
+    queryKey: ['terminal-attendance', format(new Date(), 'yyyy-MM-dd'), authUser?.id ?? 'kiosk'],
+    retry: false,
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('terminal-attendance-log', { headers: terminalHeaders() });
       
@@ -53,7 +56,6 @@ export default function AttendanceTerminal() {
     }
   }, [result, refetchAttendance]);
 
-  const { role } = useAuth();
   const isAdminUser = role === 'super_admin' || role === 'hr_admin';
   const showKeyPrompt = terminalUnauthorized && !isAdminUser;
   const isTerminalEnabled = settings?.terminal_enabled !== false;
@@ -225,7 +227,7 @@ export default function AttendanceTerminal() {
         {showKeyPrompt && (
           <form
             className="p-4 border-b border-white/10 space-y-2"
-            onSubmit={(e) => { e.preventDefault(); setTerminalKey(keyInput); setKeyInput(''); refetchAttendance(); }}
+            onSubmit={async (e) => { e.preventDefault(); setKeyError(''); setTerminalKey(keyInput); setKeyInput(''); const r = await refetchAttendance(); if (r.isError) setKeyError('Incorrect terminal key. Please try again.'); }}
           >
             <p className="text-xs text-white/80">This device is not authorized. Enter the terminal key.</p>
             <Input
@@ -235,6 +237,7 @@ export default function AttendanceTerminal() {
               placeholder="Terminal key"
               className="bg-white text-foreground"
             />
+            {keyError && <p className="text-xs text-destructive-foreground bg-destructive/80 rounded px-2 py-1">{keyError}</p>}
             <Button type="submit" size="sm" className="w-full" title="Save terminal key">Save Key</Button>
           </form>
         )}

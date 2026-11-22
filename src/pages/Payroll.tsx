@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, Loader2, CalendarDays } from 'lucide-react';
+import { Calculator, Plus, Eye, CheckCircle, Pencil, Trash2, Download, FileEdit, CalendarDays } from 'lucide-react';
 import { notifyError, notifyProcessing, notifySuccess } from '@/lib/formNotifications';
 import { PayrollSummaryIcon } from '@/components/icons/PayrollSummaryIcon';
 import { BulkPayslipsIcon } from '@/components/icons/BulkPayslipsIcon';
@@ -179,7 +179,6 @@ export default function Payroll() {
 
   const [runningPeriodId, setRunningPeriodId] = useState<string | null>(null);
   const [approvingPeriodId, setApprovingPeriodId] = useState<string | null>(null);
-  const isProcessing = runPayroll.isPending || approvePayroll.isPending;
 
   // Filter periods by status
   const filteredPeriods = periods?.filter((p: any) => {
@@ -209,11 +208,11 @@ export default function Payroll() {
             )}
             {isHR && p.status === 'draft' && (
               <Button size="sm" onClick={() => { if (runPayroll.isPending) return; setRunningPeriodId(p.id); runPayroll.mutate({ periodId: p.id }, { onSettled: () => setRunningPeriodId(null) }); }}>
-                <Calculator className="mr-1 h-4 w-4" />Run
+                <Calculator className="mr-1 h-4 w-4" />Calculate
               </Button>
             )}
             {isHR && p.status === 'processing' && (
-              <Button size="sm" variant="outline" onClick={() => { if (approvePayroll.isPending) return; setApprovingPeriodId(p.id); approvePayroll.mutate(p.id, { onSettled: () => setApprovingPeriodId(null) }); }}>
+              <Button size="sm" onClick={() => { if (approvePayroll.isPending) return; setApprovingPeriodId(p.id); approvePayroll.mutate(p.id, { onSettled: () => setApprovingPeriodId(null) }); }}>
                 <CheckCircle className="mr-1 h-4 w-4" />Process
               </Button>
             )}
@@ -285,16 +284,6 @@ export default function Payroll() {
           </Dialog>
         )}
       </div>
-
-      {/* Processing overlay */}
-      {isProcessing && (
-        <Card className="mb-4 border-primary/50 bg-primary/5">
-          <CardContent className="flex items-center justify-center gap-3 py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <p className="text-sm font-medium text-primary">{'Processing payroll...'}</p>
-          </CardContent>
-        </Card>
-      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto pb-2">

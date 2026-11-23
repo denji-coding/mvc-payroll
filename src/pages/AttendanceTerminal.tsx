@@ -47,7 +47,8 @@ export default function AttendanceTerminal() {
       if (error) throw error;
       return data?.records || [];
     },
-    refetchInterval: 10000,
+    // Stop polling while unauthorized so the key prompt stays stable
+    refetchInterval: (query) => (query.state.status === 'error' ? false : 10000),
   });
 
   // Refetch attendance when a successful result is recorded

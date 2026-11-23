@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { eachDayOfInterval, format, getDay, isWeekend, parseISO } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, format, getDay, isWeekend, parseISO, startOfMonth } from 'date-fns';
 import { formatFullName } from '@/lib/formatName';
 import { useEmployeeScheduleByEmployee } from '@/hooks/useEmployeeSchedule';
 
@@ -35,8 +35,16 @@ export function RecordDtrDialog({ record, period, onClose }: RecordDtrDialogProp
   const employee = record?.employees || {};
   const employeeId: string | undefined = record?.employee_id;
 
-  const startDate: string | undefined = period?.period_start;
-  const endDate: string | undefined = period?.period_end;
+  // Limit the DTR to the payroll's processed month (month of period end)
+  const { startDate, endDate } = useMemo(() => {
+    if (!period?.period_start || !period?.period_end) return { startDate: undefined, endDate: undefined };
+    const monthStart = format(startOfMonth(parseISO(period.period_end)), 'yyyy-MM-dd');
+    const monthEnd = format(endOfMonth(parseISO(period.period_end)), 'yyyy-MM-dd');
+    return {
+      startDate: period.period_start > monthStart ? period.period_start : monthStart,
+      endDate: period.period_end < monthEnd ? period.period_end : monthEnd,
+    } as { startDate?: string; endDate?: string };
+  }, [period?.period_start, period?.period_end]);
 
   const { data: attendance, isLoading: attendanceLoading } = useQuery({
     queryKey: ['payroll-record-dtr-attendance', employeeId, startDate, endDate],

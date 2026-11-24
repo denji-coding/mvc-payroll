@@ -70,6 +70,23 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     state: { sorting, globalFilter },
+    getColumnCanGlobalFilter: () => true,
+    globalFilterFn: (row, _columnId, filterValue) => {
+      const q = String(filterValue ?? "").trim().toLowerCase();
+      if (!q) return true;
+      const parts: string[] = [];
+      row.getAllCells().forEach((cell) => {
+        const v = cell.getValue();
+        if (v !== null && v !== undefined && typeof v !== "object") parts.push(String(v));
+      });
+      const walk = (o: unknown, depth: number) => {
+        if (o === null || o === undefined || depth > 2) return;
+        if (typeof o === "string" || typeof o === "number") { parts.push(String(o)); return; }
+        if (typeof o === "object" && !Array.isArray(o)) Object.values(o as Record<string, unknown>).forEach((x) => walk(x, depth + 1));
+      };
+      walk(row.original, 0);
+      return parts.join(" ").toLowerCase().includes(q);
+    },
     initialState: { pagination: { pageSize: initialPageSize } },
   });
 

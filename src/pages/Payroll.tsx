@@ -16,6 +16,7 @@ import { PayrollSummaryIcon } from '@/components/icons/PayrollSummaryIcon';
 import { BulkPayslipsIcon } from '@/components/icons/BulkPayslipsIcon';
 import { generatePayrollSummaryPdf } from '@/lib/generatePayrollSummaryPdf';
 import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
+import { PayslipPdfPreviewDialog } from '@/components/payslips/PayslipPdfPreviewDialog';
 import { generateBulkPayslipsPdf } from '@/lib/generateBulkPayslipsPdf';
 import { SalaryCalculator } from '@/components/payroll/SalaryCalculator';
 import { ManualPayrollDialog } from '@/components/payroll/ManualPayrollDialog';
@@ -339,7 +340,8 @@ export default function Payroll() {
               </DialogDescription>
             )}
           </DialogHeader>
-          <div className="max-h-[65vh] overflow-auto">
+          {/* p-1.5 gives the search bar's focus ring (4px outside the input) room so it is not clipped by this scroll container */}
+          <div className="max-h-[65vh] overflow-auto p-1.5">
             {!isPeriodProcessed && (
               <div className="bg-warning/10 text-warning p-4 rounded-lg mb-4 text-center"><p className="text-sm font-medium">Payroll is not yet processed. View and download will be available after processing.</p></div>
             )}
@@ -379,9 +381,8 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus, perio
   const lateEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('late'));
   const lwopEntries = Object.entries(deductionsBreakdown).filter(([key]) => key.toLowerCase().includes('without pay'));
 
-  const handleDownload = () => {
-    const emp = r.employees || {};
-    generatePayslipPdf({
+  const emp = r.employees || {};
+  const params = {
       employee: {
         employee_id: emp.employee_id,
         first_name: emp.first_name,
@@ -412,50 +413,16 @@ function PayslipDialog({ record: r, onClose, formatCurrency, periodStatus, perio
         net_pay: Number(r.net_pay || 0),
       },
       dailyRate: emp.basic_salary ? Number(emp.basic_salary) : undefined,
-    });
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Payslip - {formatFullName(r.employees?.first_name, r.employees?.last_name, r.employees?.suffix_name, r.employees?.middle_name)}</DialogTitle>
-          <DialogDescription>Piece of work: {r.days_worked ?? 0} days</DialogDescription>
-        </DialogHeader>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <h4 className="font-semibold text-success mb-2">Earnings</h4>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>Basic Pay</span><span>{formatCurrency(r.basic_pay)}</span></div>
-              <div className="flex justify-between"><span>Leave with Pay ({lwpDaysLabel})</span><span>{formatCurrency(lwpAmount)}</span></div>
-              <div className="flex justify-between font-bold border-t pt-1"><span>Gross</span><span>{formatCurrency(r.gross_pay)}</span></div>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold text-destructive mb-2">Deductions</h4>
-            <div className="space-y-1 text-sm">
-              {(r.sss_contribution || 0) > 0 && <div className="flex justify-between"><span>SSS</span><span>{formatCurrency(r.sss_contribution)}</span></div>}
-              {(r.philhealth_contribution || 0) > 0 && <div className="flex justify-between"><span>PhilHealth</span><span>{formatCurrency(r.philhealth_contribution)}</span></div>}
-              {(r.pagibig_contribution || 0) > 0 && <div className="flex justify-between"><span>Pag-IBIG</span><span>{formatCurrency(r.pagibig_contribution)}</span></div>}
-              {lateEntries.length > 0 ? lateEntries.map(([key, value]) => (
-                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
-              )) : (r.other_deductions || 0) > 0 && (
-                <div className="flex justify-between"><span>Late Deduction</span><span>{formatCurrency(r.other_deductions)}</span></div>
-              )}
-              {lwopEntries.map(([key, value]) => (
-                <div key={key} className="flex justify-between"><span>{key}</span><span>{formatCurrency(value)}</span></div>
-              ))}
-              <div className="flex justify-between font-bold border-t pt-1"><span>Total</span><span>{formatCurrency(r.total_deductions)}</span></div>
-            </div>
-          </div>
-        </div>
-        <div className="bg-primary/10 p-4 rounded-lg text-center"><p className="text-sm text-muted-foreground">Net Pay</p><p className="text-2xl font-bold text-primary">{formatCurrency(r.net_pay)}</p></div>
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">Close</Button>
-          {canDownload && <Button onClick={handleDownload} className="w-full sm:w-auto"><Download className="mr-2 h-4 w-4" /> Download Payslip</Button>}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <PayslipPdfPreviewDialog
+      params={params}
+      canDownload={canDownload}
+      title={`Payslip - ${formatFullName(emp.first_name, emp.last_name, emp.suffix_name, emp.middle_name)}`}
+      description={`Piece of work: ${r.days_worked ?? 0} days`}
+      onClose={onClose}
+    />
   );
 }
 

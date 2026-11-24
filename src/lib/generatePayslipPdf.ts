@@ -252,13 +252,19 @@ const PayslipDocument: React.FC<GeneratePayslipPdfParams> = ({ employee, payroll
   );
 };
 
-export async function generatePayslipPdf(params: GeneratePayslipPdfParams): Promise<void> {
+export type { GeneratePayslipPdfParams };
+
+export async function buildPayslipPdfBlob(params: GeneratePayslipPdfParams): Promise<Blob> {
+  const doc = React.createElement(PayslipDocument, params) as any;
+  return pdf(doc).toBlob();
+}
+
+export async function generatePayslipPdf(params: GeneratePayslipPdfParams, existingBlob?: Blob): Promise<void> {
   const { employee, payroll } = params;
   const periodStart = new Date(payroll.period_start);
   const periodEnd = new Date(payroll.period_end);
 
-  const doc = React.createElement(PayslipDocument, params) as any;
-  const blob = await pdf(doc).toBlob();
+  const blob = existingBlob ?? await buildPayslipPdfBlob(params);
 
   const periodStr = format(periodStart, "MMMdd") + "-" + format(periodEnd, "MMMdd_yyyy");
   const fileName = `Payslip_${employee.last_name}_${employee.first_name}_${periodStr}.pdf`;

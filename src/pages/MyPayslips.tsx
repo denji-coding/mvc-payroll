@@ -16,6 +16,7 @@ import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobilePayslipList } from '@/components/payslips/MobilePayslipList';
+import { PayslipPdfPreviewDialog } from '@/components/payslips/PayslipPdfPreviewDialog';
 
 const currentYear = new Date().getFullYear();
 const startYear = 2020;
@@ -49,10 +50,8 @@ export default function MyPayslips() {
     enabled: !!employee?.id,
   });
 
-  const handleDownloadPayslip = (record: any) => {
-    if (!employee || !record) return;
-    generatePayslipPdf({
-      employee: { employee_id: employee.employee_id, first_name: employee.first_name, middle_name: (employee as any).middle_name, last_name: employee.last_name, suffix_name: (employee as any).suffix_name, position: employee.position },
+  const buildParams = (record: any) => ({
+      employee: { employee_id: employee!.employee_id, first_name: employee!.first_name, middle_name: (employee as any).middle_name, last_name: employee!.last_name, suffix_name: (employee as any).suffix_name, position: employee!.position },
       payroll: {
         period_start: record.payroll_periods.period_start, period_end: record.payroll_periods.period_end, pay_date: record.payroll_periods.pay_date,
         basic_pay: Number(record.basic_pay), days_worked: Number(record.days_worked || 0), overtime_pay: Number(record.overtime_pay || 0),
@@ -63,8 +62,12 @@ export default function MyPayslips() {
         other_deductions: Number(record.other_deductions || 0), deductions_breakdown: record.deductions_breakdown as Record<string, number> || {},
         total_deductions: Number(record.total_deductions || 0), net_pay: Number(record.net_pay || 0),
       },
-      dailyRate: employee.basic_salary ? Number(employee.basic_salary) : undefined,
-    });
+      dailyRate: employee!.basic_salary ? Number(employee!.basic_salary) : undefined,
+  });
+
+  const handleDownloadPayslip = (record: any) => {
+    if (!employee || !record) return;
+    generatePayslipPdf(buildParams(record));
   };
 
   const getStatusBadge = (status: string) => {
@@ -141,82 +144,15 @@ export default function MyPayslips() {
         </CardContent>
       </Card>
 
-      {/* Payslip View Dialog */}
-      <Dialog open={!!viewRecord} onOpenChange={(open) => { if (!open) setViewRecord(null); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Payslip Details</DialogTitle>
-          </DialogHeader>
-          {viewRecord && (
-            <div className="space-y-4">
-              {/* Period Info */}
-              <div className="text-sm space-y-1">
-                <div className="flex justify-between"><span className="text-muted-foreground">Pay Period</span><span className="font-medium">{format(new Date(viewRecord.payroll_periods.period_start), 'MMM d')} - {format(new Date(viewRecord.payroll_periods.period_end), 'MMM d, yyyy')}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Pay Date</span><span className="font-medium">{format(new Date(viewRecord.payroll_periods.pay_date), 'MMM d, yyyy')}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Days Worked</span><span className="font-medium">{Number(viewRecord.days_worked || 0)}</span></div>
-              </div>
-
-              <Separator />
-
-              {/* Earnings */}
-              <div>
-                <h4 className="font-semibold text-sm mb-2" style={{ color: 'hsl(var(--success))' }}>Earnings</h4>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Basic Pay</span><span>{fmt(Number(viewRecord.basic_pay || 0))}</span></div>
-                  {(() => {
-                    const bd = (viewRecord.allowances_breakdown && typeof viewRecord.allowances_breakdown === 'object') ? viewRecord.allowances_breakdown as Record<string, number> : {};
-                    let lwpAmt = 0, lwpDays = 0;
-                    Object.entries(bd).forEach(([k, v]) => {
-                      if (/leave\s*with\s*pay/i.test(k)) {
-                        lwpAmt += Number(v) || 0;
-                        const m = k.match(/\((\d+(?:\.\d+)?)\s*days?\)/i);
-                        if (m) lwpDays += Number(m[1]);
-                      }
-                    });
-                    return (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Leave with Pay ({lwpDays} day{lwpDays === 1 ? '' : 's'})</span>
-                        <span>{fmt(lwpAmt)}</span>
-                      </div>
-                    );
-                  })()}
-                  {Number(viewRecord.total_allowances) > 0 && (() => {
-                    const bd = (viewRecord.allowances_breakdown && typeof viewRecord.allowances_breakdown === 'object') ? viewRecord.allowances_breakdown as Record<string, number> : {};
-                    const otherTotal = Object.entries(bd).filter(([k]) => !/leave\s*with\s*pay/i.test(k)).reduce((s, [, v]) => s + (Number(v) || 0), 0);
-                    return otherTotal > 0 ? <div className="flex justify-between"><span className="text-muted-foreground">Allowances</span><span>{fmt(otherTotal)}</span></div> : null;
-                  })()}
-                  <div className="flex justify-between font-semibold pt-1 border-t"><span>Gross Pay</span><span style={{ color: 'hsl(var(--success))' }}>{fmt(Number(viewRecord.gross_pay || 0))}</span></div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Deductions */}
-              <div>
-                <h4 className="font-semibold text-destructive text-sm mb-2">Deductions</h4>
-                <div className="space-y-1 text-sm">
-                  {Number(viewRecord.sss_contribution) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SSS</span><span>{fmt(Number(viewRecord.sss_contribution))}</span></div>}
-                  {Number(viewRecord.philhealth_contribution) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">PhilHealth</span><span>{fmt(Number(viewRecord.philhealth_contribution))}</span></div>}
-                  {Number(viewRecord.pagibig_contribution) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Pag-IBIG</span><span>{fmt(Number(viewRecord.pagibig_contribution))}</span></div>}
-                  {Number(viewRecord.withholding_tax) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Withholding Tax</span><span>{fmt(Number(viewRecord.withholding_tax))}</span></div>}
-                  {viewRecord.deductions_breakdown && Object.entries(viewRecord.deductions_breakdown as Record<string, number>).map(([key, val]) => (
-                    Number(val) > 0 ? <div key={key} className="flex justify-between"><span className="text-muted-foreground">{key}</span><span>{fmt(Number(val))}</span></div> : null
-                  ))}
-                  <div className="flex justify-between font-semibold pt-1 border-t"><span>Total Deductions</span><span className="text-destructive">{fmt(Number(viewRecord.total_deductions || 0))}</span></div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Net Pay */}
-              <div className="bg-primary/10 rounded-lg p-4 text-center">
-                <p className="text-sm text-muted-foreground">Net Pay</p>
-                <p className="text-2xl font-bold text-primary">{fmt(Number(viewRecord.net_pay || 0))}</p>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {viewRecord && employee && (
+        <PayslipPdfPreviewDialog
+          params={buildParams(viewRecord)}
+          canDownload={viewRecord.payroll_periods.status === 'approved' || viewRecord.payroll_periods.status === 'paid'}
+          title="Payslip"
+          description={`${format(new Date(viewRecord.payroll_periods.period_start), 'MMM d')} - ${format(new Date(viewRecord.payroll_periods.period_end), 'MMM d, yyyy')}`}
+          onClose={() => setViewRecord(null)}
+        />
+      )}
     </div>
   );
 }

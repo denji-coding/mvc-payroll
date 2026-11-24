@@ -219,7 +219,8 @@ Deno.serve(async (req) => {
 
     // Send welcome email (non-blocking)
     try {
-      await supabaseAdmin.functions.invoke('send-notification-email', {
+      const { error: invokeError } = await supabaseAdmin.functions.invoke('send-notification-email', {
+        headers: { Authorization: authHeader },
         body: {
           type: 'account_created', to: employeeData.email,
           name: `${employeeData.first_name} ${employeeData.last_name}`,
@@ -227,6 +228,11 @@ Deno.serve(async (req) => {
           role: employeeData.role, portalUrl: 'https://mvc-rose.vercel.app/'
         }
       });
+      if (invokeError) {
+        let detail = invokeError.message;
+        try { detail = await (invokeError as any).context?.text?.() ?? detail; } catch (_) { /* ignore */ }
+        console.error("Failed to send welcome email:", detail);
+      }
     } catch (emailError) {
       console.error("Failed to send welcome email:", emailError);
     }

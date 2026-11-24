@@ -340,7 +340,8 @@ export default function Payroll() {
               </DialogDescription>
             )}
           </DialogHeader>
-          <div className="max-h-[65vh] overflow-auto">
+          {/* p-1.5 gives the search bar's focus ring (4px outside the input) room so it is not clipped by this scroll container */}
+          <div className="max-h-[65vh] overflow-auto p-1.5">
             {!isPeriodProcessed && (
               <div className="bg-warning/10 text-warning p-4 rounded-lg mb-4 text-center"><p className="text-sm font-medium">Payroll is not yet processed. View and download will be available after processing.</p></div>
             )}

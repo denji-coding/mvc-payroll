@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { normalizeEmployeeId, employeeEligibilityError } from './employeeLookup.ts';
+import { matchesOutConfirmation, nextOutAction, requiresEarlyOutConfirmation, sessionUndertimeMinutes } from './earlyOut.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,6 +11,7 @@ const corsHeaders = {
 interface AttendanceRequest {
   rfid_card_number?: string;
   employee_id?: string;
+  early_out_confirmation?: { record_id: string; action: 'morning_out' | 'afternoon_out'; date: string };
 }
 
 interface TerminalSettings {
@@ -274,6 +276,26 @@ serve(async (req) => {
 
     const existingRecord = attendanceResult.data;
 
+    // All existing validations above run again when an employee confirms.
+    const pendingOutAction = nextOutAction(existingRecord);
+    if (body.early_out_confirmation && !matchesOutConfirmation(body.early_out_confirmation, existingRecord, today)) {
+      return new Response(JSON.stringify({ error: 'Attendance has changed. Please tap again.' }),
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const scheduledOut = pendingOutAction === 'morning_out' ? morningEnd : afternoonEnd;
+    if (pendingOutAction && requiresEarlyOutConfirmation(today, scheduledOut, currentTime) && !body.early_out_confirmation) {
+      // A confirmation request is read-only: no Out record or cooldown is saved.
+      return new Response(JSON.stringify({
+        confirmation_required: true,
+        action: pendingOutAction,
+        record_id: existingRecord.id,
+        date: today,
+        scheduled_out: new Date(`${today}T${scheduledOut}+08:00`).toISOString(),
+        employee_id: employee.employee_id,
+        employee_name: formatEmployeeName(employee),
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     let result;
     let action: 'morning_in' | 'morning_out' | 'afternoon_in' | 'afternoon_out';
 
@@ -336,8 +358,9 @@ serve(async (req) => {
       action = 'morning_out';
       const { data, error } = await supabase
         .from('attendance')
-        .update({ morning_out: currentTime })
+        .update({ morning_out: currentTime, undertime_minutes: sessionUndertimeMinutes(today, morningEnd, currentTime) })
         .eq('id', existingRecord.id)
+        .is('morning_out', null)
         .select()
         .single();
       if (error) throw error;
@@ -393,11 +416,9 @@ serve(async (req) => {
 
       totalHours = Math.min(totalHours, totalScheduledHours);
 
-      const endTime = new Date(`${today}T${afternoonEnd}`);
-      let undertimeMinutes = 0;
-      if (now < endTime) {
-        undertimeMinutes = Math.floor((endTime.getTime() - now.getTime()) / (1000 * 60));
-      }
+      const morningUndertime = existingRecord.morning_out
+        ? sessionUndertimeMinutes(today, morningEnd, existingRecord.morning_out) : 0;
+      const undertimeMinutes = morningUndertime + sessionUndertimeMinutes(today, afternoonEnd, currentTime);
 
       const status = isHalfDay ? 'half_day' : (existingRecord.status || 'present');
 
@@ -412,6 +433,7 @@ serve(async (req) => {
           status,
         })
         .eq('id', existingRecord.id)
+        .is('afternoon_out', null)
         .select()
         .single();
       if (error) throw error;
@@ -447,6 +469,7 @@ serve(async (req) => {
         employee_id: employee.employee_id,
         employee_name: formatEmployeeName(employee),
         timestamp: currentTime,
+        undertime_minutes: pendingOutAction ? sessionUndertimeMinutes(today, scheduledOut, currentTime) : 0,
         record: result,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

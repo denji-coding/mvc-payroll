@@ -29,3 +29,8 @@
 - [x] Correct EMP-666075 lookup feedback without changing its employment status.
 - [x] Allow revealing the terminal key saved on this device in Settings.
 - [x] Verify terminal behavior and employee lookup.
+
+# Early-out confirmation
+
+- [x] Add read-only confirmation before early Morning Out and Afternoon Out; preserve all validations.
+- [x] Confirm saves Out and undertime; Cancel saves nothing; verified both sessions through manual and RFID input with temporary records removed.

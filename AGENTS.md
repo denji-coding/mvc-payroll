@@ -9,3 +9,4 @@
 - Terminal queries do not refetch on browser focus; background polling keeps records current without interrupting input.
 - Attendance lookup distinguishes missing employees from non-active employees, retaining the active-only attendance restriction.
 - Settings may reveal only the device-local terminal key, never retrieve the server secret.
+- Early-out confirmation is read-only until confirmed, bound to the date, attendance record and Out action; re-run terminal validations on confirmation and sum session undertime in Philippine time to prevent stale punches and lost morning undertime.

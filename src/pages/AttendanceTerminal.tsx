@@ -11,6 +11,7 @@ import companyLogo from '@/assets/company-logo.png';
 import { formatFullName } from '@/lib/formatName';
 import { terminalHeaders, setTerminalKey } from '@/lib/terminalKey';
 import { useAuth } from '@/hooks/useAuth';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/ui/alert-dialog';
 
 export default function AttendanceTerminal() {
   const [mode, setMode] = useState<'rfid' | 'manual'>('rfid');
@@ -31,7 +32,12 @@ export default function AttendanceTerminal() {
     submitRfidAttendance,
     submitManualAttendance,
     clearResult,
+    pendingEarlyOut,
+    confirmEarlyOut,
+    cancelEarlyOut,
   } = useAttendanceTerminal();
+
+  const inputBlocked = isLoading || !!pendingEarlyOut;
 
   // Fetch today's attendance records via edge function (bypasses RLS for kiosk mode)
   const [keyInput, setKeyInput] = useState('');
@@ -65,7 +71,7 @@ export default function AttendanceTerminal() {
 
   // Auto-focus RFID input
   useEffect(() => {
-    if (isTerminalEnabled && terminalAuthorized && !result && !isLoading) {
+    if (isTerminalEnabled && terminalAuthorized && !result && !inputBlocked) {
       const focusInput = () => {
         if (mode === 'rfid' && rfidInputRef.current && document.activeElement !== rfidInputRef.current) {
           rfidInputRef.current.focus();
@@ -78,7 +84,7 @@ export default function AttendanceTerminal() {
       const focusInterval = setInterval(focusInput, 500);
       return () => clearInterval(focusInterval);
     }
-  }, [mode, result, isTerminalEnabled, isLoading, terminalAuthorized]);
+  }, [mode, result, isTerminalEnabled, inputBlocked, terminalAuthorized]);
 
   useEffect(() => {
     if (!result) {
@@ -96,6 +102,7 @@ export default function AttendanceTerminal() {
   // RFID scanners send characters very rapidly (<50ms between keystrokes)
   // Human typing is much slower. We use this to distinguish scanner vs keyboard.
   const handleRfidKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (inputBlocked) return;
     const now = Date.now();
     const timeSinceLastKey = now - lastKeystrokeTimeRef.current;
     lastKeystrokeTimeRef.current = now;
@@ -140,7 +147,7 @@ export default function AttendanceTerminal() {
         setRfidInput('');
       }
     }, 300);
-  }, [submitRfidAttendance, isLoading]);
+  }, [submitRfidAttendance, isLoading, inputBlocked]);
 
   const handleRfidChange = useCallback((_value: string) => {
     // Prevent manual input — all handling is done via onKeyDown
@@ -292,12 +299,12 @@ export default function AttendanceTerminal() {
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-center caret-transparent cursor-default"
                   autoComplete="off"
                   autoFocus
-                  disabled={isLoading}
+                  disabled={inputBlocked}
                   readOnly
                   style={{ color: 'transparent' }}
                   onKeyDown={handleRfidKeyDown}
                   onBlur={() => {
-                    if (mode === 'rfid' && !result && !isLoading) {
+                    if (mode === 'rfid' && !result && !inputBlocked) {
                       setTimeout(() => rfidInputRef.current?.focus(), 100);
                     }
                   }}
@@ -313,7 +320,7 @@ export default function AttendanceTerminal() {
                   placeholder="Enter Employee ID"
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-center uppercase"
                   autoComplete="off"
-                  disabled={isLoading}
+                  disabled={inputBlocked}
                 />
               </form>
             )}
@@ -328,7 +335,7 @@ export default function AttendanceTerminal() {
                     submitManualAttendance(employeeIdInput);
                   }
                 }}
-                disabled={isLoading || !employeeIdInput.trim()}
+                disabled={inputBlocked || !employeeIdInput.trim()}
                 className="w-full h-12 bg-white text-[#1a3d2b] font-semibold hover:bg-white/90"
               >
                 {isLoading ? (
@@ -494,6 +501,23 @@ export default function AttendanceTerminal() {
         </div>
       </div>
 
+      <AlertDialog open={!!pendingEarlyOut} onOpenChange={(open) => { if (!open) cancelEarlyOut(); }}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Early {pendingEarlyOut?.action === 'morning_out' ? 'Morning' : 'Afternoon'} Out</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="block font-medium text-foreground mb-2">{pendingEarlyOut?.employee_name}</span>
+              Your scheduled Out time is {pendingEarlyOut && new Date(pendingEarlyOut.scheduled_out).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' })}.
+              {' '}Are you leaving early due to an emergency? Confirm to save your Out time as Undertime, or Cancel to leave it unsaved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={cancelEarlyOut} disabled={isLoading}>Cancel</Button>
+            <Button onClick={confirmEarlyOut} disabled={isLoading}>Confirm</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Result Overlay - Enhanced with animation */}
       {result && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 animate-in fade-in duration-300">
@@ -542,6 +566,9 @@ export default function AttendanceTerminal() {
                     <AlertTriangle className="w-4 h-4" />
                     Late by {result.late_minutes} minutes
                   </div>
+                )}
+                {!!result.undertime_minutes && (
+                  <p className="mt-5 text-sm font-medium text-destructive">Undertime: {result.undertime_minutes} minutes</p>
                 )}
                 {result.status === 'present' && result.action === 'morning_in' && !result.late_minutes && (
                   <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium">

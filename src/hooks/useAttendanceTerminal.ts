@@ -1,5 +1,5 @@
 import { terminalHeaders } from '@/lib/terminalKey';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTerminalSettings } from './useSettings';
 
@@ -13,6 +13,20 @@ interface AttendanceResult {
   error_title?: string;
   late_minutes?: number;
   status?: string;
+  undertime_minutes?: number;
+}
+
+interface OutConfirmation {
+  record_id: string;
+  action: 'morning_out' | 'afternoon_out';
+  date: string;
+}
+
+interface PendingEarlyOut extends OutConfirmation {
+  identifier: string;
+  mode: 'rfid' | 'manual';
+  employee_name: string;
+  scheduled_out: string;
 }
 
 interface TerminalError {
@@ -103,6 +117,8 @@ export function useAttendanceTerminal() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AttendanceResult | null>(null);
+  const [pendingEarlyOut, setPendingEarlyOut] = useState<PendingEarlyOut | null>(null);
+  const inFlightRef = useRef(false);
   const [cooldownMap, setCooldownMap] = useState<Record<string, number>>({});
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   
@@ -160,9 +176,9 @@ export function useAttendanceTerminal() {
     setCooldownMap(prev => ({ ...prev, [identifier]: Date.now() + 60000 }));
   }, []);
 
-  const submitRfidAttendance = useCallback(async (rfidCardNumber: string) => {
+  const submitRfidAttendance = useCallback(async (rfidCardNumber: string, confirmation?: OutConfirmation) => {
     const trimmedInput = rfidCardNumber.trim();
-    if (!trimmedInput || isLoading) return;
+    if (!trimmedInput || inFlightRef.current || (pendingEarlyOut && !confirmation)) return;
 
     // Cooldown is checked after we know the employee, but we also block by RFID
     if (checkCooldown(trimmedInput.toLowerCase())) return;
@@ -173,10 +189,13 @@ export function useAttendanceTerminal() {
       return;
     }
     
+    inFlightRef.current = true;
     setIsLoading(true);
+    setResult(null);
+    if (confirmation) setPendingEarlyOut(null);
     try {
       const { data, error } = await supabase.functions.invoke('rfid-attendance', {
-        body: { rfid_card_number: trimmedInput },
+        body: { rfid_card_number: trimmedInput, early_out_confirmation: confirmation },
         headers: terminalHeaders(),
       });
 
@@ -211,6 +230,11 @@ export function useAttendanceTerminal() {
         return;
       }
 
+      if (data.confirmation_required) {
+        setPendingEarlyOut({ ...data, identifier: trimmedInput, mode: 'rfid' });
+        return;
+      }
+
       // Set cooldown by RFID and employee_id
       setCooldown(trimmedInput.toLowerCase());
       if (data.employee_id) setCooldown(data.employee_id.toLowerCase());
@@ -223,18 +247,20 @@ export function useAttendanceTerminal() {
         timestamp: data.timestamp,
         late_minutes: data.record?.late_minutes,
         status: data.record?.status,
+        undertime_minutes: data.undertime_minutes,
       });
     } catch (err) {
       console.error('RFID attendance error:', err);
       setResult({ success: false, error: 'Connection error. Please try again.', error_title: 'Connection Error' });
     } finally {
+      inFlightRef.current = false;
       setIsLoading(false);
     }
-  }, [isLoading, checkCooldown, setCooldown]);
+  }, [pendingEarlyOut, checkCooldown, setCooldown]);
 
-  const submitManualAttendance = useCallback(async (employeeId: string) => {
+  const submitManualAttendance = useCallback(async (employeeId: string, confirmation?: OutConfirmation) => {
     const trimmedInput = employeeId.trim();
-    if (!trimmedInput || isLoading) return;
+    if (!trimmedInput || inFlightRef.current || (pendingEarlyOut && !confirmation)) return;
 
     // Cooldown check per employee ID
     if (checkCooldown(trimmedInput.toLowerCase())) return;
@@ -245,10 +271,13 @@ export function useAttendanceTerminal() {
       return;
     }
     
+    inFlightRef.current = true;
     setIsLoading(true);
+    setResult(null);
+    if (confirmation) setPendingEarlyOut(null);
     try {
       const { data, error } = await supabase.functions.invoke('rfid-attendance', {
-        body: { employee_id: trimmedInput },
+        body: { employee_id: trimmedInput, early_out_confirmation: confirmation },
         headers: terminalHeaders(),
       });
 
@@ -282,6 +311,11 @@ export function useAttendanceTerminal() {
         return;
       }
 
+      if (data.confirmation_required) {
+        setPendingEarlyOut({ ...data, identifier: trimmedInput, mode: 'manual' });
+        return;
+      }
+
       // Set cooldown per employee ID
       setCooldown(trimmedInput.toLowerCase());
       
@@ -293,14 +327,34 @@ export function useAttendanceTerminal() {
         timestamp: data.timestamp,
         late_minutes: data.record?.late_minutes,
         status: data.record?.status,
+        undertime_minutes: data.undertime_minutes,
       });
     } catch (err) {
       console.error('Manual attendance error:', err);
       setResult({ success: false, error: 'Connection error. Please try again.', error_title: 'Connection Error' });
     } finally {
+      inFlightRef.current = false;
       setIsLoading(false);
     }
-  }, [isLoading, checkCooldown, setCooldown]);
+  }, [pendingEarlyOut, checkCooldown, setCooldown]);
+
+  const confirmEarlyOut = useCallback(() => {
+    if (!pendingEarlyOut || inFlightRef.current) return;
+    const confirmation: OutConfirmation = {
+      record_id: pendingEarlyOut.record_id, action: pendingEarlyOut.action, date: pendingEarlyOut.date,
+    };
+    if (pendingEarlyOut.mode === 'rfid') {
+      void submitRfidAttendance(pendingEarlyOut.identifier, confirmation);
+    } else {
+      void submitManualAttendance(pendingEarlyOut.identifier, confirmation);
+    }
+  }, [pendingEarlyOut, submitRfidAttendance, submitManualAttendance]);
+
+  const cancelEarlyOut = useCallback(() => {
+    if (inFlightRef.current) return;
+    setPendingEarlyOut(null);
+    setResult({ success: false, error_title: 'Attendance Cancelled', error: 'Your Out time was not saved.' });
+  }, []);
 
   const clearResult = useCallback(() => {
     setResult(null);
@@ -310,6 +364,9 @@ export function useAttendanceTerminal() {
     currentTime,
     isLoading,
     result,
+    pendingEarlyOut,
+    confirmEarlyOut,
+    cancelEarlyOut,
     cooldownRemaining,
     settings,
     settingsLoading,

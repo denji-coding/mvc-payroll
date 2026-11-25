@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock, MessageSquareText } from "lucide-react";
+import { Plus, Upload, Heart, Palmtree, AlertTriangle, Baby, Flower2, Ban, CalendarDays, Trash2, Clock, MessageSquareText, X } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, startOfToday, isBefore, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -225,6 +225,7 @@ export default function Leaves() {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [filterMonth, setFilterMonth] = useState<string>(format(new Date(), "yyyy-MM"));
 
@@ -312,7 +313,19 @@ export default function Leaves() {
         return;
       }
       setAttachmentFile(file);
+      setAttachmentPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
+      });
     }
+  };
+
+  const clearAttachment = () => {
+    setAttachmentFile(null);
+    setAttachmentPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
   };
 
   const uploadAttachment = async (): Promise<string | null> => {
@@ -369,7 +382,7 @@ export default function Leaves() {
             setForm({ leave_type: "", reason: "", pay_type: "with_pay" });
             setStartDate(undefined);
             setEndDate(undefined);
-            setAttachmentFile(null);
+            clearAttachment();
             setOpen(false);
           },
         },
@@ -669,14 +682,34 @@ export default function Leaves() {
                 )}
                 {showUploadField ? (
                   <div className="space-y-2">
-                    <Label>Upload Attachment (Required for {uploadConditionDays}+ days)</Label>
+                    <Label>Upload Medical Certificate</Label>
+                    <p className="text-xs text-muted-foreground">Required for {uploadConditionDays}+ days</p>
                     <div className="flex items-center gap-2">
                       <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="flex-1" />
                     </div>
                     {attachmentFile && (
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Upload className="h-3 w-3" /> {attachmentFile.name}
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Upload className="h-3 w-3" /> {attachmentFile.name}
+                        </p>
+                        {attachmentPreview && (
+                          <div className="relative inline-block">
+                            <img
+                              src={attachmentPreview}
+                              alt="Medical certificate preview"
+                              className="max-h-48 rounded-md border object-contain"
+                            />
+                            <button
+                              type="button"
+                              onClick={clearAttachment}
+                              className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow"
+                              aria-label="Remove attachment"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 ) : (

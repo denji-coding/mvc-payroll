@@ -1307,7 +1307,7 @@ function PermissionsManagement() {
 }
 
 function MedicalCertificatesTab() {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const { data: leaves, isLoading } = useQuery({
@@ -1324,11 +1324,18 @@ function MedicalCertificatesTab() {
   });
 
   const handleView = async (filePath: string) => {
-    const { data } = await supabase.storage
-      .from('medical-certificates')
-      .createSignedUrl(filePath, 300);
-    if (data?.signedUrl) {
-      setPreviewUrl(data.signedUrl);
+    const paths = filePath.split(',').map((p) => p.trim()).filter(Boolean);
+    const signed = await Promise.all(
+      paths.map(async (path) => {
+        const { data } = await supabase.storage
+          .from('medical-certificates')
+          .createSignedUrl(path, 300);
+        return data?.signedUrl ?? null;
+      }),
+    );
+    const urls = signed.filter((u): u is string => Boolean(u));
+    if (urls.length > 0) {
+      setPreviewUrls(urls);
       setPreviewOpen(true);
     }
   };
@@ -1403,10 +1410,14 @@ function MedicalCertificatesTab() {
           <DialogHeader>
             <DialogTitle>Medical Certificate</DialogTitle>
           </DialogHeader>
-          {previewUrl && (
-            <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-              <img src={previewUrl} alt="Medical Certificate" className="rounded-lg border w-full object-contain cursor-pointer hover:opacity-80 transition-opacity" />
-            </a>
+          {previewUrls.length > 0 && (
+            <div className="space-y-3">
+              {previewUrls.map((url, i) => (
+                <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                  <img src={url} alt={`Medical Certificate ${i + 1}`} className="rounded-lg border w-full object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+                </a>
+              ))}
+            </div>
           )}
         </DialogContent>
       </Dialog>

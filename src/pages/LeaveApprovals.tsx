@@ -185,23 +185,37 @@ export default function LeaveApprovals() {
 }
 
 function MedicalCertificatePreview({ filePath }: { filePath: string }) {
-  const [url, setUrl] = useState<string | null>(null);
+  const [urls, setUrls] = useState<string[]>([]);
 
   useEffect(() => {
-    const getUrl = async () => {
-      const { data } = await supabase.storage.from('medical-certificates').createSignedUrl(filePath, 300);
-      if (data?.signedUrl) setUrl(data.signedUrl);
+    let cancelled = false;
+    const paths = filePath.split(',').map((p) => p.trim()).filter(Boolean);
+    const getUrls = async () => {
+      const signed = await Promise.all(
+        paths.map(async (path) => {
+          const { data } = await supabase.storage.from('medical-certificates').createSignedUrl(path, 300);
+          return data?.signedUrl ?? null;
+        }),
+      );
+      if (!cancelled) setUrls(signed.filter((u): u is string => Boolean(u)));
     };
-    getUrl();
+    getUrls();
+    return () => {
+      cancelled = true;
+    };
   }, [filePath]);
 
   return (
     <div className="space-y-2">
       <span className="text-sm text-muted-foreground font-medium">Medical Certificate:</span>
-      {url ? (
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          <img src={url} alt="Medical Certificate" className="rounded-lg border max-h-64 w-full object-contain cursor-pointer hover:opacity-80 transition-opacity" />
-        </a>
+      {urls.length > 0 ? (
+        <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+          {urls.map((url, i) => (
+            <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+              <img src={url} alt={`Medical Certificate ${i + 1}`} className="rounded-lg border max-h-64 w-full object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+            </a>
+          ))}
+        </div>
       ) : (
         <div className="h-32 flex items-center justify-center bg-muted rounded-lg text-sm text-muted-foreground">Loading...</div>
       )}

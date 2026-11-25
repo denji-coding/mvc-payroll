@@ -224,8 +224,8 @@ export default function Leaves() {
   const [form, setForm] = useState({ leave_type: "", reason: "", pay_type: "with_pay" as "with_pay" | "without_pay" });
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
-  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
-  const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [attachmentPreviews, setAttachmentPreviews] = useState<(string | null)[]>([]);
   const [uploading, setUploading] = useState(false);
   const [filterMonth, setFilterMonth] = useState<string>(format(new Date(), "yyyy-MM"));
 
@@ -288,7 +288,13 @@ export default function Leaves() {
   useEffect(() => {
     setStartDate(undefined);
     setEndDate(undefined);
-    setAttachmentFile(null);
+    setAttachmentFiles([]);
+    setAttachmentPreviews((prev) => {
+      prev.forEach((preview) => {
+        if (preview) URL.revokeObjectURL(preview);
+      });
+      return [];
+    });
   }, [form.leave_type]);
 
   // Auto-switch to without_pay when LWP exhausted
@@ -306,36 +312,58 @@ export default function Leaves() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+    const selected = Array.from(e.target.files ?? []);
+    if (selected.length === 0) return;
+
+    const accepted: File[] = [];
+    const previews: (string | null)[] = [];
+    for (const file of selected) {
       if (file.size > 5 * 1024 * 1024) {
         toast.error("File size must be less than 5MB");
-        return;
+        continue;
       }
-      setAttachmentFile(file);
-      setAttachmentPreview((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
-      });
+      accepted.push(file);
+      previews.push(file.type.startsWith("image/") ? URL.createObjectURL(file) : null);
     }
+    if (accepted.length === 0) {
+      e.target.value = "";
+      return;
+    }
+
+    setAttachmentFiles((prev) => [...prev, ...accepted]);
+    setAttachmentPreviews((prev) => [...prev, ...previews]);
+    // Allow re-picking the same file after it was attached
+    e.target.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    const preview = attachmentPreviews[index];
+    if (preview) URL.revokeObjectURL(preview);
+    setAttachmentFiles((prev) => prev.filter((_, i) => i !== index));
+    setAttachmentPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const clearAttachment = () => {
-    setAttachmentFile(null);
-    setAttachmentPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
+    attachmentPreviews.forEach((preview) => {
+      if (preview) URL.revokeObjectURL(preview);
     });
+    setAttachmentFiles([]);
+    setAttachmentPreviews([]);
   };
 
   const uploadAttachment = async (): Promise<string | null> => {
-    if (!attachmentFile || !user) return null;
-    const fileExt = attachmentFile.name.split(".").pop();
-    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-    const { error } = await supabase.storage.from("medical-certificates").upload(fileName, attachmentFile);
-    if (error) throw new Error("Failed to upload attachment");
-    // Store just the file path — bucket is private, use signed URLs to view
-    return fileName;
+    if (attachmentFiles.length === 0 || !user) return null;
+    const paths: string[] = [];
+    for (let i = 0; i < attachmentFiles.length; i++) {
+      const file = attachmentFiles[i];
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}_${i}.${fileExt}`;
+      const { error } = await supabase.storage.from("medical-certificates").upload(fileName, file);
+      if (error) throw new Error("Failed to upload attachment");
+      // Store just the file path — bucket is private, use signed URLs to view
+      paths.push(fileName);
+    }
+    return paths.join(",");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -364,7 +392,7 @@ export default function Leaves() {
     try {
       setUploading(true);
       let attachmentUrl: string | null = null;
-      if (showUploadField && attachmentFile) attachmentUrl = await uploadAttachment();
+      if (showUploadField && attachmentFiles.length > 0) attachmentUrl = await uploadAttachment();
 
       const leaveTypeValue = normalizeLeaveTypeKey(form.leave_type);
       createLeave.mutate(
@@ -685,30 +713,39 @@ export default function Leaves() {
                     <Label>Upload Medical Certificate</Label>
                     <p className="text-xs text-muted-foreground">Required for {uploadConditionDays}+ days</p>
                     <div className="flex items-center gap-2">
-                      <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="flex-1" />
+                      <Input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={handleFileChange} className="flex-1" />
                     </div>
-                    {attachmentFile && (
+                    {attachmentFiles.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Upload className="h-3 w-3" /> {attachmentFile.name}
+                          <Upload className="h-3 w-3" />
+                          {attachmentFiles.length} file{attachmentFiles.length === 1 ? "" : "s"} attached
                         </p>
-                        {attachmentPreview && (
-                          <div className="relative inline-block">
-                            <img
-                              src={attachmentPreview}
-                              alt="Medical certificate preview"
-                              className="max-h-48 rounded-md border object-contain"
-                            />
-                            <button
-                              type="button"
-                              onClick={clearAttachment}
-                              className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow"
-                              aria-label="Remove attachment"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </div>
-                        )}
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                          {attachmentFiles.map((file, index) => (
+                            <div key={`${file.name}-${index}`} className="relative">
+                              {attachmentPreviews[index] ? (
+                                <img
+                                  src={attachmentPreviews[index] as string}
+                                  alt="Medical certificate preview"
+                                  className="max-h-40 w-full rounded-md border object-contain"
+                                />
+                              ) : (
+                                <div className="flex h-20 items-center justify-center rounded-md border bg-muted px-2 text-center text-xs break-all text-muted-foreground">
+                                  {file.name}
+                                </div>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => removeAttachment(index)}
+                                className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow"
+                                aria-label={`Remove ${file.name}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -733,7 +770,7 @@ export default function Leaves() {
                     calculatedDays < 1 ||
                     !hasCredits ||
                     !!exceedsLimit ||
-                    (showUploadField && !attachmentFile)
+                    (showUploadField && attachmentFiles.length === 0)
                   } aria-busy={createLeave.isPending}
                 >
                   {uploading ? "Uploading..." : "Submit Request"}

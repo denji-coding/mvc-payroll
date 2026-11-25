@@ -1,6 +1,4 @@
-// project_id = "qeidiljfdzpgxlmxdont"
-
-  project_id = "nqzzjpbotaawiatwyedb"
+project_id = "qeidiljfdzpgxlmxdont"
 
 [functions.rfid-attendance]
 verify_jwt = false

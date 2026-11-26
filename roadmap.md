@@ -34,3 +34,9 @@
 
 - [x] Add read-only confirmation before early Morning Out and Afternoon Out; preserve all validations.
 - [x] Confirm saves Out and undertime; Cancel saves nothing; verified both sessions through manual and RFID input with temporary records removed.
+
+# Leave upload and ordering
+
+- [x] Replace only the certificate upload control with image-only drag-and-drop selection; retain previews.
+- [x] Display newly created leave types first in Leave Credits without changing creation or deduction processes.
+- [x] Verify image selection through the browse control, image-only rules, and authenticated Leave Credits ordering against creation dates; previews remain unchanged.

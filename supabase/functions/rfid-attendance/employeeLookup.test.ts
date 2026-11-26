@@ -1,19 +1,26 @@
-import { describe, expect, test } from 'bun:test';
-import { normalizeEmployeeId, employeeEligibilityError } from './employeeLookup';
+import { normalizeEmployeeId, employeeEligibilityError } from './employeeLookup.ts';
 
-describe('attendance employee lookup', () => {
-  test('normalizes EMP-666075 for exact lookup', () => {
-    expect(normalizeEmployeeId(' emp-666075 ')).toBe('EMP-666075');
-  });
-  test('recognizes terminated employees without allowing attendance', () => {
-    expect(employeeEligibilityError({ employment_status: 'terminated' })).toBe(
-      'Employee employment status is terminated. Only active employees can log attendance. Please contact HR.',
-    );
-  });
-  test('allows active employees', () => {
-    expect(employeeEligibilityError({ employment_status: 'active' })).toBeNull();
-  });
-  test('distinguishes missing employees', () => {
-    expect(employeeEligibilityError(null)).toBe('Employee not found');
-  });
+function assertEqual<T>(actual: T, expected: T): void {
+  if (actual !== expected) {
+    throw new Error(`Expected ${String(expected)}, received ${String(actual)}`);
+  }
+}
+
+Deno.test('attendance employee lookup: normalizes EMP-666075 for exact lookup', () => {
+  assertEqual(normalizeEmployeeId(' emp-666075 '), 'EMP-666075');
+});
+
+Deno.test('attendance employee lookup: recognizes terminated employees without allowing attendance', () => {
+  assertEqual(
+    employeeEligibilityError({ employment_status: 'terminated' }),
+    'Employee employment status is terminated. Only active employees can log attendance. Please contact HR.',
+  );
+});
+
+Deno.test('attendance employee lookup: allows active employees', () => {
+  assertEqual(employeeEligibilityError({ employment_status: 'active' }), null);
+});
+
+Deno.test('attendance employee lookup: distinguishes missing employees', () => {
+  assertEqual(employeeEligibilityError(null), 'Employee not found');
 });

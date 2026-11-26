@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { newestLeaveTypesFirst } from '@/lib/leaveFormRules';
 import { useAuth } from '@/hooks/useAuth';
 import { useLeaveTypes, useCreateLeaveType, useUpdateLeaveType, useDeleteLeaveType, LeaveType } from '@/hooks/useLeaveTypes';
 
@@ -24,6 +25,7 @@ import { toast } from 'sonner';
 export default function LeaveCredits() {
   const { role } = useAuth();
   const { data: leaveTypes, isLoading } = useLeaveTypes();
+  const orderedLeaveTypes = useMemo(() => newestLeaveTypesFirst(leaveTypes || []), [leaveTypes]);
   
   const createLeaveType = useCreateLeaveType();
   const updateLeaveType = useUpdateLeaveType();
@@ -172,7 +174,7 @@ export default function LeaveCredits() {
       <Card>
         <CardContent className="pt-6">
           {isLoading ? <div className="text-center py-8 text-muted-foreground">Loading...</div> : (
-            <DataTable columns={columns} data={leaveTypes || []} searchPlaceholder="Search leave types..." emptyMessage="No leave types found. Click 'Add Leave Type' to create one." />
+            <DataTable columns={columns} data={orderedLeaveTypes} searchPlaceholder="Search leave types..." emptyMessage="No leave types found. Click 'Add Leave Type' to create one." />
           )}
         </CardContent>
       </Card>

@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { CertificateImageUpload } from "@/components/leaves/CertificateImageUpload";
+import { isCertificateImage } from "@/lib/leaveFormRules";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -311,13 +312,16 @@ export default function Leaves() {
     return () => false; // no_disable
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(e.target.files ?? []);
+  const handleFileChange = (selected: File[]) => {
     if (selected.length === 0) return;
 
     const accepted: File[] = [];
     const previews: (string | null)[] = [];
     for (const file of selected) {
+      if (!isCertificateImage(file)) {
+        toast.error("Please upload images only");
+        continue;
+      }
       if (file.size > 5 * 1024 * 1024) {
         toast.error("File size must be less than 5MB");
         continue;
@@ -325,15 +329,10 @@ export default function Leaves() {
       accepted.push(file);
       previews.push(file.type.startsWith("image/") ? URL.createObjectURL(file) : null);
     }
-    if (accepted.length === 0) {
-      e.target.value = "";
-      return;
-    }
+    if (accepted.length === 0) return;
 
     setAttachmentFiles((prev) => [...prev, ...accepted]);
     setAttachmentPreviews((prev) => [...prev, ...previews]);
-    // Allow re-picking the same file after it was attached
-    e.target.value = "";
   };
 
   const removeAttachment = (index: number) => {
@@ -712,9 +711,7 @@ export default function Leaves() {
                   <div className="space-y-2">
                     <Label>Upload Medical Certificate</Label>
                     <p className="text-xs text-muted-foreground">Required for {uploadConditionDays}+ days</p>
-                    <div className="flex items-center gap-2">
-                      <Input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={handleFileChange} className="flex-1" />
-                    </div>
+                    <CertificateImageUpload onFiles={handleFileChange} />
                     {attachmentFiles.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
